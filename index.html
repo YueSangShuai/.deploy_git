@@ -215,7 +215,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：17:53:04" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:15:06" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
 
           
@@ -244,11 +244,9 @@
 
       
           <h1 id="优化器"><a href="#优化器" class="headerlink" title="优化器"></a>优化器</h1><h2 id="1-神经网络的梯度"><a href="#1-神经网络的梯度" class="headerlink" title="1.神经网络的梯度"></a>1.神经网络的梯度</h2><h3 id="1-1梯度"><a href="#1-1梯度" class="headerlink" title="1.1梯度"></a>1.1梯度</h3><p>下面是如何求解导数</p>
-<p>$$<br>\frac{df(x)}{dx}&#x3D;\lim\limits_{x\rightarrow\infty}\frac{f(x+h)-f(x)}{h}</p>
-<p>$$</p>
+<p>$$<br>f’(x) &#x3D; \lim\limits_{h\rightarrow 0}\frac{f(x+h)-f(x)}{h}<br>$$</p>
 <p>举个例子速度的导数是加速反应了速度变换的快慢，所以在神经网络中导数往往决定方向下降的快慢。<br>下面是一个偏导数</p>
-<p>$$<br>f(x_0,x_1)&#x3D;x_0^2+x_1^2</p>
-<p>$$</p>
+<p>$$<br>f(x_0,x_1)&#x3D;x_0^2+x_1^2<br>$$</p>
 <p>可以将神经网络中的神经元理解为这些自变量，而梯度则是对这些自变量求导，我们将他称之为偏导数（求哪个自变量就是对他比较偏心），这些偏导数称之为模型的梯度。</p>
 <h3 id="1-2梯度法"><a href="#1-2梯度法" class="headerlink" title="1.2梯度法"></a>1.2梯度法</h3><p>根据高中学习的知识可以知道，函数的极值出现在导数为0的部分，也就是梯度为0的部分。函数可能有多个极值点由此可见梯度下降可能会出现的一个就是局部最优解。<br><img src="/../_resources/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_16921678799643.png" alt="企业微信截图_16921678799643.png"><br>梯度法的过程就是土话来说，我先确认一个方向向前跑几步，然后再求梯度之后再跑几步，其中这个具体跑几步就要由我们的学习率来决定了。<br>给出梯度下降的公式：<br>$$<br>x_0&#x3D;x_0-\eta\dfrac{\partial f}{\partial x_0}<br>$$<br>$$<br>x_1&#x3D;x_1-\eta\dfrac{\partial f}{\partial x_1}<br>$$<br>其中$\eta$就是神经网络中的学习率</p>
 <h2 id="2神经网络动量"><a href="#2神经网络动量" class="headerlink" title="2神经网络动量"></a>2神经网络动量</h2><h3 id="2-1一阶动量和二阶动量"><a href="#2-1一阶动量和二阶动量" class="headerlink" title="2.1一阶动量和二阶动量"></a>2.1一阶动量和二阶动量</h3><p>通过高中物理知识可以知道动量的概念是物体在它运动方向上保持运动的趋势，是该物体质量和速度的乘积。土话来举个例子，孙策开大下船的时候船会往我们指定方向运动这就是动量。<br>一阶动量为过去各个时刻梯度的线性组合，而二阶动量自然是过去各个时刻梯度的平方的线性组合，虽然一阶动量确认梯度下降的路程，二阶动量确认梯度下降的速度。。<br>动量法的一般形式,先确定梯度：<br>$$<br>g_t&#x3D;\nabla loss&#x3D;\dfrac{\partial loss}{\partial \omega_t}<br>$$<br>这就和我上述讲的损失函数差不多对损失函数的每个权重求偏导的出来的就是权重。<br>这俩是一阶动量和二阶动量的表达式<br>$$<br>m_{t}&#x3D;\phi\left(g_{1}, g_{2}, \cdots, g_{t}\right) ; V_{t}&#x3D;\psi\left(g_{1}, g_{2}, \cdots, g_{t}\right)<br>$$<br>当前时刻下降的梯度<br>$$<br>\eta_t&#x3D;\alpha·\dfrac{m_t}{\sqrt{V_t}}<br>$$<br>根据下降的梯度进行更新<br>$$<br> \omega_{t+1}&#x3D; \omega_t-\eta_t<br>$$</p>
@@ -306,7 +304,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：17:53:06" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:09:53" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
 
           
@@ -382,7 +380,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：17:56:07" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:09:41" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
 
           
@@ -460,7 +458,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：17:53:11" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:09:50" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
 
           
@@ -555,7 +553,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：17:53:08" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:09:58" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
 
           
@@ -681,6 +679,12 @@
           <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">日志</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
 </div>

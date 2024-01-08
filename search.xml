@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>YOLOV8和YOLOV5对比</title>
+    <url>/2024/01/08/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/</url>
+    <content><![CDATA[<h1 id="YOLOV8和YOLOV5对比"><a href="#YOLOV8和YOLOV5对比" class="headerlink" title="YOLOV8和YOLOV5对比"></a>YOLOV8和YOLOV5对比</h1><h2 id="正负样本匹配策略"><a href="#正负样本匹配策略" class="headerlink" title="正负样本匹配策略"></a>正负样本匹配策略</h2><h3 id="yolov5"><a href="#yolov5" class="headerlink" title="yolov5"></a>yolov5</h3><p>yolov5:采用anchor-base策略</p>
+<h4 id="1-跨anchor预测"><a href="#1-跨anchor预测" class="headerlink" title="1.跨anchor预测"></a>1.跨anchor预测</h4><p>在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。<br>在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:<br>$<br>\frac {GT宽高}{anchors宽高}&#x3D;ration_1<br>$</p>
+<p>$<br>\frac {anchors宽高}{GT宽高}&#x3D;ration_2<br>$<br>取ratio1和ratio2的最大值作为最后的宽高比，该宽高比和设定阈值（默认为4）比较，小于设定阈值的anchor则为匹配到的anchor。<br>给出一位老哥的代码比较能直观的理解这个<br>  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">anchor_boxes=torch.tensor([[<span class="number">1.25000</span>, <span class="number">1.62500</span>],[<span class="number">2.00000</span>, <span class="number">3.75000</span>],[<span class="number">4.12500</span>, <span class="number">2.87500</span>]])</span><br><span class="line">gt_box=torch.tensor([<span class="number">5</span>,<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">ratio1=gt_box/anchor_boxes</span><br><span class="line">ratio2=anchor_boxes/gt_box</span><br><span class="line"><span class="comment">#这里的max最后取[0]代表着取值[1]是索引</span></span><br><span class="line">ratio=torch.<span class="built_in">max</span>(ratio1, ratio2).<span class="built_in">max</span>(<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(ratio)</span><br><span class="line"> </span><br><span class="line">anchor_t=<span class="number">4</span></span><br><span class="line">res=ratio&lt;anchor_t</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-跨grid预测"><a href="#2-跨grid预测" class="headerlink" title="2.跨grid预测"></a>2.跨grid预测</h4><p>  在v5之前的yolo都是假设GT落入某个预测分支的某个网格(预测分支在这里的意思就是yolo的三个检测头)，该网格有左、上、右、下4个邻域网格，根据GT框的中心位置，将最近的2个邻域网格也作为预测网格，也即一个GT框可以由3个网格来预测。<br>  (偷个别人的例子)<br> 计算例子：<br>GT box中心点处于grid1中，grid1被选中，为了增加增样本，grid1的上下左右grid为候选网格，因为GT中心点更靠近grid2和grid3，grid2和grid3也作为匹配到的网格，根据上步的anchor匹配结果，GT与anchor2、anchor3相匹配，因此GT在当前层匹配到的正样本有6个，分别为：grid1_anchor2，grid1_anchor3，grid2_anchor2，grid2_anchor3，grid3_anchor2，grid3_anchor3。<br><img src="/../_resources/731986cd924df77e562fa23f6460f3ec.png" alt="731986cd924df77e562fa23f6460f3ec.png"></p>
+<h4 id="3-跨分支预测"><a href="#3-跨分支预测" class="headerlink" title="3.跨分支预测"></a>3.跨分支预测</h4><p>原先一个GT只能由一个分支进行预测，现在我们在每个分支上进行anchor的匹配和grid的匹配，只要满足上述的条件即为正样本。<br>详细的匹配策略可以根据这位大佬的debug一步步进行<br> [大佬教程]:<a href="https://blog.csdn.net/u013066730/article/details/126969286">https://blog.csdn.net/u013066730/article/details/126969286</a></p>
+<h3 id="yolov8"><a href="#yolov8" class="headerlink" title="yolov8"></a>yolov8</h3><p> yolov8采用的是anchor-free，其核心思路就是每个grid作为一个anchor,<br> $$<br>\text { alignmetric }&#x3D;s^\alpha +u^\beta<br>$$<br>其中，s 是预测类别分值，u 是预测框和真实框的ciou值，另外两个就是权重超参数了对于每个真实框，然后直接对align_metric匹配程度排序，选取topK个预测框作为正样本。</p>
+]]></content>
+      <tags>
+        <tag>土说神经网络</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>IOU和他们儿子们</title>
     <url>/2024/01/08/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/</url>
     <content><![CDATA[<h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="/../_resources/c5ab252c5e9ca95dcdc6641c7f96bdb8.png" alt="c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="/../_resources/1ade08f85509ee61112e2a760fea92ae.png" alt="1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
@@ -18,17 +32,6 @@
 
 <h2 id="CIOU"><a href="#CIOU" class="headerlink" title="CIOU"></a>CIOU</h2><p>在$GIOU$的基础之上加入了形状的相似度：<br>$$<br>CIOU&#x3D;IOU-\frac {ρ^2·(b,b^gt)}{c^2}-\alpha\upsilon<br>$$<br>其中$\alpha$是权重函数，而$\upsilon$用来度量长宽比的相似性：<br>$$<br>\upsilon&#x3D; \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right)^2<br>$$<br>$$<br>\alpha&#x3D; \frac{\upsilon}{(1-IOU)+\upsilon}<br>$$<br>在使用$CIOU$作为Loss的时候，$\upsilon$的梯度同样会参与反向传播的计算，其中：<br>$$<br>\begin{aligned}<br>\frac{\partial v}{\partial w} &amp; &#x3D;2 * \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{1}{1+\left(\frac{w}{h}\right)^{2}} * \frac{1}{h} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{h^{2}}{w^{2}+h^{2}} * \frac{1}{h} \<br>&amp; &#x3D;-\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{h}{w^{2}+h^{2}}<br>\end{aligned}<br>$$<br>$$<br>\begin{aligned}<br>\frac{\partial v}{\partial h} &amp; &#x3D;2 * \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{1}{1+\left(\frac{w}{h}\right)^{2}} * w *(-1) * h^{-2} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{h^{2}}{w^{2}+h^{2}} * w * h^{-2} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{w}{w^{2}+h^{2}}<br>\end{aligned}<br>$$</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">CIoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    y1,x1,y2,x2 = box1 </span><br><span class="line">    y3,x3,y4,x4 = box2</span><br><span class="line">    </span><br><span class="line">    iou = IoU(box1, box2)</span><br><span class="line">    diou = DIoU(box1, box2)</span><br><span class="line"></span><br><span class="line">    v = <span class="number">4</span> / math.pi**<span class="number">2</span> * (math.atan((x2-x1)/(y2-y1)) - \</span><br><span class="line">                          math.atan((x4-x3)/(y4-y3)))**<span class="number">2</span> + <span class="number">1e-5</span></span><br><span class="line">    alpha = v / ((<span class="number">1</span>-iou) + v)</span><br><span class="line">    </span><br><span class="line">    ciou = diou - alpha * v</span><br><span class="line">    <span class="keyword">return</span> ciou</span><br><span class="line">CIoU(box1, box2)</span><br></pre></td></tr></table></figure>]]></content>
-  </entry>
-  <entry>
-    <title>YOLOV8和YOLOV5对比</title>
-    <url>/2024/01/08/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/</url>
-    <content><![CDATA[<h1 id="YOLOV8和YOLOV5对比"><a href="#YOLOV8和YOLOV5对比" class="headerlink" title="YOLOV8和YOLOV5对比"></a>YOLOV8和YOLOV5对比</h1><h2 id="正负样本匹配策略"><a href="#正负样本匹配策略" class="headerlink" title="正负样本匹配策略"></a>正负样本匹配策略</h2><h3 id="yolov5"><a href="#yolov5" class="headerlink" title="yolov5"></a>yolov5</h3><p>yolov5:采用anchor-base策略</p>
-<h4 id="1-跨anchor预测"><a href="#1-跨anchor预测" class="headerlink" title="1.跨anchor预测"></a>1.跨anchor预测</h4><p>在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。<br>在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:<br>$<br>\frac {GT宽高}{anchors宽高}&#x3D;ration_1<br>$</p>
-<p>$<br>\frac {anchors宽高}{GT宽高}&#x3D;ration_2<br>$<br>取ratio1和ratio2的最大值作为最后的宽高比，该宽高比和设定阈值（默认为4）比较，小于设定阈值的anchor则为匹配到的anchor。<br>给出一位老哥的代码比较能直观的理解这个<br>  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">anchor_boxes=torch.tensor([[<span class="number">1.25000</span>, <span class="number">1.62500</span>],[<span class="number">2.00000</span>, <span class="number">3.75000</span>],[<span class="number">4.12500</span>, <span class="number">2.87500</span>]])</span><br><span class="line">gt_box=torch.tensor([<span class="number">5</span>,<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">ratio1=gt_box/anchor_boxes</span><br><span class="line">ratio2=anchor_boxes/gt_box</span><br><span class="line"><span class="comment">#这里的max最后取[0]代表着取值[1]是索引</span></span><br><span class="line">ratio=torch.<span class="built_in">max</span>(ratio1, ratio2).<span class="built_in">max</span>(<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(ratio)</span><br><span class="line"> </span><br><span class="line">anchor_t=<span class="number">4</span></span><br><span class="line">res=ratio&lt;anchor_t</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure></p>
-<h4 id="2-跨grid预测"><a href="#2-跨grid预测" class="headerlink" title="2.跨grid预测"></a>2.跨grid预测</h4><p>  在v5之前的yolo都是假设GT落入某个预测分支的某个网格(预测分支在这里的意思就是yolo的三个检测头)，该网格有左、上、右、下4个邻域网格，根据GT框的中心位置，将最近的2个邻域网格也作为预测网格，也即一个GT框可以由3个网格来预测。<br>  (偷个别人的例子)<br> 计算例子：<br>GT box中心点处于grid1中，grid1被选中，为了增加增样本，grid1的上下左右grid为候选网格，因为GT中心点更靠近grid2和grid3，grid2和grid3也作为匹配到的网格，根据上步的anchor匹配结果，GT与anchor2、anchor3相匹配，因此GT在当前层匹配到的正样本有6个，分别为：grid1_anchor2，grid1_anchor3，grid2_anchor2，grid2_anchor3，grid3_anchor2，grid3_anchor3。<br><img src="/../_resources/731986cd924df77e562fa23f6460f3ec.png" alt="731986cd924df77e562fa23f6460f3ec.png"></p>
-<h4 id="3-跨分支预测"><a href="#3-跨分支预测" class="headerlink" title="3.跨分支预测"></a>3.跨分支预测</h4><p>原先一个GT只能由一个分支进行预测，现在我们在每个分支上进行anchor的匹配和grid的匹配，只要满足上述的条件即为正样本。<br>详细的匹配策略可以根据这位大佬的debug一步步进行<br> [大佬教程]:<a href="https://blog.csdn.net/u013066730/article/details/126969286">https://blog.csdn.net/u013066730/article/details/126969286</a></p>
-<h3 id="yolov8"><a href="#yolov8" class="headerlink" title="yolov8"></a>yolov8</h3><p> yolov8采用的是anchor-free，其核心思路就是每个grid作为一个anchor,<br> $$<br>\text { alignmetric }&#x3D;s^\alpha +u^\beta<br>$$<br>其中，s 是预测类别分值，u 是预测框和真实框的ciou值，另外两个就是权重超参数了对于每个真实框，然后直接对align_metric匹配程度排序，选取topK个预测框作为正样本。</p>
-]]></content>
   </entry>
   <entry>
     <title>YoloV3 Anchor生成正负样本</title>
@@ -57,16 +60,29 @@
 <p>这部分主要是吧刚刚算出来正样本加入进去用之前得到的$x,y$的中心格位置，或者你这边直接归一化也可以。</p>
 <p>这里讲一句对于正负样本不均匀的理解，举个例子就像小时候父母告诉我们做这个不好，做那个不好，实际上需要怎么做的好有时候他们并不会告诉我，导致我们只知道这样做是不好的，但是不知道怎么往好的方面发展。</p>
 ]]></content>
+      <tags>
+        <tag>土说神经网络</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>交叉熵损失</title>
+    <url>/2024/01/08/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
+    <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="/../_resources/059755e389e74059a0eef42704677f81.png" alt="059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
+<h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
+<h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
+<p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
+]]></content>
+      <tags>
+        <tag>土说神经网络</tag>
+      </tags>
   </entry>
   <entry>
     <title>神经网络优化器</title>
     <url>/2024/01/08/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96%E5%99%A8/</url>
     <content><![CDATA[<h1 id="优化器"><a href="#优化器" class="headerlink" title="优化器"></a>优化器</h1><h2 id="1-神经网络的梯度"><a href="#1-神经网络的梯度" class="headerlink" title="1.神经网络的梯度"></a>1.神经网络的梯度</h2><h3 id="1-1梯度"><a href="#1-1梯度" class="headerlink" title="1.1梯度"></a>1.1梯度</h3><p>下面是如何求解导数</p>
-<p>$$<br>\frac{df(x)}{dx}&#x3D;\lim\limits_{x\rightarrow\infty}\frac{f(x+h)-f(x)}{h}</p>
-<p>$$</p>
+<p>$$<br>f’(x) &#x3D; \lim\limits_{h\rightarrow 0}\frac{f(x+h)-f(x)}{h}<br>$$</p>
 <p>举个例子速度的导数是加速反应了速度变换的快慢，所以在神经网络中导数往往决定方向下降的快慢。<br>下面是一个偏导数</p>
-<p>$$<br>f(x_0,x_1)&#x3D;x_0^2+x_1^2</p>
-<p>$$</p>
+<p>$$<br>f(x_0,x_1)&#x3D;x_0^2+x_1^2<br>$$</p>
 <p>可以将神经网络中的神经元理解为这些自变量，而梯度则是对这些自变量求导，我们将他称之为偏导数（求哪个自变量就是对他比较偏心），这些偏导数称之为模型的梯度。</p>
 <h3 id="1-2梯度法"><a href="#1-2梯度法" class="headerlink" title="1.2梯度法"></a>1.2梯度法</h3><p>根据高中学习的知识可以知道，函数的极值出现在导数为0的部分，也就是梯度为0的部分。函数可能有多个极值点由此可见梯度下降可能会出现的一个就是局部最优解。<br><img src="/../_resources/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_16921678799643.png" alt="企业微信截图_16921678799643.png"><br>梯度法的过程就是土话来说，我先确认一个方向向前跑几步，然后再求梯度之后再跑几步，其中这个具体跑几步就要由我们的学习率来决定了。<br>给出梯度下降的公式：<br>$$<br>x_0&#x3D;x_0-\eta\dfrac{\partial f}{\partial x_0}<br>$$<br>$$<br>x_1&#x3D;x_1-\eta\dfrac{\partial f}{\partial x_1}<br>$$<br>其中$\eta$就是神经网络中的学习率</p>
 <h2 id="2神经网络动量"><a href="#2神经网络动量" class="headerlink" title="2神经网络动量"></a>2神经网络动量</h2><h3 id="2-1一阶动量和二阶动量"><a href="#2-1一阶动量和二阶动量" class="headerlink" title="2.1一阶动量和二阶动量"></a>2.1一阶动量和二阶动量</h3><p>通过高中物理知识可以知道动量的概念是物体在它运动方向上保持运动的趋势，是该物体质量和速度的乘积。土话来举个例子，孙策开大下船的时候船会往我们指定方向运动这就是动量。<br>一阶动量为过去各个时刻梯度的线性组合，而二阶动量自然是过去各个时刻梯度的平方的线性组合，虽然一阶动量确认梯度下降的路程，二阶动量确认梯度下降的速度。。<br>动量法的一般形式,先确定梯度：<br>$$<br>g_t&#x3D;\nabla loss&#x3D;\dfrac{\partial loss}{\partial \omega_t}<br>$$<br>这就和我上述讲的损失函数差不多对损失函数的每个权重求偏导的出来的就是权重。<br>这俩是一阶动量和二阶动量的表达式<br>$$<br>m_{t}&#x3D;\phi\left(g_{1}, g_{2}, \cdots, g_{t}\right) ; V_{t}&#x3D;\psi\left(g_{1}, g_{2}, \cdots, g_{t}\right)<br>$$<br>当前时刻下降的梯度<br>$$<br>\eta_t&#x3D;\alpha·\dfrac{m_t}{\sqrt{V_t}}<br>$$<br>根据下降的梯度进行更新<br>$$<br> \omega_{t+1}&#x3D; \omega_t-\eta_t<br>$$</p>
@@ -81,14 +97,8 @@
 <h3 id="2-8AdaDelta-RMSProp"><a href="#2-8AdaDelta-RMSProp" class="headerlink" title="2.8AdaDelta &#x2F; RMSProp"></a>2.8AdaDelta &#x2F; RMSProp</h3><p>这个方法和SGD with Momentum有点相似不过他这里是为了防止学习率太低的情况，<br>$$<br>V_t&#x3D;\beta_2*V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
 <h3 id="2-9Adam"><a href="#2-9Adam" class="headerlink" title="2.9Adam"></a>2.9Adam</h3><p>阿蛋优化器集合了一阶动量以及二阶动量的特点：<br>$$<br>m_t&#x3D;\beta_1<em>m_{t-1}+(1-\beta)·g_t<br>$$<br>$$<br>V_t&#x3D;\beta_2</em>V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>交叉熵损失</title>
-    <url>/2024/01/08/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
-    <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="/../_resources/059755e389e74059a0eef42704677f81.png" alt="059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
-<h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
-<h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
-<p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
-]]></content>
+      <tags>
+        <tag>土说神经网络</tag>
+      </tags>
   </entry>
 </search>
