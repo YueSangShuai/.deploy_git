@@ -11,7 +11,7 @@
 	position: fixed;
 	transition: margin-left 1s;
 	width: 60px;
-	writing-mode: vertical-lr;
+	writing-mode: vertical-rl;
 }
 
 #waifu-toggle.waifu-toggle-active {
@@ -23,8 +23,8 @@
 }
 
 #waifu {
-	bottom: -1500px;
-	right: 50px;
+	bottom: -1000px;
+	right: 100px;
 	line-height: 0;
 	margin-bottom: -10px;
 	position: fixed;
@@ -68,9 +68,9 @@
 
 #live2d {
 	cursor: grab;
-	height: 200px;
+	height: 300px;
 	position: relative;
-	width: 200px;
+	width: 300px;
 }
 
 #live2d:active {
