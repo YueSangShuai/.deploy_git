@@ -22,22 +22,25 @@
     var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="关于手撸YoloV3代码的可以看一下b站一个up主：深度学习麋了鹿这里主要讲的是YoloV3中正负样本的生成以及我个人的理解。 1.正负样本生成的原理1.1正样本的选择首先先计算$gt$的中心落在哪个$grid$上，总共有3个特征层以及3个$anchor$总共生成9个先验框，选出与$gt$的$IOU$最大的那个先验框做为正样本。 1.2负样本的选择计算各个先验框和所有的目标$gt$之间的$IOU$">
+  <meta name="description" content="Ubuntu19 Openvion cmake源码编译苦逼打工人Ubuntu服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。 123451.  git clone https:&#x2F;&#x2F;github.com&#x2F;openvinotoolkit&#x2F;openvino.git    2.  cd openvino      解压后的">
 <meta property="og:type" content="article">
-<meta property="og:title" content="YoloV3 Anchor生成正负样本">
-<meta property="og:url" content="http://yuesangshuai.github.io/2024/01/08/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/index.html">
+<meta property="og:title" content="Ubuntu19 Openvion cmake源码编译">
+<meta property="og:url" content="http://yuesangshuai.github.io/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/index.html">
 <meta property="og:site_name" content="你好陌生人">
-<meta property="og:description" content="关于手撸YoloV3代码的可以看一下b站一个up主：深度学习麋了鹿这里主要讲的是YoloV3中正负样本的生成以及我个人的理解。 1.正负样本生成的原理1.1正样本的选择首先先计算$gt$的中心落在哪个$grid$上，总共有3个特征层以及3个$anchor$总共生成9个先验框，选出与$gt$的$IOU$最大的那个先验框做为正样本。 1.2负样本的选择计算各个先验框和所有的目标$gt$之间的$IOU$">
+<meta property="og:description" content="Ubuntu19 Openvion cmake源码编译苦逼打工人Ubuntu服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。 123451.  git clone https:&#x2F;&#x2F;github.com&#x2F;openvinotoolkit&#x2F;openvino.git    2.  cd openvino      解压后的">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://yuesangshuai.github.io/_resources/9573740d47f359fa58f705e02e5ec1f8.png">
-<meta property="article:published_time" content="2024-01-08T09:43:59.845Z">
-<meta property="article:modified_time" content="2024-01-08T10:09:50.316Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png">
+<meta property="article:published_time" content="2024-01-09T02:37:19.348Z">
+<meta property="article:modified_time" content="2024-01-09T02:54:10.187Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="土说神经网络">
+<meta property="article:tag" content="Openvino">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yuesangshuai.github.io/_resources/9573740d47f359fa58f705e02e5ec1f8.png">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png">
 
-<link rel="canonical" href="http://yuesangshuai.github.io/2024/01/08/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/">
+<link rel="canonical" href="http://yuesangshuai.github.io/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/">
 
 
 <script id="page-configurations">
@@ -50,7 +53,7 @@
   };
 </script>
 
-  <title>YoloV3 Anchor生成正负样本 | 你好陌生人</title>
+  <title>Ubuntu19 Openvion cmake源码编译 | 你好陌生人</title>
   
 
 
@@ -198,7 +201,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yuesangshuai.github.io/2024/01/08/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/">
+    <link itemprop="mainEntityOfPage" href="http://yuesangshuai.github.io/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -211,7 +214,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          YoloV3 Anchor生成正负样本
+          Ubuntu19 Openvion cmake源码编译
         </h1>
 
         <div class="post-meta">
@@ -222,7 +225,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:09:50" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-09 10:37:19 / 修改时间：10:54:10" itemprop="dateCreated datePublished" datetime="2024-01-09T10:37:19+08:00">2024-01-09</time>
             </span>
 
           
@@ -234,8 +237,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2024/01/08/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2024/01/08/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/" itemprop="commentCount"></span>
+    <a title="valine" href="/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -250,29 +253,34 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>关于手撸YoloV3代码的可以看一下b站一个up主：深度学习麋了鹿<br>这里主要讲的是YoloV3中正负样本的生成以及我个人的理解。</p>
-<h1 id="1-正负样本生成的原理"><a href="#1-正负样本生成的原理" class="headerlink" title="1.正负样本生成的原理"></a>1.正负样本生成的原理</h1><h2 id="1-1正样本的选择"><a href="#1-1正样本的选择" class="headerlink" title="1.1正样本的选择"></a>1.1正样本的选择</h2><p>首先先计算$gt$的中心落在哪个$grid$上，总共有3个特征层以及3个$anchor$总共生成9个先验框，选出与$gt$的$IOU$最大的那个先验框做为正样本。</p>
-<h2 id="1-2负样本的选择"><a href="#1-2负样本的选择" class="headerlink" title="1.2负样本的选择"></a>1.2负样本的选择</h2><p>计算各个先验框和所有的目标$gt$之间的$IOU$，如果某先验框和图像中所有物体最大的IOU都小于阈值（一般0.5），那么就认为该先验框不含目标，记作负样本，其置信度应当为0</p>
-<h2 id="1-3其他样本"><a href="#1-3其他样本" class="headerlink" title="1.3其他样本"></a>1.3其他样本</h2><p>对于剩下$IOU$大于阈值但不是与$gt$的$IOU$最大的那部分，这句话可能有点绕，可以这样简单理解，这个班上只要第一名作为学习的榜样，分数低于60分的大家作为反面教材，剩下大于60分但又不是第一名的那些人大家就不用管他了。</p>
-<h1 id="2-代码部分的讲解"><a href="#2-代码部分的讲解" class="headerlink" title="2.代码部分的讲解"></a>2.代码部分的讲解</h1><p>这里贴一下麋鹿的手撸代码这部分就是$label$的生成，我个人也是按照他的视频讲解来写的</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">  labels=&#123;&#125;</span><br><span class="line">w,h=img.size</span><br><span class="line">  <span class="keyword">case</span>=<span class="number">416</span>/w</span><br><span class="line">  <span class="keyword">for</span> feature_size,_antors <span class="keyword">in</span> antors.items():</span><br><span class="line">      labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> box <span class="keyword">in</span> boxes:</span><br><span class="line">          cls,cx,cy,w,h=box</span><br><span class="line">          cx, cy,w,h=cx*<span class="keyword">case</span>,cy*<span class="keyword">case</span>,w*<span class="keyword">case</span>,h*<span class="keyword">case</span></span><br><span class="line">          _x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">          _y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br><span class="line">          <span class="keyword">for</span> i,antor <span class="keyword">in</span> <span class="built_in">enumerate</span>(_antors):</span><br><span class="line">              area=w*h</span><br><span class="line">              iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br><span class="line">              p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br><span class="line">              labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
+        <h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.  git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">    </span><br><span class="line">2.  cd openvino</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">w,h=img.size</span><br><span class="line"><span class="keyword">case</span>=<span class="number">416</span>/w</span><br></pre></td></tr></table></figure>
+<p>解压后的结构目录</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
+<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.  chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line">2.  ./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p>这部分主要将中心点和宽高转移到对应尺寸上，比如当你图像的$size$是$(3.,3)$的时候你的中心点是$(2,2)$,当你reisze成$(9,9)$的时候，你的中心点应该转换成$(5,5)$</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br></pre></td></tr></table></figure>
-<p>个人理解首先每个$grid$里面都应该对应一个宽高中心的置信度类别，所以最后的一个维度是:5+CLASS_NUM,然后3对应的是RGB三个通道，feature_size就是对应我们将图像分成几个部分。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">_x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">_y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br></pre></td></tr></table></figure>
-<p>这个部分是将中心点转换到对应的grid中并且获得他的偏移量拿下面这个例子来说，假设图像的size是39*39的$gt$的中心为$(20,20)$那么此时中心点坐标其实转换到了$(1,1)$再加上$(7,7)$的偏移。<br><img src="/../_resources/9573740d47f359fa58f705e02e5ec1f8.png" alt="9573740d47f359fa58f705e02e5ec1f8.png"></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br></pre></td></tr></table></figure>
+<p>然后安装外部依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.  chmod +x install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line">2.  sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p>他这里的$IOU$的计算有点问题，我之后会一期关于各种IOU的讲解。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
-<p>这里的主要计算的是$gt$的宽高和$anchor$宽高的比值，注意这里损失函数的时候宽高做了$\log$处理是为了防止过宽或者过高影响网络。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
+<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">  1.    cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">    </span><br><span class="line">2.    make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
 
-<p>这部分主要是吧刚刚算出来正样本加入进去用之前得到的$x,y$的中心格位置，或者你这边直接归一化也可以。</p>
-<p>这里讲一句对于正负样本不均匀的理解，举个例子就像小时候父母告诉我们做这个不好，做那个不好，实际上需要怎么做的好有时候他们并不会告诉我，导致我们只知道这样做是不好的，但是不知道怎么往好的方面发展。</p>
+<p>我中间报了一些黄的的警告我没有管他之后</p>
+<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1.  #根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">    </span><br><span class="line">2.  #如果需要的话可以指定一下位置</span><br><span class="line">    </span><br><span class="line">3.  cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">    </span><br><span class="line">4.  -DENABLE_PYTHON=ON \</span><br><span class="line">    </span><br><span class="line">5.  -DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">    </span><br><span class="line">6.  -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">    </span><br><span class="line">7.  -DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
+<p>&nbsp;没有报错就好，然后开始编译库</p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
+<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
+<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
+<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
 
     </div>
 
@@ -282,7 +290,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" rel="tag"># 土说神经网络</a>
+              <a href="/tags/Openvino/" rel="tag"># Openvino</a>
           </div>
 
         
@@ -291,12 +299,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2024/01/08/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/" rel="prev" title="IOU和他们儿子们">
-      <i class="fa fa-chevron-left"></i> IOU和他们儿子们
+    <a href="/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/" rel="prev" title="Openvino量化模型推理 Fp32 Fp16 int8">
+      <i class="fa fa-chevron-left"></i> Openvino量化模型推理 Fp32 Fp16 int8
     </a></div>
       <div class="post-nav-item">
-    <a href="/2024/01/08/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/" rel="next" title="YOLOV8和YOLOV5对比">
-      YOLOV8和YOLOV5对比 <i class="fa fa-chevron-right"></i>
+    <a href="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/" rel="next" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装">
+      ubuntu22 pycharm,cuda,cudnn，tensorrt的安装 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -357,7 +365,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC%E7%94%9F%E6%88%90%E7%9A%84%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">1.正负样本生成的原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1%E6%AD%A3%E6%A0%B7%E6%9C%AC%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-number">1.1.</span> <span class="nav-text">1.1正样本的选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2%E8%B4%9F%E6%A0%B7%E6%9C%AC%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-number">1.2.</span> <span class="nav-text">1.2负样本的选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3%E5%85%B6%E4%BB%96%E6%A0%B7%E6%9C%AC"><span class="nav-number">1.3.</span> <span class="nav-text">1.3其他样本</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E4%BB%A3%E7%A0%81%E9%83%A8%E5%88%86%E7%9A%84%E8%AE%B2%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">2.代码部分的讲解</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Ubuntu19-Openvion-cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91"><span class="nav-number">1.</span> <span class="nav-text">Ubuntu19 Openvion cmake源码编译</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -371,14 +379,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

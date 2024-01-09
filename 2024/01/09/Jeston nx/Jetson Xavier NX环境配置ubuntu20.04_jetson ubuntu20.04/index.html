@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/fluid.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/fluid.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Jetson Xavier NX环境配置ubuntu20.04特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。 安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系 这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。 一.准备事项有条件的话最好有台装ubuuntu的主机，因为nx安">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Jetson Xavier NX环境配置ubuntu20.04">
+<meta property="og:url" content="http://yuesangshuai.github.io/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/index.html">
+<meta property="og:site_name" content="你好陌生人">
+<meta property="og:description" content="Jetson Xavier NX环境配置ubuntu20.04特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。 安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系 这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。 一.准备事项有条件的话最好有台装ubuuntu的主机，因为nx安">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png">
+<meta property="article:published_time" content="2024-01-09T02:37:19.312Z">
+<meta property="article:modified_time" content="2024-01-09T02:53:34.285Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Jeston nx">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png">
+
+<link rel="canonical" href="http://yuesangshuai.github.io/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Jetson Xavier NX环境配置ubuntu20.04 | 你好陌生人</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">你好陌生人</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yuesangshuai.github.io/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="你好陌生人">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Jetson Xavier NX环境配置ubuntu20.04
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-01-09 10:37:19 / 修改时间：10:53:34" itemprop="dateCreated datePublished" datetime="2024-01-09T10:37:19+08:00">2024-01-09</time>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Jetson-Xavier-NX环境配置ubuntu20-04"><a href="#Jetson-Xavier-NX环境配置ubuntu20-04" class="headerlink" title="Jetson Xavier NX环境配置ubuntu20.04"></a>Jetson Xavier NX环境配置ubuntu20.04</h1><p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
+<p><strong>安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系</strong></p>
+<p><strong>这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。</strong></p>
+<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
+<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=ssd&spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
+<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…..）然后直接把之前安装好的镜像直接导入即可。</p>
+<h2 id="二-虚拟机"><a href="#二-虚拟机" class="headerlink" title="二.虚拟机"></a><a id="t1"></a>二.虚拟机</h2><p>创建一个虚拟机</p>
+<img width="1200" height="716" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png"/>
+
+<p>&nbsp;选择你镜像的位置</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png"></p>
+<p>&nbsp;分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png"></p>
+<p>&nbsp;然后就是Ubuntu的安装</p>
+<img width="1200" height="566" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png"/>
+
+<h2 id="三-Nvidia-sdk的安装"><a href="#三-Nvidia-sdk的安装" class="headerlink" title="三.Nvidia sdk的安装"></a><a id="t2"></a>三.<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=Nvidia&spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2><p>进入官网：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
+<p>选择SDK，这里需要登录自己个人的Nvidia账号</p>
+<img width="1200" height="265" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png"/>
+
+<p>或者直接在虚拟机内进行下载，我这里选择直接从主机拖拽到虚拟机内因为我有安装vmware-tools</p>
+<p>输入指令进行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ./sdkmanager_1.6.1-8175_amd64.deb ./sdkmanager_1.6.1-8175_amd64.deb </span><br></pre></td></tr></table></figure>
+
+<p>安装完成后输入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdkmanager </span><br></pre></td></tr></table></figure>
+
+<p>出现这个页面就代表着安装完成，然后登录一下自己的开发者账号<img width="1200" height="683" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png"/></p>
+<p>&nbsp;成功进入后的界面</p>
+<img width="1200" height="538" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png"/>
+
+<p>&nbsp;之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
+<img width="1200" height="900" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg"/>
+
+<p>&nbsp;接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
+<img width="1200" height="754" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png"/>
+
+<p>&nbsp;<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=jetpack&spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
+<img width="1200" height="786" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png"/>
+
+<p>deepstream我也不知道干啥的先装上去吧</p>
+<img width="1200" height="739" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png"/>
+
+<p>&nbsp;然后只装os</p>
+<img width="1200" height="755" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png"/>
+
+<p>&nbsp;到这步应该就没有问题了（网络不好的可以多等等）</p>
+<img width="1200" height="567" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png"/>
+
+<p>&nbsp;完成后跳出了这个页面（按照这个选择）</p>
+<img width="1200" height="708" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png"/>
+
+<p>&nbsp;然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png"/>
+
+<p>查看一下我们装的系统版本是否是正确的.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/lsb-release</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;大功告成</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png"/>
+
+<h2 id="四将SSD设置成默认启动盘"><a href="#四将SSD设置成默认启动盘" class="headerlink" title=" 四将SSD设置成默认启动盘"></a><a id="t3"></a> 四将SSD设置成默认启动盘</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
+
+<p>输入disk,我这里是16g运存所以我分16g，剩下全部给系统就可以了</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png"/>
+
+<p>jinru</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">1.  git clone https://github.com/jetsonhacks/rootOnNVMe.git</span><br><span class="line">    </span><br><span class="line">2.  cd rootOnNVMe</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./copy-rootfs-ssd.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./setup-service.sh</span><br></pre></td></tr></table></figure>
+
+<p>进入新的系统后在root打开属性查看一下空间就知道有没有成功了。</p>
+<p>完成！</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Jeston-nx/" rel="tag"># Jeston nx</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/" rel="prev" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）">
+      <i class="fa fa-chevron-left"></i> Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/" rel="next" title="Openvino量化模型推理 Fp32 Fp16 int8">
+      Openvino量化模型推理 Fp32 Fp16 int8 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Jetson-Xavier-NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20-04"><span class="nav-number">1.</span> <span class="nav-text">Jetson Xavier NX环境配置ubuntu20.04</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%87%86%E5%A4%87%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.1.</span> <span class="nav-text">一.准备事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">1.2.</span> <span class="nav-text">二.虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-Nvidia-sdk%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">1.3.</span> <span class="nav-text">三.Nvidia sdk的安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E5%B0%86SSD%E8%AE%BE%E7%BD%AE%E6%88%90%E9%BB%98%E8%AE%A4%E5%90%AF%E5%8A%A8%E7%9B%98"><span class="nav-number">1.4.</span> <span class="nav-text"> 四将SSD设置成默认启动盘</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'Ti1kR0paKsHBzpXZnrhRIx8g-gzGzoHsz',
+      appKey     : 'fmLUyLzUTPYCOpcwoBJqCcSz',
+      placeholder: "来了老弟",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
