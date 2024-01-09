@@ -213,10 +213,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:15:06" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-01-09 09:26:57" itemprop="dateModified" datetime="2024-01-09T09:26:57+08:00">2024-01-09</time>
+              </span>
 
           
   
@@ -244,7 +250,7 @@
 
       
           <h1 id="优化器"><a href="#优化器" class="headerlink" title="优化器"></a>优化器</h1><h2 id="1-神经网络的梯度"><a href="#1-神经网络的梯度" class="headerlink" title="1.神经网络的梯度"></a>1.神经网络的梯度</h2><h3 id="1-1梯度"><a href="#1-1梯度" class="headerlink" title="1.1梯度"></a>1.1梯度</h3><p>下面是如何求解导数</p>
-<p>$$<br>f’(x) &#x3D; \lim\limits_{h\rightarrow 0}\frac{f(x+h)-f(x)}{h}<br>$$</p>
+<p>$$<br>\frac{df(x)}{dx}&#x3D;\lim\limits_{x\rightarrow\infty}\frac{f(x+h)-f(x)}{h}<br>$$</p>
 <p>举个例子速度的导数是加速反应了速度变换的快慢，所以在神经网络中导数往往决定方向下降的快慢。<br>下面是一个偏导数</p>
 <p>$$<br>f(x_0,x_1)&#x3D;x_0^2+x_1^2<br>$$</p>
 <p>可以将神经网络中的神经元理解为这些自变量，而梯度则是对这些自变量求导，我们将他称之为偏导数（求哪个自变量就是对他比较偏心），这些偏导数称之为模型的梯度。</p>
@@ -259,7 +265,8 @@
 <h3 id="2-6-SGD-with-Nesterov-Acceleration"><a href="#2-6-SGD-with-Nesterov-Acceleration" class="headerlink" title="2.6 SGD with Nesterov Acceleration"></a>2.6 SGD with Nesterov Acceleration</h3><p>先给出他的改进点主要在第一步：<br>$$<br>g_{t}&#x3D;\nabla f\left(w_{t}-\alpha \cdot m_{t-1} &#x2F; \sqrt{V_{t-1}}\right)<br>$$<br>根据上面的表达式我们可以知道$\alpha \cdot m_{t-1} &#x2F; \sqrt{V_{t-1}}$代表的是当前时刻的梯度因此先下降一步，相当于走出去看看，不行就回去。</p>
 <h3 id="2-7-AdaGrad"><a href="#2-7-AdaGrad" class="headerlink" title="2.7 AdaGrad"></a>2.7 AdaGrad</h3><p>这里给出二阶动量的表达式:<br>$$<br>V_t&#x3D; {\textstyle \sum_{t}^{T&#x3D;1}} g_T^2<br>$$<br>表示所有梯度值的平方，因此我们此时的学习率变成了$\alpha&#x2F;\sqrt{V_t}$,当梯度整体下降的慢也就是速度较小的时候，相当于学习率会大一点加快下降的速度。<br>在这之前我提到过高阶矩的目的，这里大家可以去详细了解一下高阶矩，他有个好记的特性就是对极大值特别的敏感，随着梯度越大下降的速度应该更快。<br>这里因为$\sqrt{V_t}$是个单调递增的函数，所以学习率可能下降的很快导致有一些特征没有学到这就是他的缺点。</p>
 <h3 id="2-8AdaDelta-RMSProp"><a href="#2-8AdaDelta-RMSProp" class="headerlink" title="2.8AdaDelta &#x2F; RMSProp"></a>2.8AdaDelta &#x2F; RMSProp</h3><p>这个方法和SGD with Momentum有点相似不过他这里是为了防止学习率太低的情况，<br>$$<br>V_t&#x3D;\beta_2*V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
-<h3 id="2-9Adam"><a href="#2-9Adam" class="headerlink" title="2.9Adam"></a>2.9Adam</h3><p>阿蛋优化器集合了一阶动量以及二阶动量的特点：<br>$$<br>m_t&#x3D;\beta_1<em>m_{t-1}+(1-\beta)·g_t<br>$$<br>$$<br>V_t&#x3D;\beta_2</em>V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
+<h3 id="2-9Adam"><a href="#2-9Adam" class="headerlink" title="2.9Adam"></a>2.9Adam</h3><p>阿蛋优化器集合了一阶动量以及二阶动量的特点：<br>$$<br>m_t&#x3D;\beta_1*m_{t-1}+(1-\beta)·g_t<br>$$</p>
+<p>$$<br>V_t&#x3D;\beta_2*V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
 
       
     </div>
@@ -302,10 +309,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:09:53" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-01-09 09:55:40" itemprop="dateModified" datetime="2024-01-09T09:55:40+08:00">2024-01-09</time>
+              </span>
 
           
   
@@ -332,7 +345,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="/../_resources/059755e389e74059a0eef42704677f81.png" alt="059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
+          <h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="https://github.com/YueSangShuai/upload_imgs/blob/master/059755e389e74059a0eef42704677f81.png" alt="059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
 <h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
 <h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
 <p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
@@ -378,10 +391,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:09:41" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-01-09 09:23:24" itemprop="dateModified" datetime="2024-01-09T09:23:24+08:00">2024-01-09</time>
+              </span>
 
           
   
@@ -551,10 +570,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2024-01-08 17:43:59 / 修改时间：18:09:58" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
+              <time title="创建时间：2024-01-08 17:43:59" itemprop="dateCreated datePublished" datetime="2024-01-08T17:43:59+08:00">2024-01-08</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-01-09 09:23:02" itemprop="dateModified" datetime="2024-01-09T09:23:02+08:00">2024-01-09</time>
+              </span>
 
           
   
@@ -581,11 +606,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="/../_resources/c5ab252c5e9ca95dcdc6641c7f96bdb8.png" alt="c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="/../_resources/1ade08f85509ee61112e2a760fea92ae.png" alt="1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
+          <h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="/_resources/c5ab252c5e9ca95dcdc6641c7f96bdb8.png" alt="c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="/_resources/1ade08f85509ee61112e2a760fea92ae.png" alt="1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">IoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    <span class="comment">#这里的box是xyxy形式的</span></span><br><span class="line">    <span class="comment"># 计算中间矩形的宽高</span></span><br><span class="line">    in_h = <span class="built_in">min</span>(box1[<span class="number">2</span>], box2[<span class="number">2</span>]) - <span class="built_in">max</span>(box1[<span class="number">0</span>], box2[<span class="number">0</span>])</span><br><span class="line">    in_w = <span class="built_in">min</span>(box1[<span class="number">3</span>], box2[<span class="number">3</span>]) - <span class="built_in">max</span>(box1[<span class="number">1</span>], box2[<span class="number">1</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算交集、并集面积</span></span><br><span class="line">    inter = <span class="number">0</span> <span class="keyword">if</span> in_h &lt; <span class="number">0</span> <span class="keyword">or</span> in_w &lt; <span class="number">0</span> <span class="keyword">else</span> in_h * in_w</span><br><span class="line">    union = (box1[<span class="number">2</span>] - box1[<span class="number">0</span>]) * (box1[<span class="number">3</span>] - box1[<span class="number">1</span>]) + \</span><br><span class="line">            (box2[<span class="number">2</span>] - box2[<span class="number">0</span>]) * (box2[<span class="number">3</span>] - box2[<span class="number">1</span>]) - inter</span><br><span class="line">    <span class="comment"># 计算IoU</span></span><br><span class="line">    iou = inter / union</span><br><span class="line">    <span class="keyword">return</span> iou</span><br></pre></td></tr></table></figure>
 
-<p>$IOU$的两个缺点：<br>(1).当预测框和真实框的不存在交集的时候，如下图所示.如何使用$IOU$进行计算的话，其定位损失就为0，导致梯度为0无法进行优化。<br><img src="/../_resources/4982c9882af8a4b2b2e28115e835c5ee.png" alt="4982c9882af8a4b2b2e28115e835c5ee.png"><br>(2).IoU无法精确的反映两者的重合度大小。如下图所示，三种情况IoU都相等，但看得出来他们的重合度是不一样的，左边的图回归的效果最好，右边的最差。<br><img src="/../_resources/bccccb77b50dc6571d7c2a69c99521a5.png" alt="bccccb77b50dc6571d7c2a69c99521a5.png"></p>
-<h2 id="GIOU"><a href="#GIOU" class="headerlink" title="GIOU"></a>GIOU</h2><p>$GIOU$的提出解决了$IOU$的第一个缺点，给出$GIOU$的定义<br>$$<br>GIOU&#x3D;IOU-\frac {C-|A\cap B |}{C}<br>$$<br>$C$为这两个框的最小外接矩形<br>下面还用刚刚那个例子来进行计算<br><img src="/../_resources/1898684fd46507d18bf54b1ab6e32b8a.png" alt="1898684fd46507d18bf54b1ab6e32b8a.png"></p>
+<p>$IOU$的两个缺点：<br>(1).当预测框和真实框的不存在交集的时候，如下图所示.如何使用$IOU$进行计算的话，其定位损失就为0，导致梯度为0无法进行优化。<br><img src="/_resources/4982c9882af8a4b2b2e28115e835c5ee.png" alt="4982c9882af8a4b2b2e28115e835c5ee.png"><br>(2).IoU无法精确的反映两者的重合度大小。如下图所示，三种情况IoU都相等，但看得出来他们的重合度是不一样的，左边的图回归的效果最好，右边的最差。<br><img src="/_resources/bccccb77b50dc6571d7c2a69c99521a5.png" alt="bccccb77b50dc6571d7c2a69c99521a5.png"></p>
+<h2 id="GIOU"><a href="#GIOU" class="headerlink" title="GIOU"></a>GIOU</h2><p>$GIOU$的提出解决了$IOU$的第一个缺点，给出$GIOU$的定义<br>$$<br>GIOU&#x3D;IOU-\frac {C-|A\cap B |}{C}<br>$$<br>$C$为这两个框的最小外接矩形<br>下面还用刚刚那个例子来进行计算<br><img src="/_resources/1898684fd46507d18bf54b1ab6e32b8a.png" alt="1898684fd46507d18bf54b1ab6e32b8a.png"></p>
 <p>$$<br>GIOU&#x3D;IOU-\frac {红框-(黄色+蓝色-绿色)}{红框}<br>$$<br>给出$GIOU$的代码</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">GIoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    <span class="comment"># 计算最小包庇面积</span></span><br><span class="line">    y1,x1,y2,x2 = box1 </span><br><span class="line">    y3,x3,y4,x4 = box2</span><br><span class="line">    area_C = (<span class="built_in">max</span>(x1,x2,x3,x4)-<span class="built_in">min</span>(x1,x2,x3,x4)) * \</span><br><span class="line">             (<span class="built_in">max</span>(y1,y2,y3,y4)-<span class="built_in">min</span>(y1,y2,y3,y4))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算IoU</span></span><br><span class="line">    in_h = <span class="built_in">min</span>(box1[<span class="number">2</span>], box2[<span class="number">2</span>]) - <span class="built_in">max</span>(box1[<span class="number">0</span>], box2[<span class="number">0</span>])</span><br><span class="line">    in_w = <span class="built_in">min</span>(box1[<span class="number">3</span>], box2[<span class="number">3</span>]) - <span class="built_in">max</span>(box1[<span class="number">1</span>], box2[<span class="number">1</span>])</span><br><span class="line">    inter = <span class="number">0</span> <span class="keyword">if</span> in_h &lt; <span class="number">0</span> <span class="keyword">or</span> in_w &lt; <span class="number">0</span> <span class="keyword">else</span> in_h * in_w</span><br><span class="line">    union = (box1[<span class="number">2</span>] - box1[<span class="number">0</span>]) * (box1[<span class="number">3</span>] - box1[<span class="number">1</span>]) + \</span><br><span class="line">            (box2[<span class="number">2</span>] - box2[<span class="number">0</span>]) * (box2[<span class="number">3</span>] - box2[<span class="number">1</span>]) - inter</span><br><span class="line">    iou = inter / union</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算空白部分占比</span></span><br><span class="line">    end_area = (area_C - union)/area_C</span><br><span class="line">    giou = iou - end_area</span><br><span class="line">    <span class="keyword">return</span> giou</span><br></pre></td></tr></table></figure>
 
