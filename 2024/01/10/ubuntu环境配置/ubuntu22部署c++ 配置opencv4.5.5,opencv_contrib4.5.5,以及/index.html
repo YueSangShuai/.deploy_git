@@ -19,13 +19,13 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1） cudann一定要配置好不然opencv配置cuda会失败的 我这里采用的是opencv4.5.5和相同版本的contribure 一.软件的安装这个部分我装了太多的依赖具体是那些我已经记不清了所以先放我成功配置看的那篇博客的依赖">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）">
-<meta property="og:url" content="http://yuesangshuai.github.io/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/index.html">
+<meta property="og:url" content="http://yuesangshuai.github.io/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/index.html">
 <meta property="og:site_name" content="你好陌生人">
 <meta property="og:description" content="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1） cudann一定要配置好不然opencv配置cuda会失败的 我这里采用的是opencv4.5.5和相同版本的contribure 一.软件的安装这个部分我装了太多的依赖具体是那些我已经记不清了所以先放我成功配置看的那篇博客的依赖">
 <meta property="og:locale" content="zh_CN">
@@ -59,14 +59,14 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3e48d766bf3447c0ace30494fd4f89ee_6b3985a4f64044fb9.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/18ecd3fa40b5495895406a508c23bd9d_f4c0eca51cfe498fb.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1f36240ab5a6449d840a1a9f21fe6bd6_308a181b3d5141879.png">
-<meta property="article:published_time" content="2024-01-09T02:37:19.381Z">
-<meta property="article:modified_time" content="2024-01-09T03:16:55.827Z">
+<meta property="article:published_time" content="2024-01-10T03:15:37.897Z">
+<meta property="article:modified_time" content="2024-01-10T03:18:44.585Z">
 <meta property="article:author" content="YueSang">
-<meta property="article:tag" content="Ubuntu">
+<meta property="article:tag" content="opencv,opencv_contrib,cuda">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4ed2bb74aaf545c18d602ca74ede3b84_71bc944cdd274fdf8.png">
 
-<link rel="canonical" href="http://yuesangshuai.github.io/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/">
+<link rel="canonical" href="http://yuesangshuai.github.io/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/">
 
 
 <script id="page-configurations">
@@ -233,7 +233,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yuesangshuai.github.io/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/">
+    <link itemprop="mainEntityOfPage" href="http://yuesangshuai.github.io/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/微信图片_20240109114649.jpg">
@@ -257,7 +257,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-09 10:37:19 / 修改时间：11:16:55" itemprop="dateCreated datePublished" datetime="2024-01-09T10:37:19+08:00">2024-01-09</time>
+              <time title="创建时间：2024-01-10 11:15:37 / 修改时间：11:18:44" itemprop="dateCreated datePublished" datetime="2024-01-10T11:15:37+08:00">2024-01-10</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -270,7 +270,7 @@
             </span>
 
           
-            <span id="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" class="post-meta-item leancloud_visitors" data-flag-title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）" title="阅读次数">
+            <span id="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" class="post-meta-item leancloud_visitors" data-flag-title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -285,8 +285,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" itemprop="commentCount"></span>
+    <a title="valine" href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -305,7 +305,7 @@
 <p>cudann一定要配置好不然<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=opencv%E9%85%8D%E7%BD%AE&spm=1001.2101.3001.7020">opencv配置</a>cuda会失败的</p>
 <p>我这里采用的是<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=opencv4&spm=1001.2101.3001.7020">opencv4</a>.5.5和相同版本的contribure</p>
 <h2 id="一-软件的安装"><a href="#一-软件的安装" class="headerlink" title="一.软件的安装"></a><a href="#"></a>一.软件的安装</h2><p>这个部分我装了太多的依赖具体是那些我已经记不清了所以先放我成功配置看的那篇博客的依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1.  sudo apt-get update</span><br><span class="line">    </span><br><span class="line">2.  sudo apt-get upgrade</span><br><span class="line">    </span><br><span class="line">3.  sudo apt-get install build-essential cmake cmake-gui unzip pkg-config</span><br><span class="line">    </span><br><span class="line">4.  sudo apt-get install libjpeg-dev libpng-dev libtiff-dev</span><br><span class="line">    </span><br><span class="line">5.  sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libgtk2.0-dev</span><br><span class="line">    </span><br><span class="line">6.  sudo apt-get install libv4l-dev libxvidcore-dev libx264-dev libtbb2 libtbb-dev libdc1394-22-dev libjasper-dev</span><br><span class="line">    </span><br><span class="line">7.  sudo apt-get install libgtk-3-dev</span><br><span class="line">    </span><br><span class="line">8.  sudo apt-get install libatlas-base-dev liblapacke-dev gfortran</span><br><span class="line">    </span><br><span class="line">9.  sudo apt-get install python3-dev</span><br><span class="line">    </span><br><span class="line">10. sudo apt-get install ffmpeg </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get upgrade</span><br><span class="line">sudo apt-get install build-essential cmake cmake-gui unzip pkg-config</span><br><span class="line">sudo apt-get install libjpeg-dev libpng-dev libtiff-dev</span><br><span class="line">sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libgtk2.0-dev</span><br><span class="line">sudo apt-get install libv4l-dev libxvidcore-dev libx264-dev libtbb2 libtbb-dev libdc1394-22-dev libjasper-dev</span><br><span class="line">sudo apt-get install libgtk-3-dev</span><br><span class="line">sudo apt-get install libatlas-base-dev liblapacke-dev gfortran</span><br><span class="line">sudo apt-get install python3-dev</span><br><span class="line">sudo apt-get install ffmpeg </span><br></pre></td></tr></table></figure>
 
 <p>cmake的安装</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install cmake-gui</span><br></pre></td></tr></table></figure>
@@ -317,7 +317,7 @@
 <p>下载好后复制到opencv的文件夹下，如果没有显示的话输入critl+H就可以了。contrib也可以放在这个文件夹下面</p>
 <p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4ed2bb74aaf545c18d602ca74ede3b84_71bc944cdd274fdf8.png"></p>
 <p>创建文件夹并进入</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1.  mkdir myopencv</span><br><span class="line">    </span><br><span class="line">2.  cd myopencv</span><br><span class="line">    </span><br><span class="line">3.  cmake-gui</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir myopencv</span><br><span class="line">cd myopencv</span><br><span class="line">cmake-gui</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p>进入后的c++界面</p>
 <p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0472a495d99846828b3986bfecc7d8fd_5de0ec3948a74a2b8.png"></p>
@@ -352,7 +352,7 @@
 <img width="1200" height="507" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a242254fd7c04137a97c5c2b42f281bb_ec80974e8b4942759.png" class="jop-noMdConv">
 
 <p>&nbsp;输入</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.  sudo make -j20</span><br><span class="line">    </span><br><span class="line">2.  #这个20是你的核心数</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo make -j20</span><br><span class="line">#这个20是你的核心数</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p>人生没有一帆风顺出现报错了怎么办</p>
 <p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/640e54d53f744d64b31a6f379f35b343_c7968622ef7f4e058.png"></p>
@@ -382,7 +382,7 @@
 <p>include &#x2F;etc&#x2F;ld.so.conf.d&#x2F;*.conf<br>include &#x2F;usr&#x2F;local&#x2F;lib</p>
 </blockquote>
 <p>然后再输入</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.  sudo ldconfig</span><br><span class="line">    </span><br><span class="line">2.  sudo gedit /etc/profile   </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo ldconfig</span><br><span class="line">sudo gedit /etc/profile   </span><br></pre></td></tr></table></figure>
 
 <p>添加这两行</p>
 <blockquote>
@@ -437,7 +437,7 @@
 <p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/18ecd3fa40b5495895406a508c23bd9d_f4c0eca51cfe498fb.png"></p>
 <p>&nbsp;这样opencv的编译到此完成。</p>
 <h2 id="三-Clion"><a href="#三-Clion" class="headerlink" title=" 三.Clion"></a><a href="#"></a> 三.Clion</h2><p>创建desktop文件</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1.  cd ~/.local/share/applications/</span><br><span class="line">    </span><br><span class="line">2.  sudo gedit Clion.desktop</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.local/share/applications/</span><br><span class="line">sudo gedit Clion.desktop</span><br></pre></td></tr></table></figure>
 
 <p>注意看注释</p>
 <blockquote>
@@ -449,12 +449,12 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.23)</span><br><span class="line">project(test)</span><br><span class="line"></span><br><span class="line">find_package(OpenCV REQUIRED) #加这一句</span><br><span class="line">include_directories($&#123;OpenCV_INCLUDE_DIRS&#125;) #加这一句</span><br><span class="line"></span><br><span class="line">set(CMAKE_CXX_STANDARD 14)</span><br><span class="line"></span><br><span class="line">add_executable(test main.cpp)</span><br><span class="line"></span><br><span class="line">target_link_libraries(test $&#123;OpenCV_LIBS&#125;)#加这一句</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>测试代码</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">1.  #include&lt;opencv2/opencv.hpp&gt;</span><br><span class="line">    </span><br><span class="line">2.  #include&lt;iostream&gt;</span><br><span class="line">    </span><br><span class="line">3.  using namespace std;</span><br><span class="line">    </span><br><span class="line">4.  using namespace cv;</span><br><span class="line">    </span><br><span class="line">5.  int main(int argc,char** argv)&#123;</span><br><span class="line">    </span><br><span class="line">6.      Mat src = imread(&quot;/home/yuesang/CLionProjects/test/1.jpg&quot;); //读取图片</span><br><span class="line">    </span><br><span class="line">7.      if (src.empty()) &#123;                     //判断是否找到图片</span><br><span class="line">    </span><br><span class="line">8.          printf(&quot;没有找到图片 &quot;);           //输出文字</span><br><span class="line">    </span><br><span class="line">9.          return -1;</span><br><span class="line">    </span><br><span class="line">10.     &#125;</span><br><span class="line">    </span><br><span class="line">11.     else</span><br><span class="line">    </span><br><span class="line">12.     &#123;</span><br><span class="line">    </span><br><span class="line">13.         namedWindow(&quot;input&quot;,WINDOW_AUTOSIZE);// 显示窗口命名为input ；WINDOW_AUTOSIZE显示大小为图片自定义大小，且不可以更改大小</span><br><span class="line">    </span><br><span class="line">14.         imshow(&quot;input&quot;,src); //显示</span><br><span class="line">    </span><br><span class="line">15.         waitKey(0);//显示的毫秒时间，如果函数参数&lt;=0表示一直显示。&gt;0表示显示的时间</span><br><span class="line">    </span><br><span class="line">16.         destroyAllWindows();</span><br><span class="line">    </span><br><span class="line">17.         return 0;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">19.     &#125;</span><br><span class="line">    </span><br><span class="line">20. &#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;opencv2/opencv.hpp&gt;</span><br><span class="line">#include&lt;iostream&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">using namespace cv;</span><br><span class="line">int main(int argc,char** argv)&#123;</span><br><span class="line">    Mat src = imread(&quot;/home/yuesang/CLionProjects/test/1.jpg&quot;); //读取图片</span><br><span class="line">    if (src.empty()) &#123;                     //判断是否找到图片</span><br><span class="line">        printf(&quot;没有找到图片 &quot;);           //输出文字</span><br><span class="line">        return -1;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        namedWindow(&quot;input&quot;,WINDOW_AUTOSIZE);// 显示窗口命名为input ；WINDOW_AUTOSIZE显示大小为图片自定义大小，且不可以更改大小</span><br><span class="line">        imshow(&quot;input&quot;,src); //显示</span><br><span class="line">        waitKey(0);//显示的毫秒时间，如果函数参数&lt;=0表示一直显示。&gt;0表示显示的时间</span><br><span class="line">        destroyAllWindows();</span><br><span class="line">        return 0;</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p>终于配完了</p>
 <img width="1200" height="733" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1f36240ab5a6449d840a1a9f21fe6bd6_308a181b3d5141879.png" class="jop-noMdConv">
 
-<h2 id="四-opencv的卸载"><a href="#四-opencv的卸载" class="headerlink" title="四.opencv的卸载"></a><a href="#"></a>四.opencv的卸载</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1.  sudo make uninstall</span><br><span class="line">    </span><br><span class="line">2.  cd ..</span><br><span class="line">    </span><br><span class="line">3.  sudo rm -r mybuild</span><br><span class="line">    </span><br><span class="line">4.  sudo rm -r /usr/local/include/opencv2 /usr/local/include/opencv /usr/include/opencv /usr/include/opencv2 /usr/local/share/opencv /usr/local/share/OpenCV /usr/share/opencv /usr/share/OpenCV /usr/local/bin/opencv* /usr/local/lib/libopencv*</span><br><span class="line">    </span><br><span class="line">5.  cd /usr/</span><br><span class="line">    </span><br><span class="line">6.  find . -name &quot;*opencv*&quot; | xargs sudo rm -rf</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="四-opencv的卸载"><a href="#四-opencv的卸载" class="headerlink" title="四.opencv的卸载"></a><a href="#"></a>四.opencv的卸载</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo make uninstall</span><br><span class="line">cd ..</span><br><span class="line">sudo rm -r mybuild</span><br><span class="line">sudo rm -r /usr/local/include/opencv2 /usr/local/include/opencv /usr/include/opencv /usr/include/opencv2 /usr/local/share/opencv /usr/local/share/OpenCV /usr/share/opencv /usr/share/OpenCV /usr/local/bin/opencv* /usr/local/lib/libopencv*</span><br><span class="line">cd /usr/</span><br><span class="line">find . -name &quot;*opencv*&quot; | xargs sudo rm -rf</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p>环境变量那块 之前是忘记配置opencv4.pc了所以导致实例可以正常运行但是clion里面运行不了代码，环境变量那块自己也弄得有点迷糊</p>
 <p>ubuntu22的坑还是有一些的，比如openvion好像是没办法装到上面因为openvion只支持到20，有什么错误或者不懂的欢迎大家给我指出</p>
@@ -486,7 +486,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/Ubuntu/" rel="tag"># Ubuntu</a>
+              <a href="/tags/opencv-opencv-contrib-cuda/" rel="tag"># opencv,opencv_contrib,cuda</a>
           </div>
 
         
@@ -495,11 +495,11 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/" rel="prev" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装">
+    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/" rel="prev" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装">
       <i class="fa fa-chevron-left"></i> ubuntu22 pycharm,cuda,cudnn，tensorrt的安装
     </a></div>
       <div class="post-nav-item">
-    <a href="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/%E7%A9%B7%E8%8B%A6%E4%BA%BA%E6%B0%91%E5%A6%82%E4%BD%95%E7%94%A8%E7%A7%BB%E5%8A%A8%E5%9B%BA%E6%80%81%E9%85%8D%E7%BD%AEunbutu22.04_awesome-terminal-fonts-CS/" rel="next" title="穷苦人民如何用移动固态配置unbutu22.04">
+    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/%E7%A9%B7%E8%8B%A6%E4%BA%BA%E6%B0%91%E5%A6%82%E4%BD%95%E7%94%A8%E7%A7%BB%E5%8A%A8%E5%9B%BA%E6%80%81%E9%85%8D%E7%BD%AEunbutu22.04_awesome-terminal-fonts-CS/" rel="next" title="穷苦人民如何用移动固态配置unbutu22.04">
       穷苦人民如何用移动固态配置unbutu22.04 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -590,7 +590,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -626,17 +626,17 @@
 	</div>
 	<ul class="links-of-blogroll-list recent-posts-list">
 	        <li class="my-links-of-blogroll-item">
-		    <a href="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/%E7%A9%B7%E8%8B%A6%E4%BA%BA%E6%B0%91%E5%A6%82%E4%BD%95%E7%94%A8%E7%A7%BB%E5%8A%A8%E5%9B%BA%E6%80%81%E9%85%8D%E7%BD%AEunbutu22.04_awesome-terminal-fonts-CS/" title="穷苦人民如何用移动固态配置unbutu22.04" target="">
+		    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/%E7%A9%B7%E8%8B%A6%E4%BA%BA%E6%B0%91%E5%A6%82%E4%BD%95%E7%94%A8%E7%A7%BB%E5%8A%A8%E5%9B%BA%E6%80%81%E9%85%8D%E7%BD%AEunbutu22.04_awesome-terminal-fonts-CS/" title="穷苦人民如何用移动固态配置unbutu22.04" target="">
 		    穷苦人民如何用移动固态配置unbutu22.04
 		    </a>
 		</li>
 	        <li class="my-links-of-blogroll-item">
-		    <a href="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）" target="">
+		    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）" target="">
 		    ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）
 		    </a>
 		</li>
 	        <li class="my-links-of-blogroll-item">
-		    <a href="/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装" target="">
+		    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装" target="">
 		    ubuntu22 pycharm,cuda,cudnn，tensorrt的安装
 		    </a>
 		</li>
