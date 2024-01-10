@@ -1,132 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</title>
-    <url>/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/</url>
-    <content><![CDATA[<h1 id="Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）"><a href="#Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）" class="headerlink" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）"></a>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1><p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<p>这里有个很狗的坑，我在安装的时候杜邦线忘记拔下来导致系统一直无法被主机识别，ip地址一直不对。</p>
-<p>之后把nx接数据线到主机上面（记得杜邦线不要短接！！！记得杜邦线不要短接！！！记得杜邦线不要短接！！！重要的事情说三遍）</p>
-<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>首先我们先换个源</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<p>注意JetPack5.0.1是ubuntu20了，后缀是focal，开发板还要带上ports：(记得开发板的要是ubuntu-port之前换源一直出错就是因为换错了)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>进入主机的sdk界面host不用勾选（这个选项是为了安装cuda这些东西到你的主机上面，看很多博客说这样安装大概率会用不了）</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/745ba610764a440895475ba8d1aa28d1_2be41ad5b386494d8.png"/>
-
-<p>在这里Jeston os不用勾选，如果你勾选的换就默认重装系统了 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/daf6336878d94e8e8a0f7121b9b452c1_d840294fbb1b49ce9.png"/></p>
-<p>&nbsp;ip地址一般默认不用改变如果实在不知道的话可以</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure>
-
-<p>来查看你的ip如果有连WIFE的话可能会出现两个这里你两个都试试一般就可以了，然后输入你的用户名和密码</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6319a52dd2ab4669a59e17520f708772_839888ab3d0f4cd6a.png"/>
-
-<p>&nbsp;等这三个选项全部打勾以后开始安装<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b59586872bf445afa5219503d1d9181a_89a9e6a610604b49b.png"/></p>
-<p>安装完成后先安装pip3</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br></pre></td></tr></table></figure>
-
-<p>安装jtop(一定要加后面的版本这个版本是支持5.0以上的)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo -H pip install jetson-stats==4.0.0rc2</span><br></pre></td></tr></table></figure>
-
-<h2 id="二-opencv的卸载"><a href="#二-opencv的卸载" class="headerlink" title="二.opencv的卸载"></a><a id="t1"></a>二.opencv的卸载</h2><p>（最近公司加班多找个时间把这个部分补上）</p>
-<p> </p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Jeston nx</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Jetson Xavier NX环境配置ubuntu20.04</title>
-    <url>/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/</url>
-    <content><![CDATA[<h1 id="Jetson-Xavier-NX环境配置ubuntu20-04"><a href="#Jetson-Xavier-NX环境配置ubuntu20-04" class="headerlink" title="Jetson Xavier NX环境配置ubuntu20.04"></a>Jetson Xavier NX环境配置ubuntu20.04</h1><p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
-<p><strong>安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系</strong></p>
-<p><strong>这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。</strong></p>
-<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
-<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a href="https://so.csdn.net/so/search?q=ssd&spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
-<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…..）然后直接把之前安装好的镜像直接导入即可。</p>
-<h2 id="二-虚拟机"><a href="#二-虚拟机" class="headerlink" title="二.虚拟机"></a><a id="t1"></a>二.虚拟机</h2><p>创建一个虚拟机</p>
-<img width="1200" height="716" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png"/>
-
-<p>&nbsp;选择你镜像的位置</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png"></p>
-<p>&nbsp;分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png"></p>
-<p>&nbsp;然后就是Ubuntu的安装</p>
-<img width="1200" height="566" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png"/>
-
-<h2 id="三-Nvidia-sdk的安装"><a href="#三-Nvidia-sdk的安装" class="headerlink" title="三.Nvidia sdk的安装"></a><a id="t2"></a>三.<a href="https://so.csdn.net/so/search?q=Nvidia&spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2><p>进入官网：<a href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
-<p>选择SDK，这里需要登录自己个人的Nvidia账号</p>
-<img width="1200" height="265" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png"/>
-
-<p>或者直接在虚拟机内进行下载，我这里选择直接从主机拖拽到虚拟机内因为我有安装vmware-tools</p>
-<p>输入指令进行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install ./sdkmanager_1.6.1-8175_amd64.deb ./sdkmanager_1.6.1-8175_amd64.deb </span><br></pre></td></tr></table></figure>
-
-<p>安装完成后输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sdkmanager </span><br></pre></td></tr></table></figure>
-
-<p>出现这个页面就代表着安装完成，然后登录一下自己的开发者账号<img width="1200" height="683" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png"/></p>
-<p>&nbsp;成功进入后的界面</p>
-<img width="1200" height="538" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png"/>
-
-<p>&nbsp;之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
-<img width="1200" height="900" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg"/>
-
-<p>&nbsp;接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
-<img width="1200" height="754" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png"/>
-
-<p>&nbsp;<a href="https://so.csdn.net/so/search?q=jetpack&spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
-<img width="1200" height="786" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png"/>
-
-<p>deepstream我也不知道干啥的先装上去吧</p>
-<img width="1200" height="739" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png"/>
-
-<p>&nbsp;然后只装os</p>
-<img width="1200" height="755" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png"/>
-
-<p>&nbsp;到这步应该就没有问题了（网络不好的可以多等等）</p>
-<img width="1200" height="567" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png"/>
-
-<p>&nbsp;完成后跳出了这个页面（按照这个选择）</p>
-<img width="1200" height="708" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png"/>
-
-<p>&nbsp;然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png"/>
-
-<p>查看一下我们装的系统版本是否是正确的.</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /etc/lsb-release</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;大功告成</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png"/>
-
-<h2 id="四将SSD设置成默认启动盘"><a href="#四将SSD设置成默认启动盘" class="headerlink" title=" 四将SSD设置成默认启动盘"></a><a id="t3"></a> 四将SSD设置成默认启动盘</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
-
-<p>输入disk,我这里是16g运存所以我分16g，剩下全部给系统就可以了</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png"/>
-
-<p>jinru</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">git clone https://github.com/jetsonhacks/rootOnNVMe.git</span><br><span class="line">    </span><br><span class="line">cd rootOnNVMe</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./copy-rootfs-ssd.sh</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./setup-service.sh</span><br></pre></td></tr></table></figure>
-
-<p>进入新的系统后在root打开属性查看一下空间就知道有没有成功了。</p>
-<p>完成！</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Jeston nx</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
     <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
     <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
@@ -249,6 +123,47 @@
       </tags>
   </entry>
   <entry>
+    <title>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</title>
+    <url>/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/</url>
+    <content><![CDATA[<h1 id="Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）"><a href="#Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）" class="headerlink" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）"></a>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1><p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<p>这里有个很狗的坑，我在安装的时候杜邦线忘记拔下来导致系统一直无法被主机识别，ip地址一直不对。</p>
+<p>之后把nx接数据线到主机上面（记得杜邦线不要短接！！！记得杜邦线不要短接！！！记得杜邦线不要短接！！！重要的事情说三遍）</p>
+<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>首先我们先换个源</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<p>注意JetPack5.0.1是ubuntu20了，后缀是focal，开发板还要带上ports：(记得开发板的要是ubuntu-port之前换源一直出错就是因为换错了)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>进入主机的sdk界面host不用勾选（这个选项是为了安装cuda这些东西到你的主机上面，看很多博客说这样安装大概率会用不了）</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/745ba610764a440895475ba8d1aa28d1_2be41ad5b386494d8.png"/>
+
+<p>在这里Jeston os不用勾选，如果你勾选的换就默认重装系统了 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/daf6336878d94e8e8a0f7121b9b452c1_d840294fbb1b49ce9.png"/></p>
+<p>&nbsp;ip地址一般默认不用改变如果实在不知道的话可以</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure>
+
+<p>来查看你的ip如果有连WIFE的话可能会出现两个这里你两个都试试一般就可以了，然后输入你的用户名和密码</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6319a52dd2ab4669a59e17520f708772_839888ab3d0f4cd6a.png"/>
+
+<p>&nbsp;等这三个选项全部打勾以后开始安装<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b59586872bf445afa5219503d1d9181a_89a9e6a610604b49b.png"/></p>
+<p>安装完成后先安装pip3</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br></pre></td></tr></table></figure>
+
+<p>安装jtop(一定要加后面的版本这个版本是支持5.0以上的)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo -H pip install jetson-stats==4.0.0rc2</span><br></pre></td></tr></table></figure>
+
+<h2 id="二-opencv的卸载"><a href="#二-opencv的卸载" class="headerlink" title="二.opencv的卸载"></a><a id="t1"></a>二.opencv的卸载</h2><p>（最近公司加班多找个时间把这个部分补上）</p>
+<p> </p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Jeston nx</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>IOU和他们儿子们</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/</url>
     <content><![CDATA[<h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
@@ -271,6 +186,91 @@
       </categories>
       <tags>
         <tag>IOU</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Jetson Xavier NX环境配置ubuntu20.04</title>
+    <url>/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/</url>
+    <content><![CDATA[<h1 id="Jetson-Xavier-NX环境配置ubuntu20-04"><a href="#Jetson-Xavier-NX环境配置ubuntu20-04" class="headerlink" title="Jetson Xavier NX环境配置ubuntu20.04"></a>Jetson Xavier NX环境配置ubuntu20.04</h1><p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
+<p><strong>安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系</strong></p>
+<p><strong>这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。</strong></p>
+<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
+<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a href="https://so.csdn.net/so/search?q=ssd&spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
+<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…..）然后直接把之前安装好的镜像直接导入即可。</p>
+<h2 id="二-虚拟机"><a href="#二-虚拟机" class="headerlink" title="二.虚拟机"></a><a id="t1"></a>二.虚拟机</h2><p>创建一个虚拟机</p>
+<img width="1200" height="716" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png"/>
+
+<p>&nbsp;选择你镜像的位置</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png"></p>
+<p>&nbsp;分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png"></p>
+<p>&nbsp;然后就是Ubuntu的安装</p>
+<img width="1200" height="566" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png"/>
+
+<h2 id="三-Nvidia-sdk的安装"><a href="#三-Nvidia-sdk的安装" class="headerlink" title="三.Nvidia sdk的安装"></a><a id="t2"></a>三.<a href="https://so.csdn.net/so/search?q=Nvidia&spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2><p>进入官网：<a href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
+<p>选择SDK，这里需要登录自己个人的Nvidia账号</p>
+<img width="1200" height="265" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png"/>
+
+<p>或者直接在虚拟机内进行下载，我这里选择直接从主机拖拽到虚拟机内因为我有安装vmware-tools</p>
+<p>输入指令进行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install ./sdkmanager_1.6.1-8175_amd64.deb ./sdkmanager_1.6.1-8175_amd64.deb </span><br></pre></td></tr></table></figure>
+
+<p>安装完成后输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sdkmanager </span><br></pre></td></tr></table></figure>
+
+<p>出现这个页面就代表着安装完成，然后登录一下自己的开发者账号<img width="1200" height="683" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png"/></p>
+<p>&nbsp;成功进入后的界面</p>
+<img width="1200" height="538" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png"/>
+
+<p>&nbsp;之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
+<img width="1200" height="900" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg"/>
+
+<p>&nbsp;接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
+<img width="1200" height="754" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png"/>
+
+<p>&nbsp;<a href="https://so.csdn.net/so/search?q=jetpack&spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
+<img width="1200" height="786" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png"/>
+
+<p>deepstream我也不知道干啥的先装上去吧</p>
+<img width="1200" height="739" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png"/>
+
+<p>&nbsp;然后只装os</p>
+<img width="1200" height="755" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png"/>
+
+<p>&nbsp;到这步应该就没有问题了（网络不好的可以多等等）</p>
+<img width="1200" height="567" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png"/>
+
+<p>&nbsp;完成后跳出了这个页面（按照这个选择）</p>
+<img width="1200" height="708" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png"/>
+
+<p>&nbsp;然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png"/>
+
+<p>查看一下我们装的系统版本是否是正确的.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /etc/lsb-release</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;大功告成</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png"/>
+
+<h2 id="四将SSD设置成默认启动盘"><a href="#四将SSD设置成默认启动盘" class="headerlink" title=" 四将SSD设置成默认启动盘"></a><a id="t3"></a> 四将SSD设置成默认启动盘</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
+
+<p>输入disk,我这里是16g运存所以我分16g，剩下全部给系统就可以了</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png"/>
+
+<p>jinru</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">git clone https://github.com/jetsonhacks/rootOnNVMe.git</span><br><span class="line">    </span><br><span class="line">cd rootOnNVMe</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./copy-rootfs-ssd.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./setup-service.sh</span><br></pre></td></tr></table></figure>
+
+<p>进入新的系统后在root打开属性查看一下空间就知道有没有成功了。</p>
+<p>完成！</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Jeston nx</tag>
       </tags>
   </entry>
   <entry>
@@ -518,6 +518,172 @@
       </tags>
   </entry>
   <entry>
+    <title>穷苦人民如何用移动固态配置unbutu22.04</title>
+    <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/%E7%A9%B7%E8%8B%A6%E4%BA%BA%E6%B0%91%E5%A6%82%E4%BD%95%E7%94%A8%E7%A7%BB%E5%8A%A8%E5%9B%BA%E6%80%81%E9%85%8D%E7%BD%AEunbutu22.04_awesome-terminal-fonts-CS/</url>
+    <content><![CDATA[<h1 id="穷苦人民如何用移动固态配置unbutu22-04"><a href="#穷苦人民如何用移动固态配置unbutu22-04" class="headerlink" title="穷苦人民如何用移动固态配置unbutu22.04"></a>穷苦人民如何用移动固态配置unbutu22.04</h1><p>(这篇博客大部分都是查找的别人的博客或者CSDN我对这些内容进行整理出来的，如果有侵权请联系我)</p>
+<p>因为深度学习大部分用的是linux系统，而且之后很多代码也要部署到nuc和nx上，但是我刚好又在外面实习，在电脑空间不足的情况下我选择使用移动固态作为unbutu的系统盘</p>
+<p>对于显卡的部分我放在cuda,cudnn,tensorrt一起讲</p>
+<h2 id="一-unbutu系统的安装"><a href="#一-unbutu系统的安装" class="headerlink" title="一.unbutu系统的安装"></a><a href="#"></a>一.unbutu系统的安装</h2><p>具体可以详见这位大佬的CSDN：<a href="https://www.edwardzcn98yx.com/post/8bb234ab.html" title="UbuntuToGo——打造属于自己的移动固态热插拔Liniux操作系统 - Edward&#39;s blog">UbuntuToGo——打造属于自己的移动固态热插拔Liniux操作系统 - Edward’s blog</a></p>
+<p>这里提几点需要注意的事项</p>
+<p>&nbsp;1.安装的时候看好盘，不要把你默认的window盘格式化掉</p>
+<p>&nbsp;2.记得选择其他选项</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e8c99bb2c1e248d89a1b3c4a2c0d314f_9ddf4445e29b4cd59.png"></p>
+<p>3.首先要选择你的主板对应的ubuntu版本，因为我的电脑是y9000p用20.04的话是连不上WIFE所以我采用了最新的22.04版本并且可以成功连接上WIFE</p>
+<p>4.个人建议是安装英文版本的ubuntu之后可以在设置里面改成中文，但是文件夹名字依然为英文避免英文路径出错。</p>
+<p>5.我移动硬盘是512g,硬盘装ubuntu系统分区是要自己去划分的；这里我给出我的分区</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#以下单位为MB</span><br><span class="line">swap 16384 #交换区一般给内存的大小，16g的可以多给1-2G</span><br><span class="line">/home 225820 #建议多给点</span><br><span class="line">/boot 1024</span><br><span class="line">EIF 256</span><br><span class="line">/tmp 5120 #这里是个坑，我在配置cuda的时候踩到了</span><br><span class="line">/  #剩下的空间都给他，建议大点</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>对于22的颜值我首先是表示肯定的</p>
+<img width="1200" height="746" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b5aa7604a9534f4aac8f267432ed929d_0e77ecf57bbe452aa.png" class="jop-noMdConv">
+
+<p>是不是有点window那味了</p>
+<h2 id="二-关于语言以及中文输入法"><a href="#二-关于语言以及中文输入法" class="headerlink" title="二.关于语言以及中文输入法"></a><a href="#"></a>二.关于语言以及中文输入法</h2><p>进入setting-&gt;区域与语言，之后选择管理已安装的语言</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1423bd21f24d4b72bc99006f7d72dcc6_ca4cffa938d947c6b.png"></p>
+<p>添加语言中选择汉语，</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6ea0ae63aee048c4a9e2b7f1835e30cf_d79e25afc14e43e28.png"></p>
+<p>&nbsp;键盘这里选择+号，添加ibus中文输入法</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f9dbede4c7874791b8ef7d19845d037e_46536698b9544bbab.png"></p>
+<h2 id="三-给ubuntu换源"><a href="#三-给ubuntu换源" class="headerlink" title=" 三.给ubuntu换源"></a><a href="#"></a> 三.给<a href="https://so.csdn.net/so/search?q=ubuntu%E6%8D%A2%E6%BA%90&spm=1001.2101.3001.7020">ubuntu换源</a></h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<p>清华</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line"> </span><br><span class="line"># 预发布软件源，不建议启用</span><br><span class="line"># deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>阿里</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>中科大</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>（个人觉得中科大的比较快）然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get upgrade</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>完成ubuntu源的更新</p>
+<h2 id="四-下载谷歌浏览器"><a href="#四-下载谷歌浏览器" class="headerlink" title="四.下载谷歌浏览器"></a><a href="#"></a>四.下载谷歌浏览器</h2><h3 id="1-通过使用Ctrl-Alt-T键盘快捷键或单击终端图标来打开终端"><a href="#1-通过使用Ctrl-Alt-T键盘快捷键或单击终端图标来打开终端" class="headerlink" title="1.通过使用Ctrl+Alt+T键盘快捷键或单击终端图标来打开终端"></a><a href="#"></a>1.通过使用<code>Ctrl+Alt+T</code>键盘快捷键或单击终端图标来打开终端</h3><p>使用wget下载最新的Google Chrome <code>.deb</code>软件包：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-安装Google-Chrome"><a href="#2-安装Google-Chrome" class="headerlink" title="2.安装Google Chrome"></a><a href="#"></a>2.安装Google Chrome</h3><p>在Ubuntu上安装软件包需要管理权限。以<a href="https://www.iplayio.cn/post/816316675" title="具有sudo特权">具有sudo特权</a>的用户身份运行以下命令，以<code>.deb</code>在系统上安装Chrome 软件包：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install ./google-chrome-stable_current_amd64.deb</span><br></pre></td></tr></table></figure>
+
+<p>个人建议最好科学上网一下可以把window下谷歌的一些配置导入进来</p>
+<h2 id="五-微信的安装"><a href="#五-微信的安装" class="headerlink" title="五.微信的安装"></a><a href="#"></a>五.微信的安装</h2><p><strong>添加仓库</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update  </span><br><span class="line">sudo wget -O- https://deepin-wine.i-m.dev/setup.sh | sh</span><br></pre></td></tr></table></figure>
+
+<p><strong>安装</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install synaptic</span><br></pre></td></tr></table></figure>
+
+<p><a href="#"></a><strong>卸载</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get remove --purge synaptic</span><br></pre></td></tr></table></figure>
+
+<p><code>--purge</code>是删除了配置文件。</p>
+<p><strong>进入新得力</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo synaptic </span><br></pre></td></tr></table></figure>
+
+<p>进入后的界面</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/89b2aec2682a40f5b394c994ffa80298_89b84160b493400ab.png"></p>
+<p>&nbsp;搜索微信后直接安装</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/499cdb3df50f4b0b96f59a5defe44d98_b1d48cff15244a559.png"></p>
+<h2 id="六-ubuntu界面的美化"><a href="#六-ubuntu界面的美化" class="headerlink" title="六.ubuntu界面的美化"></a><a href="#"></a>六.ubuntu界面的美化</h2><p>ubuntu22是基于gone美化的，我装了一次kde界面然后我就重装了我的系统…..先上才艺</p>
+<img width="1200" height="750" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/fbbcfbc92eec4577a5bf0f5e6745668f_f8f57e87fb624e2a8.png" class="jop-noMdConv">
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c334ef13071c4698bf9da9370097a513_e2a193614b71455a8.png"></p>
+<h3 id="1-gone美化"><a href="#1-gone美化" class="headerlink" title="1.gone美化"></a><a href="#"></a>1.gone美化</h3><p><strong>首先依赖安装</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install gnome-tweaks chrome-gnome-shell</span><br><span class="line">sudo apt install gtk2-engines-murrine gtk2-engines-pixbuf </span><br><span class="line">sudo apt install sassc optipng inkscape libcanberra-gtk-module libglib2.0-dev libxml2-utils</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;gnome 插件的网址是：<a href="https://link.zhihu.com/?target=https://extensions.gnome.org" title="https://extensions.gnome.org">https://extensions.gnome.org</a></p>
+<p>这里建议科学上网，直接去谷歌商店安装</p>
+<img width="1200" height="467" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/449f2b121cf34e08af2d4908bc4d2b07_e6e8d05c573a4c48a.png" class="jop-noMdConv">
+
+<p>这是进入之后的页面</p>
+<ul>
+<li>user themes（可以把ubuntu换成mac样子的格式）</li>
+<li>dash to dock（像我页面中最左边那个一样）</li>
+<li>netspeed（网速测试）</li>
+</ul>
+<p>这几个是我装的插件</p>
+<p><img width="1200" height="826" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/360845479585416e83db2f5653f8ad63_6c812ef0fd7a4c6bb.png" class="jop-noMdConv">按照好后进入这个页面进行插件的打开，点击dash to dock的设置按钮就可以进行修改了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6e53397555664df6911765dd10912886_b236dcce821f46a89.png"></p>
+<p>&nbsp;美化包都可以从 <a href="https://link.zhihu.com/?target=https://www.gnome-look.org/" title="https://www.gnome-look.org">https://www.gnome-look.org</a> 这个网站下载的</p>
+<p>Ubuntu 22.04 为所有用户提供的默认存放主题的文件夹分别如下：</p>
+<ul>
+<li>主题包：&#x2F;usr&#x2F;share&#x2F;themes&#x2F;</li>
+</ul>
+<p>将下载好的主题包解压到这个目录，或者解压后拷贝到这个目录。</p>
+<ul>
+<li>Icons 图标：&#x2F;usr&#x2F;share&#x2F;icons</li>
+</ul>
+<p>将下载好的 Icons 图标解压到这个目录，或者解压后拷贝到这个目录。</p>
+<ul>
+<li>鼠标图标：&#x2F;usr&#x2F;share&#x2F;icons</li>
+</ul>
+<p>将下载好的鼠标图标解压到这个目录，或者解压后拷贝到这个目录。</p>
+<ul>
+<li>选择下载的壁纸图片，右键设置为壁纸即可。</li>
+</ul>
+<p>上面的操作一定要保证正确无误，接下来就可以选择这些主题包，并让其生效了。</p>
+<p><strong>打开 gnome-tweaks 工具，如下图：</strong></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a2f2db6d0cf84869880a3a747bc5623b_032faaab3fc945238.png"></p>
+<p>就可以开始自定义自己的ubuntu</p>
+<p>(这个部分详细可见：<a href="https://zhuanlan.zhihu.com/p/176977192" title="Ubuntu 20.04 桌面美化 - 知乎">Ubuntu 20.04 桌面美化 - 知乎</a> 我是主题的配置是按照这个大佬的来的)</p>
+<h3 id="2-oh-my-zsh的安装"><a href="#2-oh-my-zsh的安装" class="headerlink" title="2.oh-my-zsh的安装"></a><a href="#"></a>2.<a href="https://so.csdn.net/so/search?q=oh-my-zsh&spm=1001.2101.3001.7020">oh-my-zsh</a>的安装</h3><p>说实话ubuntu自带的终端还是不够帅diao炸的所以我们玩的花一点，</p>
+<h4 id="zsh的安装"><a href="#zsh的安装" class="headerlink" title="zsh的安装"></a><a href="#"></a>zsh的安装</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 安装zsh</span><br><span class="line">sudo apt install zsh</span><br><span class="line"># 然后将zsh设置为默认shell：</span><br><span class="line">chsh -s /bin/zsh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>PS：</p>
+<ul>
+<li><code>echo $SHELL</code>: 可以通过<code>echo $SHELL</code>查看当前默认的shell，如果没有改为<code>/bin/zsh</code>，需要重启shell。</li>
+<li><code>cat /etc/shells</code>: 查看系统内已安装的shell</li>
+</ul>
+<h4 id="git的安装"><a href="#git的安装" class="headerlink" title="git的安装"></a><a href="#"></a>git的安装</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
+
+<h4 id="安装oh-my-zsh"><a href="#安装oh-my-zsh" class="headerlink" title="安装oh-my-zsh"></a><a href="#"></a>安装oh-my-zsh</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 方式一</span><br><span class="line">wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | sh</span><br><span class="line"># 方式二</span><br><span class="line">wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh</span><br><span class="line">bash ./install.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>安装后</p>
+<p>字体的安装，没有安装图形会出现乱码（别问我怎么知道的）</p>
+<p><strong>下载最新版本的符号字体和字体配置文件（下载好后直接点击文件安装就可）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf</span><br><span class="line">wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>powerline字体安装</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 下载</span><br><span class="line">git clone https://github.com/powerline/fonts.git</span><br><span class="line"> </span><br><span class="line"># 进入文件夹并安装</span><br><span class="line">cd fonts</span><br><span class="line">./install.sh</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>安装 Awesome-Terminal Fonts字体</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/gabrielelana/awesome-terminal-fonts.git</span><br><span class="line">cd awesome-terminal-fonts</span><br><span class="line">./install.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>安装nerd-fonts</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#下载</span><br><span class="line">git clone https://github.com/ryanoasis/nerd-fonts.git</span><br><span class="line">#安装同上</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>更新字体到缓存</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">fc-cache -vf /usr/share/fonts</span><br><span class="line">#vf是你的个人字体路径需要寻找一下装在哪里</span><br><span class="line">#以下三个目录都是字体目录</span><br><span class="line"> </span><br><span class="line">#/usr/share/fonts</span><br><span class="line">#/usr/local/share/fonts</span><br><span class="line">#/home/&lt;username&gt;/.fonts&lt; ( &lt;username&gt;是你的用户名)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="要是还是出现错误的情况，可以直接打开终端"><a href="#要是还是出现错误的情况，可以直接打开终端" class="headerlink" title="要是还是出现错误的情况，可以直接打开终端"></a><a href="#"></a>要是还是出现错误的情况，可以直接打开终端</h4><p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e67fce7d344a415c868f450843dfb0c4_50024374098648a99.png"></p>
+<p>&nbsp;然后选择</p>
+<p>&nbsp;<img width="1200" height="428" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7bccbad88403447fadb4977f3b4e13af_a8cef1d3c9614cd38.png" class="jop-noMdConv"></p>
+<p>&nbsp;这个时候字会变得很丑，我们把自定义字体关掉就可以了啦</p>
+<p>&nbsp;<img width="1200" height="625" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/00466458ba5640c7863bc2ae21f2c900_4daf4731c45d47f48.png" class="jop-noMdConv"></p>
+<p>&nbsp;（这个地方我也没有搞的很明白，但是如果你的图形没办法像我一样正常显示估计就是字体问题可以自行百度poerline字体的安装方法）</p>
+<h4 id="配置oh-my-zsh主题"><a href="#配置oh-my-zsh主题" class="headerlink" title="配置oh-my-zsh主题"></a><a href="#"></a>配置oh-my-zsh主题</h4><p>使用<code>sudo gedit ~/.zshrc</code>编辑<code>.zshrc</code>，将<code>ZSH_THEME</code>项改为：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ZSH_THEME=&quot;agnoster&quot;</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>source ~/.zshrc</code>命令更新。</p>
+<h4 id="oh-my-sh插件的安装"><a href="#oh-my-sh插件的安装" class="headerlink" title="oh-my-sh插件的安装"></a><a href="#"></a>oh-my-sh插件的安装</h4><p>zsh-autosuggestions的安装（命令行命令键入时的历史命令建议插件）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/zsh-users/zsh-autosuggestions $&#123;ZSH_CUSTOM:-~/.oh-my-zsh/custom&#125;/plugins/zsh-autosuggestions</span><br></pre></td></tr></table></figure>
+
+<p>zsh-<a href="https://so.csdn.net/so/search?q=syntax&spm=1001.2101.3001.7020" title="syntax">syntax</a>-highlighting的安装（命令行语法高亮插件）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $&#123;ZSH_CUSTOM:-~/.oh-my-zsh/custom&#125;/plugins/zsh-syntax-highlighting</span><br></pre></td></tr></table></figure>
+
+<p>主题的修改以及插件的安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit ~/.zshrc</span><br><span class="line"> </span><br><span class="line">#不是添加而是找到对对应的变量进行修改</span><br><span class="line">#修改主题：ZSH_THEME</span><br><span class="line"> </span><br><span class="line">ZSH_THEME=&quot;agnoster&quot;</span><br><span class="line">plugins=(</span><br><span class="line">	git zsh-autosuggestions zsh-syntax-highlighting</span><br><span class="line">)</span><br><span class="line">#修改插件</span><br><span class="line">plugins=(</span><br><span class="line">	git extract autojump zsh-autosuggestions zsh-syntax-highlighting</span><br><span class="line">)</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+
+<p>最后source  ~&#x2F;.zshrc一下。</p>
+<h2 id="七-关于终端的美化"><a href="#七-关于终端的美化" class="headerlink" title="七.关于终端的美化"></a><a href="#"></a>七.关于终端的美化</h2><p>可以看这个大佬的CSDN：<a href="https://blog.csdn.net/zhangjiali12011/article/details/85533482" title="ubuntu下修改终端字体颜色以及terminator字体美化_zhangjiali12011的博客-CSDN博客_terminator 美化">ubuntu下修改终端字体颜色以及terminator字体美化_zhangjiali12011的博客-CSDN博客_terminator 美化</a></p>
+<p>ubuntu的安装基本到此结束，有什么问题或者错误欢迎私信我</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>ubuntu</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</title>
     <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/</url>
     <content><![CDATA[<h1 id="ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）"><a href="#ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）" class="headerlink" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）"></a>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</h1><hr>
@@ -685,172 +851,6 @@
         <tag>cuda</tag>
         <tag>opencv</tag>
         <tag>opencv_contrib</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>穷苦人民如何用移动固态配置unbutu22.04</title>
-    <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/%E7%A9%B7%E8%8B%A6%E4%BA%BA%E6%B0%91%E5%A6%82%E4%BD%95%E7%94%A8%E7%A7%BB%E5%8A%A8%E5%9B%BA%E6%80%81%E9%85%8D%E7%BD%AEunbutu22.04_awesome-terminal-fonts-CS/</url>
-    <content><![CDATA[<h1 id="穷苦人民如何用移动固态配置unbutu22-04"><a href="#穷苦人民如何用移动固态配置unbutu22-04" class="headerlink" title="穷苦人民如何用移动固态配置unbutu22.04"></a>穷苦人民如何用移动固态配置unbutu22.04</h1><p>(这篇博客大部分都是查找的别人的博客或者CSDN我对这些内容进行整理出来的，如果有侵权请联系我)</p>
-<p>因为深度学习大部分用的是linux系统，而且之后很多代码也要部署到nuc和nx上，但是我刚好又在外面实习，在电脑空间不足的情况下我选择使用移动固态作为unbutu的系统盘</p>
-<p>对于显卡的部分我放在cuda,cudnn,tensorrt一起讲</p>
-<h2 id="一-unbutu系统的安装"><a href="#一-unbutu系统的安装" class="headerlink" title="一.unbutu系统的安装"></a><a href="#"></a>一.unbutu系统的安装</h2><p>具体可以详见这位大佬的CSDN：<a href="https://www.edwardzcn98yx.com/post/8bb234ab.html" title="UbuntuToGo——打造属于自己的移动固态热插拔Liniux操作系统 - Edward&#39;s blog">UbuntuToGo——打造属于自己的移动固态热插拔Liniux操作系统 - Edward’s blog</a></p>
-<p>这里提几点需要注意的事项</p>
-<p>&nbsp;1.安装的时候看好盘，不要把你默认的window盘格式化掉</p>
-<p>&nbsp;2.记得选择其他选项</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e8c99bb2c1e248d89a1b3c4a2c0d314f_9ddf4445e29b4cd59.png"></p>
-<p>3.首先要选择你的主板对应的ubuntu版本，因为我的电脑是y9000p用20.04的话是连不上WIFE所以我采用了最新的22.04版本并且可以成功连接上WIFE</p>
-<p>4.个人建议是安装英文版本的ubuntu之后可以在设置里面改成中文，但是文件夹名字依然为英文避免英文路径出错。</p>
-<p>5.我移动硬盘是512g,硬盘装ubuntu系统分区是要自己去划分的；这里我给出我的分区</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#以下单位为MB</span><br><span class="line">swap 16384 #交换区一般给内存的大小，16g的可以多给1-2G</span><br><span class="line">/home 225820 #建议多给点</span><br><span class="line">/boot 1024</span><br><span class="line">EIF 256</span><br><span class="line">/tmp 5120 #这里是个坑，我在配置cuda的时候踩到了</span><br><span class="line">/  #剩下的空间都给他，建议大点</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>对于22的颜值我首先是表示肯定的</p>
-<img width="1200" height="746" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b5aa7604a9534f4aac8f267432ed929d_0e77ecf57bbe452aa.png" class="jop-noMdConv">
-
-<p>是不是有点window那味了</p>
-<h2 id="二-关于语言以及中文输入法"><a href="#二-关于语言以及中文输入法" class="headerlink" title="二.关于语言以及中文输入法"></a><a href="#"></a>二.关于语言以及中文输入法</h2><p>进入setting-&gt;区域与语言，之后选择管理已安装的语言</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1423bd21f24d4b72bc99006f7d72dcc6_ca4cffa938d947c6b.png"></p>
-<p>添加语言中选择汉语，</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6ea0ae63aee048c4a9e2b7f1835e30cf_d79e25afc14e43e28.png"></p>
-<p>&nbsp;键盘这里选择+号，添加ibus中文输入法</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f9dbede4c7874791b8ef7d19845d037e_46536698b9544bbab.png"></p>
-<h2 id="三-给ubuntu换源"><a href="#三-给ubuntu换源" class="headerlink" title=" 三.给ubuntu换源"></a><a href="#"></a> 三.给<a href="https://so.csdn.net/so/search?q=ubuntu%E6%8D%A2%E6%BA%90&spm=1001.2101.3001.7020">ubuntu换源</a></h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<p>清华</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line"> </span><br><span class="line"># 预发布软件源，不建议启用</span><br><span class="line"># deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line"># deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>阿里</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line">deb http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb-src http://mirrors.aliyun.com/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>中科大</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse</span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse</span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse</span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse</span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line">deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>（个人觉得中科大的比较快）然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get upgrade</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>完成ubuntu源的更新</p>
-<h2 id="四-下载谷歌浏览器"><a href="#四-下载谷歌浏览器" class="headerlink" title="四.下载谷歌浏览器"></a><a href="#"></a>四.下载谷歌浏览器</h2><h3 id="1-通过使用Ctrl-Alt-T键盘快捷键或单击终端图标来打开终端"><a href="#1-通过使用Ctrl-Alt-T键盘快捷键或单击终端图标来打开终端" class="headerlink" title="1.通过使用Ctrl+Alt+T键盘快捷键或单击终端图标来打开终端"></a><a href="#"></a>1.通过使用<code>Ctrl+Alt+T</code>键盘快捷键或单击终端图标来打开终端</h3><p>使用wget下载最新的Google Chrome <code>.deb</code>软件包：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-安装Google-Chrome"><a href="#2-安装Google-Chrome" class="headerlink" title="2.安装Google Chrome"></a><a href="#"></a>2.安装Google Chrome</h3><p>在Ubuntu上安装软件包需要管理权限。以<a href="https://www.iplayio.cn/post/816316675" title="具有sudo特权">具有sudo特权</a>的用户身份运行以下命令，以<code>.deb</code>在系统上安装Chrome 软件包：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install ./google-chrome-stable_current_amd64.deb</span><br></pre></td></tr></table></figure>
-
-<p>个人建议最好科学上网一下可以把window下谷歌的一些配置导入进来</p>
-<h2 id="五-微信的安装"><a href="#五-微信的安装" class="headerlink" title="五.微信的安装"></a><a href="#"></a>五.微信的安装</h2><p><strong>添加仓库</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get update  </span><br><span class="line">sudo wget -O- https://deepin-wine.i-m.dev/setup.sh | sh</span><br></pre></td></tr></table></figure>
-
-<p><strong>安装</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install synaptic</span><br></pre></td></tr></table></figure>
-
-<p><a href="#"></a><strong>卸载</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get remove --purge synaptic</span><br></pre></td></tr></table></figure>
-
-<p><code>--purge</code>是删除了配置文件。</p>
-<p><strong>进入新得力</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo synaptic </span><br></pre></td></tr></table></figure>
-
-<p>进入后的界面</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/89b2aec2682a40f5b394c994ffa80298_89b84160b493400ab.png"></p>
-<p>&nbsp;搜索微信后直接安装</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/499cdb3df50f4b0b96f59a5defe44d98_b1d48cff15244a559.png"></p>
-<h2 id="六-ubuntu界面的美化"><a href="#六-ubuntu界面的美化" class="headerlink" title="六.ubuntu界面的美化"></a><a href="#"></a>六.ubuntu界面的美化</h2><p>ubuntu22是基于gone美化的，我装了一次kde界面然后我就重装了我的系统…..先上才艺</p>
-<img width="1200" height="750" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/fbbcfbc92eec4577a5bf0f5e6745668f_f8f57e87fb624e2a8.png" class="jop-noMdConv">
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c334ef13071c4698bf9da9370097a513_e2a193614b71455a8.png"></p>
-<h3 id="1-gone美化"><a href="#1-gone美化" class="headerlink" title="1.gone美化"></a><a href="#"></a>1.gone美化</h3><p><strong>首先依赖安装</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install gnome-tweaks chrome-gnome-shell</span><br><span class="line">sudo apt install gtk2-engines-murrine gtk2-engines-pixbuf </span><br><span class="line">sudo apt install sassc optipng inkscape libcanberra-gtk-module libglib2.0-dev libxml2-utils</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;gnome 插件的网址是：<a href="https://link.zhihu.com/?target=https://extensions.gnome.org" title="https://extensions.gnome.org">https://extensions.gnome.org</a></p>
-<p>这里建议科学上网，直接去谷歌商店安装</p>
-<img width="1200" height="467" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/449f2b121cf34e08af2d4908bc4d2b07_e6e8d05c573a4c48a.png" class="jop-noMdConv">
-
-<p>这是进入之后的页面</p>
-<ul>
-<li>user themes（可以把ubuntu换成mac样子的格式）</li>
-<li>dash to dock（像我页面中最左边那个一样）</li>
-<li>netspeed（网速测试）</li>
-</ul>
-<p>这几个是我装的插件</p>
-<p><img width="1200" height="826" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/360845479585416e83db2f5653f8ad63_6c812ef0fd7a4c6bb.png" class="jop-noMdConv">按照好后进入这个页面进行插件的打开，点击dash to dock的设置按钮就可以进行修改了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6e53397555664df6911765dd10912886_b236dcce821f46a89.png"></p>
-<p>&nbsp;美化包都可以从 <a href="https://link.zhihu.com/?target=https://www.gnome-look.org/" title="https://www.gnome-look.org">https://www.gnome-look.org</a> 这个网站下载的</p>
-<p>Ubuntu 22.04 为所有用户提供的默认存放主题的文件夹分别如下：</p>
-<ul>
-<li>主题包：&#x2F;usr&#x2F;share&#x2F;themes&#x2F;</li>
-</ul>
-<p>将下载好的主题包解压到这个目录，或者解压后拷贝到这个目录。</p>
-<ul>
-<li>Icons 图标：&#x2F;usr&#x2F;share&#x2F;icons</li>
-</ul>
-<p>将下载好的 Icons 图标解压到这个目录，或者解压后拷贝到这个目录。</p>
-<ul>
-<li>鼠标图标：&#x2F;usr&#x2F;share&#x2F;icons</li>
-</ul>
-<p>将下载好的鼠标图标解压到这个目录，或者解压后拷贝到这个目录。</p>
-<ul>
-<li>选择下载的壁纸图片，右键设置为壁纸即可。</li>
-</ul>
-<p>上面的操作一定要保证正确无误，接下来就可以选择这些主题包，并让其生效了。</p>
-<p><strong>打开 gnome-tweaks 工具，如下图：</strong></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a2f2db6d0cf84869880a3a747bc5623b_032faaab3fc945238.png"></p>
-<p>就可以开始自定义自己的ubuntu</p>
-<p>(这个部分详细可见：<a href="https://zhuanlan.zhihu.com/p/176977192" title="Ubuntu 20.04 桌面美化 - 知乎">Ubuntu 20.04 桌面美化 - 知乎</a> 我是主题的配置是按照这个大佬的来的)</p>
-<h3 id="2-oh-my-zsh的安装"><a href="#2-oh-my-zsh的安装" class="headerlink" title="2.oh-my-zsh的安装"></a><a href="#"></a>2.<a href="https://so.csdn.net/so/search?q=oh-my-zsh&spm=1001.2101.3001.7020">oh-my-zsh</a>的安装</h3><p>说实话ubuntu自带的终端还是不够帅diao炸的所以我们玩的花一点，</p>
-<h4 id="zsh的安装"><a href="#zsh的安装" class="headerlink" title="zsh的安装"></a><a href="#"></a>zsh的安装</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 安装zsh</span><br><span class="line">sudo apt install zsh</span><br><span class="line"># 然后将zsh设置为默认shell：</span><br><span class="line">chsh -s /bin/zsh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>PS：</p>
-<ul>
-<li><code>echo $SHELL</code>: 可以通过<code>echo $SHELL</code>查看当前默认的shell，如果没有改为<code>/bin/zsh</code>，需要重启shell。</li>
-<li><code>cat /etc/shells</code>: 查看系统内已安装的shell</li>
-</ul>
-<h4 id="git的安装"><a href="#git的安装" class="headerlink" title="git的安装"></a><a href="#"></a>git的安装</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
-
-<h4 id="安装oh-my-zsh"><a href="#安装oh-my-zsh" class="headerlink" title="安装oh-my-zsh"></a><a href="#"></a>安装oh-my-zsh</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 方式一</span><br><span class="line">wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | sh</span><br><span class="line"># 方式二</span><br><span class="line">wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh</span><br><span class="line">bash ./install.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>安装后</p>
-<p>字体的安装，没有安装图形会出现乱码（别问我怎么知道的）</p>
-<p><strong>下载最新版本的符号字体和字体配置文件（下载好后直接点击文件安装就可）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf</span><br><span class="line">wget https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p><strong>powerline字体安装</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 下载</span><br><span class="line">git clone https://github.com/powerline/fonts.git</span><br><span class="line"> </span><br><span class="line"># 进入文件夹并安装</span><br><span class="line">cd fonts</span><br><span class="line">./install.sh</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p><strong>安装 Awesome-Terminal Fonts字体</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/gabrielelana/awesome-terminal-fonts.git</span><br><span class="line">cd awesome-terminal-fonts</span><br><span class="line">./install.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p><strong>安装nerd-fonts</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#下载</span><br><span class="line">git clone https://github.com/ryanoasis/nerd-fonts.git</span><br><span class="line">#安装同上</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p><strong>更新字体到缓存</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">fc-cache -vf /usr/share/fonts</span><br><span class="line">#vf是你的个人字体路径需要寻找一下装在哪里</span><br><span class="line">#以下三个目录都是字体目录</span><br><span class="line"> </span><br><span class="line">#/usr/share/fonts</span><br><span class="line">#/usr/local/share/fonts</span><br><span class="line">#/home/&lt;username&gt;/.fonts&lt; ( &lt;username&gt;是你的用户名)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h4 id="要是还是出现错误的情况，可以直接打开终端"><a href="#要是还是出现错误的情况，可以直接打开终端" class="headerlink" title="要是还是出现错误的情况，可以直接打开终端"></a><a href="#"></a>要是还是出现错误的情况，可以直接打开终端</h4><p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e67fce7d344a415c868f450843dfb0c4_50024374098648a99.png"></p>
-<p>&nbsp;然后选择</p>
-<p>&nbsp;<img width="1200" height="428" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7bccbad88403447fadb4977f3b4e13af_a8cef1d3c9614cd38.png" class="jop-noMdConv"></p>
-<p>&nbsp;这个时候字会变得很丑，我们把自定义字体关掉就可以了啦</p>
-<p>&nbsp;<img width="1200" height="625" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/00466458ba5640c7863bc2ae21f2c900_4daf4731c45d47f48.png" class="jop-noMdConv"></p>
-<p>&nbsp;（这个地方我也没有搞的很明白，但是如果你的图形没办法像我一样正常显示估计就是字体问题可以自行百度poerline字体的安装方法）</p>
-<h4 id="配置oh-my-zsh主题"><a href="#配置oh-my-zsh主题" class="headerlink" title="配置oh-my-zsh主题"></a><a href="#"></a>配置oh-my-zsh主题</h4><p>使用<code>sudo gedit ~/.zshrc</code>编辑<code>.zshrc</code>，将<code>ZSH_THEME</code>项改为：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ZSH_THEME=&quot;agnoster&quot;</span><br></pre></td></tr></table></figure>
-
-<p>使用<code>source ~/.zshrc</code>命令更新。</p>
-<h4 id="oh-my-sh插件的安装"><a href="#oh-my-sh插件的安装" class="headerlink" title="oh-my-sh插件的安装"></a><a href="#"></a>oh-my-sh插件的安装</h4><p>zsh-autosuggestions的安装（命令行命令键入时的历史命令建议插件）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/zsh-users/zsh-autosuggestions $&#123;ZSH_CUSTOM:-~/.oh-my-zsh/custom&#125;/plugins/zsh-autosuggestions</span><br></pre></td></tr></table></figure>
-
-<p>zsh-<a href="https://so.csdn.net/so/search?q=syntax&spm=1001.2101.3001.7020" title="syntax">syntax</a>-highlighting的安装（命令行语法高亮插件）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $&#123;ZSH_CUSTOM:-~/.oh-my-zsh/custom&#125;/plugins/zsh-syntax-highlighting</span><br></pre></td></tr></table></figure>
-
-<p>主题的修改以及插件的安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit ~/.zshrc</span><br><span class="line"> </span><br><span class="line">#不是添加而是找到对对应的变量进行修改</span><br><span class="line">#修改主题：ZSH_THEME</span><br><span class="line"> </span><br><span class="line">ZSH_THEME=&quot;agnoster&quot;</span><br><span class="line">plugins=(</span><br><span class="line">	git zsh-autosuggestions zsh-syntax-highlighting</span><br><span class="line">)</span><br><span class="line">#修改插件</span><br><span class="line">plugins=(</span><br><span class="line">	git extract autojump zsh-autosuggestions zsh-syntax-highlighting</span><br><span class="line">)</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
-
-<p>最后source  ~&#x2F;.zshrc一下。</p>
-<h2 id="七-关于终端的美化"><a href="#七-关于终端的美化" class="headerlink" title="七.关于终端的美化"></a><a href="#"></a>七.关于终端的美化</h2><p>可以看这个大佬的CSDN：<a href="https://blog.csdn.net/zhangjiali12011/article/details/85533482" title="ubuntu下修改终端字体颜色以及terminator字体美化_zhangjiali12011的博客-CSDN博客_terminator 美化">ubuntu下修改终端字体颜色以及terminator字体美化_zhangjiali12011的博客-CSDN博客_terminator 美化</a></p>
-<p>ubuntu的安装基本到此结束，有什么问题或者错误欢迎私信我</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>ubuntu</tag>
       </tags>
   </entry>
 </search>
