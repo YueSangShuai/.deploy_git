@@ -1,6 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
+    <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
+    <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
+<p>我的OpenVino采用的是源码编译的这里采用的是python代码，之后可能会写一份C++代码放上去,先上才艺</p>
+<h2 id="一-将模型转换成onnx模型"><a href="#一-将模型转换成onnx模型" class="headerlink" title="一.将模型转换成onnx模型"></a><a href="#"></a>一.将模型转换成<a href="https://so.csdn.net/so/search?q=onnx%E6%A8%A1%E5%9E%8B&spm=1001.2101.3001.7020">onnx模型</a></h2><p>这里我采用的是pytorch模型文件转成onnx</p>
+<p>模型结构包括参数保存</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  import torch</span><br><span class="line">    </span><br><span class="line">2.  import torch.nn</span><br><span class="line">    </span><br><span class="line">3.  import os</span><br><span class="line">    </span><br><span class="line">4.  import sys</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">7.  def export(model_path):</span><br><span class="line">    </span><br><span class="line">8.      net = torch.load(</span><br><span class="line">    </span><br><span class="line">9.          model_path,</span><br><span class="line">    </span><br><span class="line">10.         map_location=torch.device(&#x27;cpu&#x27;),</span><br><span class="line">    </span><br><span class="line">11.     )</span><br><span class="line">    </span><br><span class="line">12.     net.eval()</span><br><span class="line">    </span><br><span class="line">13.     #这里需要指定你输入和输出的名字方便后面推理</span><br><span class="line">    </span><br><span class="line">14.     input_names = [&#x27;input&#x27;]</span><br><span class="line">    </span><br><span class="line">15.     output_names = [&#x27;output&#x27;]</span><br><span class="line">    </span><br><span class="line">16.     #这里需要确定模型的输入</span><br><span class="line">    </span><br><span class="line">17.     x = torch.randn(1, 3, 224, 224)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">19.     torch.onnx.export(</span><br><span class="line">    </span><br><span class="line">20.         net,</span><br><span class="line">    </span><br><span class="line">21.         x,</span><br><span class="line">    </span><br><span class="line">22.         os.path.join(</span><br><span class="line">    </span><br><span class="line">23.             os.path.split(model_path)[0],</span><br><span class="line">    </span><br><span class="line">24.             &#x27;best.onnx&#x27;,</span><br><span class="line">    </span><br><span class="line">25.         ),</span><br><span class="line">    </span><br><span class="line">26.         input_names=input_names,</span><br><span class="line">    </span><br><span class="line">27.         output_names=output_names,</span><br><span class="line">    </span><br><span class="line">28.         verbose=False,</span><br><span class="line">    </span><br><span class="line">29.         opset_version=12,</span><br><span class="line">    </span><br><span class="line">30.     )</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">33. if __name__ == &quot;__main__&quot;:</span><br><span class="line">    </span><br><span class="line">34.     model_path = &#x27;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/best.pt&#x27;</span><br><span class="line">    </span><br><span class="line">35.     export(model_path)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>模型采用字典保存</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  import os</span><br><span class="line">    </span><br><span class="line">2.  import torch</span><br><span class="line">    </span><br><span class="line">3.  from swin_transformer import *</span><br><span class="line">    </span><br><span class="line">4.  from collections import OrderedDict</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">6.  DROP_PATH_RATE = 0.5</span><br><span class="line">    </span><br><span class="line">7.  EMBED_DIM = 192</span><br><span class="line">    </span><br><span class="line">8.  DEPTHS = [2, 2, 18, 2]</span><br><span class="line">    </span><br><span class="line">9.  NUM_HEADS = [6, 12, 24, 48]</span><br><span class="line">    </span><br><span class="line">10. WINDOW_SIZE = 7</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">12. model_path = &#x27;&#x27;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">14. checkpoint = torch.load(</span><br><span class="line">    </span><br><span class="line">15.     model_path,</span><br><span class="line">    </span><br><span class="line">16.     map_location=&#x27;cpu&#x27;,</span><br><span class="line">    </span><br><span class="line">17. )</span><br><span class="line">    </span><br><span class="line">18. model = SwinTransformer(</span><br><span class="line">    </span><br><span class="line">19.     img_size=224,</span><br><span class="line">    </span><br><span class="line">20.     patch_size=4,</span><br><span class="line">    </span><br><span class="line">21.     in_chans=3,</span><br><span class="line">    </span><br><span class="line">22.     num_classes=0,</span><br><span class="line">    </span><br><span class="line">23.     embed_dim=EMBED_DIM,</span><br><span class="line">    </span><br><span class="line">24.     depths=DEPTHS,</span><br><span class="line">    </span><br><span class="line">25.     num_heads=NUM_HEADS,</span><br><span class="line">    </span><br><span class="line">26.     window_size=WINDOW_SIZE,</span><br><span class="line">    </span><br><span class="line">27.     mlp_ratio=4,</span><br><span class="line">    </span><br><span class="line">28.     qkv_bias=True,</span><br><span class="line">    </span><br><span class="line">29.     qk_scale=None,</span><br><span class="line">    </span><br><span class="line">30.     drop_rate=0.0,</span><br><span class="line">    </span><br><span class="line">31.     drop_path_rate=DROP_PATH_RATE,</span><br><span class="line">    </span><br><span class="line">32.     ape=False,</span><br><span class="line">    </span><br><span class="line">33.     patch_norm=True,</span><br><span class="line">    </span><br><span class="line">34. )</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">36. new_state_dict = OrderedDict()</span><br><span class="line">    </span><br><span class="line">37. for k, v in checkpoint[&#x27;model&#x27;].items():</span><br><span class="line">    </span><br><span class="line">38.     if k != &#x27;head.weight&#x27;:</span><br><span class="line">    </span><br><span class="line">39.         new_state_dict[k] = v</span><br><span class="line">    </span><br><span class="line">40.     else:</span><br><span class="line">    </span><br><span class="line">41.         print(k, v.shape)</span><br><span class="line">    </span><br><span class="line">42. model.load_state_dict(new_state_dict, strict=False)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">44. model.eval()</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">46. input_names = [&#x27;input&#x27;]</span><br><span class="line">    </span><br><span class="line">47. output_names = [&#x27;output&#x27;]</span><br><span class="line">    </span><br><span class="line">48. x = torch.randn(1, 3, 224, 224)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">50. torch.onnx.export(</span><br><span class="line">    </span><br><span class="line">51.     model,</span><br><span class="line">    </span><br><span class="line">52.     x,</span><br><span class="line">    </span><br><span class="line">53.     os.path.join(</span><br><span class="line">    </span><br><span class="line">54.         os.path.split(model_path)[0],</span><br><span class="line">    </span><br><span class="line">55.         &#x27;best.onnx&#x27;,</span><br><span class="line">    </span><br><span class="line">56.     ),</span><br><span class="line">    </span><br><span class="line">57.     input_names=input_names,</span><br><span class="line">    </span><br><span class="line">58.     output_names=output_names,</span><br><span class="line">    </span><br><span class="line">59.     verbose=False,</span><br><span class="line">    </span><br><span class="line">60.     opset_version=12,</span><br><span class="line">    </span><br><span class="line">61. )</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>总结来说就是把字典导入到模型的结构里面然后在进行onnx的转换这部分可以自己网上找找教程听多的</p>
+<h2 id="二-模型从onnx模型转ir模型"><a href="#二-模型从onnx模型转ir模型" class="headerlink" title="二.模型从onnx模型转ir模型"></a><a href="#"></a>二.模型从onnx模型转ir模型</h2><p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/397c40c6ae4a4094a2e8dc88cda85f48_cbd8964035d941349.png"></p>
+<p>&nbsp;这里如果你是用python直接pip的话可以直接进入conda的环境去使用她，如果你是源码编译OpenVino的话可能要进入那个目录下载一下，这里我个人觉得如果你只是用来测试的话Python其实就很够用了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python mo_onnx.py --input_model &lt;输入模型路经&gt; --output_dir &lt;输出模型路经&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>（如果需要量化到FP16的话需要额外指定参数 –compress_to_fp16）</strong></p>
+<p>首先先将你的模型转换到Ir格式，这里放一下mo的参数你们可以有道翻译一下我个人英语不太好这里就不解释了</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  mo -h #可以查看mo的参数</span><br><span class="line">    </span><br><span class="line">2.  #或者是进入到mo.py所在的文件夹然后</span><br><span class="line">    </span><br><span class="line">3.  python mo.py -h</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后测试一下转换完的模型推理速度</p>
+<p>进入Openvino这个文件夹</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/41d7baf4604c49d39d32700025ce258a_3e8eadeb2477454a9.png"></p>
+<p>&nbsp;然后查看一下你模型量化的结果（FP32）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python ./benchmark_app.py -m &lt;量化后的xml文件&gt; -d CPU -api async -i &lt;选择图片路径&gt; -b 1</span><br></pre></td></tr></table></figure>
+
+<p>其中 <strong>-d</strong>指定的是你的设备 -api指定的是你的推理模式（同步还是异步推理）</p>
+<p>看一下FP32模型的速度</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9dbc17d300f143568c3c598f768cc605_dbe4da939502499a9.png"></p>
+<p>&nbsp;FP16</p>
+<img width="598" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bec68d6b955a4401bedf8d1c54e700c6_f4b0436799124d78a.png" class="jop-noMdConv">
+
+<p>&nbsp;ONNX模型推理速度</p>
+<img width="870" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c25101469a364d8e9d8bea60f3dd3142_2ded076e1fd74ad0b.png" class="jop-noMdConv">
+
+<h2 id="三，Int8量化"><a href="#三，Int8量化" class="headerlink" title=" 三，Int8量化"></a><a href="#"></a> 三，<a href="https://so.csdn.net/so/search?q=Int8&spm=1001.2101.3001.7020">Int8</a>量化</h2><p>在转换之前，我们需要准备一下数据（在量化过程中会使用到）。对于自己的数据集首先转换成openvino支持的数据格式，这里使用imagenet数据集格式，对于分类任务需要annotation.txt文件以及labels.txt共两个文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  ├── dataset:： 存放数据集的根目录</span><br><span class="line">    </span><br><span class="line">2.  │     ├── 1：         </span><br><span class="line">    </span><br><span class="line">3.  │     ├── 2：     </span><br><span class="line">    </span><br><span class="line">4.  │     ├── 3：         </span><br><span class="line">    </span><br><span class="line">5.  │     ├── 4：    </span><br><span class="line">    </span><br><span class="line">6.  │     └── .... ：       </span><br></pre></td></tr></table></figure>
+
+<p>这里给一个生成annotation.txt和labels.txt脚本（霹雳趴拉导师那边抄的）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  import os</span><br><span class="line">    </span><br><span class="line">2.  import glob</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">4.  image_dir = &quot;/your_dataset_dir&quot;</span><br><span class="line">    </span><br><span class="line">5.  assert os.path.exists(image_dir), &quot;image dir does not exist...&quot;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">7.  img_list = glob.glob(os.path.join(image_dir, &quot;*&quot;, &quot;*.jpg&quot;))</span><br><span class="line">    </span><br><span class="line">8.  assert len(img_list) &gt; 0, &quot;No images(.jpg) were found in image dir...&quot;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">10. classes_info = os.listdir(image_dir)</span><br><span class="line">    </span><br><span class="line">11. classes_info.sort()</span><br><span class="line">    </span><br><span class="line">12. classes_dict = &#123;&#125;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">14. # create label file</span><br><span class="line">    </span><br><span class="line">15. with open(&quot;my_labels.txt&quot;, &quot;w&quot;) as lw:</span><br><span class="line">    </span><br><span class="line">16.     # 注意，没有背景时，index要从0开始</span><br><span class="line">    </span><br><span class="line">17.     for index, c in enumerate(classes_info, start=0):</span><br><span class="line">    </span><br><span class="line">18.         txt = &quot;&#123;&#125;:&#123;&#125;&quot;.format(index, c)</span><br><span class="line">    </span><br><span class="line">19.         if index != len(classes_info):</span><br><span class="line">    </span><br><span class="line">20.             txt += &quot;\n&quot;</span><br><span class="line">    </span><br><span class="line">21.         lw.write(txt)</span><br><span class="line">    </span><br><span class="line">22.         classes_dict.update(&#123;c: str(index)&#125;)</span><br><span class="line">    </span><br><span class="line">23. print(&quot;create my_labels.txt successful...&quot;)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">25. # create annotation file</span><br><span class="line">    </span><br><span class="line">26. with open(&quot;my_annotation.txt&quot;, &quot;w&quot;) as aw:</span><br><span class="line">    </span><br><span class="line">27.     for img in img_list:</span><br><span class="line">    </span><br><span class="line">28.         img_classes = classes_dict[img.split(&quot;/&quot;)[-2]]</span><br><span class="line">    </span><br><span class="line">29.         txt = &quot;&#123;&#125; &#123;&#125;&quot;.format(img, img_classes)</span><br><span class="line">    </span><br><span class="line">30.         if index != len(img_list):</span><br><span class="line">    </span><br><span class="line">31.             txt += &quot;\n&quot;</span><br><span class="line">    </span><br><span class="line">32.         aw.write(txt)</span><br><span class="line">    </span><br><span class="line">33. print(&quot;create my_annotation.txt successful...&quot;)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-模型测试"><a href="#3-1-模型测试" class="headerlink" title="3.1 模型测试"></a><a href="#"></a>3.1 模型测试</h3><p>首先先测试FP32和FP16的模型精度，先准备一份yaml文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  models:</span><br><span class="line">    </span><br><span class="line">2.   - name: mobileNetV3Fp32</span><br><span class="line">    </span><br><span class="line">3.      launchers:</span><br><span class="line">    </span><br><span class="line">4.        #下面指定运行的框架 dlsdk就是openvino， 也可以是tensorflow或者其他框架</span><br><span class="line">    </span><br><span class="line">5.        #model/weights是要测试的模型文件名</span><br><span class="line">    </span><br><span class="line">6.        #adapter是告诉accuracy checker模型的输出是目标分类还是目标识别或者其他的输出</span><br><span class="line">    </span><br><span class="line">7.       - framework: openvino</span><br><span class="line">    </span><br><span class="line">8.          model: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml</span><br><span class="line">    </span><br><span class="line">9.          weights: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin</span><br><span class="line">    </span><br><span class="line">10.         adapter: classification</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">12.     datasets:</span><br><span class="line">    </span><br><span class="line">13.       #下面这部分是有关数据集的路径，数据集的格式(imagenet，VOC或者其他)以及标注文件的名字</span><br><span class="line">    </span><br><span class="line">14.      - name: Flower</span><br><span class="line">    </span><br><span class="line">15.         data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">    </span><br><span class="line">16.         annotation_conversion:</span><br><span class="line">    </span><br><span class="line">17.           converter: imagenet</span><br><span class="line">    </span><br><span class="line">18.           annotation_file: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt&quot;</span><br><span class="line">    </span><br><span class="line">19.         #预处理告诉ac_checker工具在把数据集图片送进模型前要做那些预处理，比如缩放，剪切或者调整RGB/BGR顺序之类</span><br><span class="line">    </span><br><span class="line">20.         reader: opencv_imread # default setting</span><br><span class="line">    </span><br><span class="line">21.         preprocessing:</span><br><span class="line">    </span><br><span class="line">22.          - type: resize</span><br><span class="line">    </span><br><span class="line">23.             size: 256</span><br><span class="line">    </span><br><span class="line">24.             aspect_ratio_scale: greater</span><br><span class="line">    </span><br><span class="line">25.          - type: crop</span><br><span class="line">    </span><br><span class="line">26.             size: 224</span><br><span class="line">    </span><br><span class="line">27.          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">    </span><br><span class="line">28.          - type: normalization</span><br><span class="line">    </span><br><span class="line">29.             # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">    </span><br><span class="line">30.             mean: (123.675, 116.28, 103.53)</span><br><span class="line">    </span><br><span class="line">31.             std: (58.395, 57.12, 57.375)</span><br><span class="line">    </span><br><span class="line">32.         #这里定义统计准确度用的算法，这里要看2种准确度，一���是top1的，还一个是top5的</span><br><span class="line">    </span><br><span class="line">33.         metrics:</span><br><span class="line">    </span><br><span class="line">34.          - name: accuracy @ top1</span><br><span class="line">    </span><br><span class="line">35.             type: accuracy</span><br><span class="line">    </span><br><span class="line">36.             top_k: 1</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>model：存放你的xml的路径，在精度测试中可以先不用放weight,这个model也可以是你的onnx文件</p>
+<p>adapter:选择你的网络类型我这里是分类网络，openvino还支持目标检测网络具体可以看看config下面的配置</p>
+<p>datasource:下面存放的是你的数据集的根路径（这里有个坑就是这个文件夹下面存放的图片路径要和你上面生成的annotion.txt对应起来包括你的类别还有路径，相当于就是你把你数据集所有的图片全部放在这个路径下面，验证的时候由annotion.txt里面的东西验证）</p>
+<p>convert:我直接写imagenet没有什么影响</p>
+<p>preprocessing：里面的是写的是你预处理操作（记得颜色通道的转换不然的话精确度一直和训练的时候验证都是错的）这里有的预处理很傻逼我官网也没有找到如果有人找到的话欢迎评论区和我说一声哈哈哈哈哈</p>
+<p>&nbsp;metrics:定义的是评价指标这里是分类网络所以我采用的是accuary这里的top1表示，评分排名前1中能正确分出的概率。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">accuracy_check -c 你的yaml文件 -s ./ -td CPU</span><br></pre></td></tr></table></figure>
+
+<p>可以得到正确率了，之后int8量化也需要用到这个进行评估。</p>
+<h3 id="3-2-yaml文件以及json文件的准备"><a href="#3-2-yaml文件以及json文件的准备" class="headerlink" title="3.2.yaml文件以及json文件的准备"></a><a href="#"></a>3.2.yaml文件以及json文件的准备</h3><p>这里int8有两种量化方式一种是全int8量化还有一种是混精度量化首先先准备一下model.yaml文件</p>
+<p>这里的yaml文件和刚刚那个yaml文件大差不差</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  models:</span><br><span class="line">    </span><br><span class="line">2.   - name: mobileNetV3</span><br><span class="line">    </span><br><span class="line">3.      launchers:</span><br><span class="line">    </span><br><span class="line">4.       - framework: dlsdk</span><br><span class="line">    </span><br><span class="line">5.          device: CPU</span><br><span class="line">    </span><br><span class="line">6.          adapter: classification</span><br><span class="line">    </span><br><span class="line">7.      #定义数据集</span><br><span class="line">    </span><br><span class="line">8.      datasets:</span><br><span class="line">    </span><br><span class="line">9.       - name: classification_dataset</span><br><span class="line">    </span><br><span class="line">10.         #定义数据集路径</span><br><span class="line">    </span><br><span class="line">11.         data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">    </span><br><span class="line">12.         #定义annotation路径</span><br><span class="line">    </span><br><span class="line">13.         annotation_conversion:</span><br><span class="line">    </span><br><span class="line">14.           converter: imagenet</span><br><span class="line">    </span><br><span class="line">15.           annotation_file: /home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">17.         reader: opencv_imread # default setting</span><br><span class="line">    </span><br><span class="line">18.         #这里需要提前定义预处理</span><br><span class="line">    </span><br><span class="line">19.         preprocessing:</span><br><span class="line">    </span><br><span class="line">20.          - type: resize</span><br><span class="line">    </span><br><span class="line">21.             size: 256</span><br><span class="line">    </span><br><span class="line">22.             aspect_ratio_scale: greater</span><br><span class="line">    </span><br><span class="line">23.          - type: crop</span><br><span class="line">    </span><br><span class="line">24.             size: 224</span><br><span class="line">    </span><br><span class="line">25.          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">    </span><br><span class="line">26.          - type: normalization</span><br><span class="line">    </span><br><span class="line">27.             # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">    </span><br><span class="line">28.             mean: (123.675, 116.28, 103.53)</span><br><span class="line">    </span><br><span class="line">29.             std: (58.395, 57.12, 57.375)</span><br><span class="line">    </span><br><span class="line">30.         metrics:</span><br><span class="line">    </span><br><span class="line">31.          - name: accuracy @ top1</span><br><span class="line">    </span><br><span class="line">32.             type: accuracy</span><br><span class="line">    </span><br><span class="line">33.             top_k: 1</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后就是json文件的编写</p>
+<h4 id="3-2-1-DefaultQuantization"><a href="#3-2-1-DefaultQuantization" class="headerlink" title="3.2.1 DefaultQuantization"></a><a href="#"></a>3.2.1 DefaultQuantization</h4><p>这个应该是openvino中的全int8的量化</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  &#123;</span><br><span class="line">    </span><br><span class="line">2.      &quot;model&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">3.          &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">    </span><br><span class="line">4.          &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">    </span><br><span class="line">5.          &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    </span><br><span class="line">6.      &#125;,</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">10.     &quot;engine&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">11.         &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/defualtQuantization/model.yaml&quot;</span><br><span class="line">    </span><br><span class="line">12.     &#125;,</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">15.     &quot;compression&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">16.         &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">18.         &quot;algorithms&quot;: [</span><br><span class="line">    </span><br><span class="line">19.             &#123;</span><br><span class="line">    </span><br><span class="line">20.                 &quot;name&quot;: &quot;DefaultQuantization&quot;, </span><br><span class="line">    </span><br><span class="line">21.                 &quot;params&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">22.                     &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">    </span><br><span class="line">23.                     &quot;stat_subset_size&quot;: 300  </span><br><span class="line">    </span><br><span class="line">24.                 &#125;</span><br><span class="line">    </span><br><span class="line">25.             &#125;</span><br><span class="line">    </span><br><span class="line">26.         ]</span><br><span class="line">    </span><br><span class="line">27.     &#125;</span><br><span class="line">    </span><br><span class="line">28. &#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>model：里面定义的是你最开始量化后的xml和bin的路径以及指定你的设备</p>
+<p>engine:就是你刚刚写好的yaml文件了</p>
+<p>target_device：就是你要量化的设备</p>
+<p>algorithms –</p>
+<p>&nbsp;                       name：这里指定的是你的量化方式</p>
+<p>&nbsp;                       preset：我也不知道什么意思</p>
+<p>&nbsp;                       stat_subset_size: 好像是采取多少张数据集的意思</p>
+<h4 id="3-2-2-AccuracyAwareQuantization"><a href="#3-2-2-AccuracyAwareQuantization" class="headerlink" title="3.2.2 AccuracyAwareQuantization"></a><a href="#"></a>3.2.2 AccuracyAwareQuantization</h4><p>先放一下json文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  &#123;</span><br><span class="line">    </span><br><span class="line">2.      &quot;model&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">3.          &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">    </span><br><span class="line">4.          &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">    </span><br><span class="line">5.          &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    </span><br><span class="line">6.      &#125;,</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">10.     &quot;engine&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">11.         &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/AccuracyAwareQuantization/model.yaml&quot;</span><br><span class="line">    </span><br><span class="line">12.     &#125;,</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">15.     &quot;compression&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">16.         &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">18.         &quot;algorithms&quot;: [</span><br><span class="line">    </span><br><span class="line">19.             &#123;</span><br><span class="line">    </span><br><span class="line">20.                 &quot;name&quot;: &quot;AccuracyAwareQuantization&quot;, </span><br><span class="line">    </span><br><span class="line">21.                 &quot;params&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">22.                     &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">    </span><br><span class="line">23.                     &quot;stat_subset_size&quot;: 300  ,</span><br><span class="line">    </span><br><span class="line">24.                     &quot;maximal_drop&quot;: 0.1 </span><br><span class="line">    </span><br><span class="line">25.                 &#125;</span><br><span class="line">    </span><br><span class="line">26.             &#125;</span><br><span class="line">    </span><br><span class="line">27.         ]</span><br><span class="line">    </span><br><span class="line">28.     &#125;</span><br><span class="line">    </span><br><span class="line">29. &#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>想比于DefaultQuantization就是name里面那个不一样以及多了一个maximal_drop,这个参数的意义是运行你的模型下降多少指标</p>
+<p>准确度的测试脚本可以用我3.1讲到的那个部分来测试只要把模型替换掉就OK了</p>
+<p>但是Openvino的量化好像只支撑分类网络和目标检测，后续找个时间写一下有关Pytorch自带的QAT的量化方法</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu19 Openvion cmake源码编译</title>
+    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
+    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">    </span><br><span class="line">2.  cd openvino</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>解压后的结构目录</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
+<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line">2.  ./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后安装外部依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  chmod +x install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line">2.  sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">  1.    cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">    </span><br><span class="line">2.    make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
+
+<p>我中间报了一些黄的的警告我没有管他之后</p>
+<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  #根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">    </span><br><span class="line">2.  #如果需要的话可以指定一下位置</span><br><span class="line">    </span><br><span class="line">3.  cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">    </span><br><span class="line">4.  -DENABLE_PYTHON=ON \</span><br><span class="line">    </span><br><span class="line">5.  -DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">    </span><br><span class="line">6.  -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">    </span><br><span class="line">7.  -DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
+<p>&nbsp;没有报错就好，然后开始编译库</p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
+<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
+<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
+<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</title>
     <url>/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/</url>
     <content><![CDATA[<h1 id="Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）"><a href="#Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）" class="headerlink" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）"></a>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1><p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
@@ -124,128 +246,6 @@
       </categories>
       <tags>
         <tag>Jeston nx</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
-    <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
-    <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
-<p>我的OpenVino采用的是源码编译的这里采用的是python代码，之后可能会写一份C++代码放上去,先上才艺</p>
-<h2 id="一-将模型转换成onnx模型"><a href="#一-将模型转换成onnx模型" class="headerlink" title="一.将模型转换成onnx模型"></a><a href="#"></a>一.将模型转换成<a href="https://so.csdn.net/so/search?q=onnx%E6%A8%A1%E5%9E%8B&spm=1001.2101.3001.7020">onnx模型</a></h2><p>这里我采用的是pytorch模型文件转成onnx</p>
-<p>模型结构包括参数保存</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  import torch</span><br><span class="line">    </span><br><span class="line">2.  import torch.nn</span><br><span class="line">    </span><br><span class="line">3.  import os</span><br><span class="line">    </span><br><span class="line">4.  import sys</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">7.  def export(model_path):</span><br><span class="line">    </span><br><span class="line">8.      net = torch.load(</span><br><span class="line">    </span><br><span class="line">9.          model_path,</span><br><span class="line">    </span><br><span class="line">10.         map_location=torch.device(&#x27;cpu&#x27;),</span><br><span class="line">    </span><br><span class="line">11.     )</span><br><span class="line">    </span><br><span class="line">12.     net.eval()</span><br><span class="line">    </span><br><span class="line">13.     #这里需要指定你输入和输出的名字方便后面推理</span><br><span class="line">    </span><br><span class="line">14.     input_names = [&#x27;input&#x27;]</span><br><span class="line">    </span><br><span class="line">15.     output_names = [&#x27;output&#x27;]</span><br><span class="line">    </span><br><span class="line">16.     #这里需要确定模型的输入</span><br><span class="line">    </span><br><span class="line">17.     x = torch.randn(1, 3, 224, 224)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">19.     torch.onnx.export(</span><br><span class="line">    </span><br><span class="line">20.         net,</span><br><span class="line">    </span><br><span class="line">21.         x,</span><br><span class="line">    </span><br><span class="line">22.         os.path.join(</span><br><span class="line">    </span><br><span class="line">23.             os.path.split(model_path)[0],</span><br><span class="line">    </span><br><span class="line">24.             &#x27;best.onnx&#x27;,</span><br><span class="line">    </span><br><span class="line">25.         ),</span><br><span class="line">    </span><br><span class="line">26.         input_names=input_names,</span><br><span class="line">    </span><br><span class="line">27.         output_names=output_names,</span><br><span class="line">    </span><br><span class="line">28.         verbose=False,</span><br><span class="line">    </span><br><span class="line">29.         opset_version=12,</span><br><span class="line">    </span><br><span class="line">30.     )</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">33. if __name__ == &quot;__main__&quot;:</span><br><span class="line">    </span><br><span class="line">34.     model_path = &#x27;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/best.pt&#x27;</span><br><span class="line">    </span><br><span class="line">35.     export(model_path)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>模型采用字典保存</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  import os</span><br><span class="line">    </span><br><span class="line">2.  import torch</span><br><span class="line">    </span><br><span class="line">3.  from swin_transformer import *</span><br><span class="line">    </span><br><span class="line">4.  from collections import OrderedDict</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">6.  DROP_PATH_RATE = 0.5</span><br><span class="line">    </span><br><span class="line">7.  EMBED_DIM = 192</span><br><span class="line">    </span><br><span class="line">8.  DEPTHS = [2, 2, 18, 2]</span><br><span class="line">    </span><br><span class="line">9.  NUM_HEADS = [6, 12, 24, 48]</span><br><span class="line">    </span><br><span class="line">10. WINDOW_SIZE = 7</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">12. model_path = &#x27;&#x27;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">14. checkpoint = torch.load(</span><br><span class="line">    </span><br><span class="line">15.     model_path,</span><br><span class="line">    </span><br><span class="line">16.     map_location=&#x27;cpu&#x27;,</span><br><span class="line">    </span><br><span class="line">17. )</span><br><span class="line">    </span><br><span class="line">18. model = SwinTransformer(</span><br><span class="line">    </span><br><span class="line">19.     img_size=224,</span><br><span class="line">    </span><br><span class="line">20.     patch_size=4,</span><br><span class="line">    </span><br><span class="line">21.     in_chans=3,</span><br><span class="line">    </span><br><span class="line">22.     num_classes=0,</span><br><span class="line">    </span><br><span class="line">23.     embed_dim=EMBED_DIM,</span><br><span class="line">    </span><br><span class="line">24.     depths=DEPTHS,</span><br><span class="line">    </span><br><span class="line">25.     num_heads=NUM_HEADS,</span><br><span class="line">    </span><br><span class="line">26.     window_size=WINDOW_SIZE,</span><br><span class="line">    </span><br><span class="line">27.     mlp_ratio=4,</span><br><span class="line">    </span><br><span class="line">28.     qkv_bias=True,</span><br><span class="line">    </span><br><span class="line">29.     qk_scale=None,</span><br><span class="line">    </span><br><span class="line">30.     drop_rate=0.0,</span><br><span class="line">    </span><br><span class="line">31.     drop_path_rate=DROP_PATH_RATE,</span><br><span class="line">    </span><br><span class="line">32.     ape=False,</span><br><span class="line">    </span><br><span class="line">33.     patch_norm=True,</span><br><span class="line">    </span><br><span class="line">34. )</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">36. new_state_dict = OrderedDict()</span><br><span class="line">    </span><br><span class="line">37. for k, v in checkpoint[&#x27;model&#x27;].items():</span><br><span class="line">    </span><br><span class="line">38.     if k != &#x27;head.weight&#x27;:</span><br><span class="line">    </span><br><span class="line">39.         new_state_dict[k] = v</span><br><span class="line">    </span><br><span class="line">40.     else:</span><br><span class="line">    </span><br><span class="line">41.         print(k, v.shape)</span><br><span class="line">    </span><br><span class="line">42. model.load_state_dict(new_state_dict, strict=False)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">44. model.eval()</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">46. input_names = [&#x27;input&#x27;]</span><br><span class="line">    </span><br><span class="line">47. output_names = [&#x27;output&#x27;]</span><br><span class="line">    </span><br><span class="line">48. x = torch.randn(1, 3, 224, 224)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">50. torch.onnx.export(</span><br><span class="line">    </span><br><span class="line">51.     model,</span><br><span class="line">    </span><br><span class="line">52.     x,</span><br><span class="line">    </span><br><span class="line">53.     os.path.join(</span><br><span class="line">    </span><br><span class="line">54.         os.path.split(model_path)[0],</span><br><span class="line">    </span><br><span class="line">55.         &#x27;best.onnx&#x27;,</span><br><span class="line">    </span><br><span class="line">56.     ),</span><br><span class="line">    </span><br><span class="line">57.     input_names=input_names,</span><br><span class="line">    </span><br><span class="line">58.     output_names=output_names,</span><br><span class="line">    </span><br><span class="line">59.     verbose=False,</span><br><span class="line">    </span><br><span class="line">60.     opset_version=12,</span><br><span class="line">    </span><br><span class="line">61. )</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>总结来说就是把字典导入到模型的结构里面然后在进行onnx的转换这部分可以自己网上找找教程听多的</p>
-<h2 id="二-模型从onnx模型转ir模型"><a href="#二-模型从onnx模型转ir模型" class="headerlink" title="二.模型从onnx模型转ir模型"></a><a href="#"></a>二.模型从onnx模型转ir模型</h2><p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/397c40c6ae4a4094a2e8dc88cda85f48_cbd8964035d941349.png"></p>
-<p>&nbsp;这里如果你是用python直接pip的话可以直接进入conda的环境去使用她，如果你是源码编译OpenVino的话可能要进入那个目录下载一下，这里我个人觉得如果你只是用来测试的话Python其实就很够用了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python mo_onnx.py --input_model &lt;输入模型路经&gt; --output_dir &lt;输出模型路经&gt;</span><br></pre></td></tr></table></figure>
-
-<p><strong>（如果需要量化到FP16的话需要额外指定参数 –compress_to_fp16）</strong></p>
-<p>首先先将你的模型转换到Ir格式，这里放一下mo的参数你们可以有道翻译一下我个人英语不太好这里就不解释了</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  mo -h #可以查看mo的参数</span><br><span class="line">    </span><br><span class="line">2.  #或者是进入到mo.py所在的文件夹然后</span><br><span class="line">    </span><br><span class="line">3.  python mo.py -h</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后测试一下转换完的模型推理速度</p>
-<p>进入Openvino这个文件夹</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/41d7baf4604c49d39d32700025ce258a_3e8eadeb2477454a9.png"></p>
-<p>&nbsp;然后查看一下你模型量化的结果（FP32）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python ./benchmark_app.py -m &lt;量化后的xml文件&gt; -d CPU -api async -i &lt;选择图片路径&gt; -b 1</span><br></pre></td></tr></table></figure>
-
-<p>其中 <strong>-d</strong>指定的是你的设备 -api指定的是你的推理模式（同步还是异步推理）</p>
-<p>看一下FP32模型的速度</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9dbc17d300f143568c3c598f768cc605_dbe4da939502499a9.png"></p>
-<p>&nbsp;FP16</p>
-<img width="598" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bec68d6b955a4401bedf8d1c54e700c6_f4b0436799124d78a.png" class="jop-noMdConv">
-
-<p>&nbsp;ONNX模型推理速度</p>
-<img width="870" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c25101469a364d8e9d8bea60f3dd3142_2ded076e1fd74ad0b.png" class="jop-noMdConv">
-
-<h2 id="三，Int8量化"><a href="#三，Int8量化" class="headerlink" title=" 三，Int8量化"></a><a href="#"></a> 三，<a href="https://so.csdn.net/so/search?q=Int8&spm=1001.2101.3001.7020">Int8</a>量化</h2><p>在转换之前，我们需要准备一下数据（在量化过程中会使用到）。对于自己的数据集首先转换成openvino支持的数据格式，这里使用imagenet数据集格式，对于分类任务需要annotation.txt文件以及labels.txt共两个文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  ├── dataset:： 存放数据集的根目录</span><br><span class="line">    </span><br><span class="line">2.  │     ├── 1：         </span><br><span class="line">    </span><br><span class="line">3.  │     ├── 2：     </span><br><span class="line">    </span><br><span class="line">4.  │     ├── 3：         </span><br><span class="line">    </span><br><span class="line">5.  │     ├── 4：    </span><br><span class="line">    </span><br><span class="line">6.  │     └── .... ：       </span><br></pre></td></tr></table></figure>
-
-<p>这里给一个生成annotation.txt和labels.txt脚本（霹雳趴拉导师那边抄的）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  import os</span><br><span class="line">    </span><br><span class="line">2.  import glob</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">4.  image_dir = &quot;/your_dataset_dir&quot;</span><br><span class="line">    </span><br><span class="line">5.  assert os.path.exists(image_dir), &quot;image dir does not exist...&quot;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">7.  img_list = glob.glob(os.path.join(image_dir, &quot;*&quot;, &quot;*.jpg&quot;))</span><br><span class="line">    </span><br><span class="line">8.  assert len(img_list) &gt; 0, &quot;No images(.jpg) were found in image dir...&quot;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">10. classes_info = os.listdir(image_dir)</span><br><span class="line">    </span><br><span class="line">11. classes_info.sort()</span><br><span class="line">    </span><br><span class="line">12. classes_dict = &#123;&#125;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">14. # create label file</span><br><span class="line">    </span><br><span class="line">15. with open(&quot;my_labels.txt&quot;, &quot;w&quot;) as lw:</span><br><span class="line">    </span><br><span class="line">16.     # 注意，没有背景时，index要从0开始</span><br><span class="line">    </span><br><span class="line">17.     for index, c in enumerate(classes_info, start=0):</span><br><span class="line">    </span><br><span class="line">18.         txt = &quot;&#123;&#125;:&#123;&#125;&quot;.format(index, c)</span><br><span class="line">    </span><br><span class="line">19.         if index != len(classes_info):</span><br><span class="line">    </span><br><span class="line">20.             txt += &quot;\n&quot;</span><br><span class="line">    </span><br><span class="line">21.         lw.write(txt)</span><br><span class="line">    </span><br><span class="line">22.         classes_dict.update(&#123;c: str(index)&#125;)</span><br><span class="line">    </span><br><span class="line">23. print(&quot;create my_labels.txt successful...&quot;)</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">25. # create annotation file</span><br><span class="line">    </span><br><span class="line">26. with open(&quot;my_annotation.txt&quot;, &quot;w&quot;) as aw:</span><br><span class="line">    </span><br><span class="line">27.     for img in img_list:</span><br><span class="line">    </span><br><span class="line">28.         img_classes = classes_dict[img.split(&quot;/&quot;)[-2]]</span><br><span class="line">    </span><br><span class="line">29.         txt = &quot;&#123;&#125; &#123;&#125;&quot;.format(img, img_classes)</span><br><span class="line">    </span><br><span class="line">30.         if index != len(img_list):</span><br><span class="line">    </span><br><span class="line">31.             txt += &quot;\n&quot;</span><br><span class="line">    </span><br><span class="line">32.         aw.write(txt)</span><br><span class="line">    </span><br><span class="line">33. print(&quot;create my_annotation.txt successful...&quot;)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="3-1-模型测试"><a href="#3-1-模型测试" class="headerlink" title="3.1 模型测试"></a><a href="#"></a>3.1 模型测试</h3><p>首先先测试FP32和FP16的模型精度，先准备一份yaml文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  models:</span><br><span class="line">    </span><br><span class="line">2.   - name: mobileNetV3Fp32</span><br><span class="line">    </span><br><span class="line">3.      launchers:</span><br><span class="line">    </span><br><span class="line">4.        #下面指定运行的框架 dlsdk就是openvino， 也可以是tensorflow或者其他框架</span><br><span class="line">    </span><br><span class="line">5.        #model/weights是要测试的模型文件名</span><br><span class="line">    </span><br><span class="line">6.        #adapter是告诉accuracy checker模型的输出是目标分类还是目标识别或者其他的输出</span><br><span class="line">    </span><br><span class="line">7.       - framework: openvino</span><br><span class="line">    </span><br><span class="line">8.          model: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml</span><br><span class="line">    </span><br><span class="line">9.          weights: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin</span><br><span class="line">    </span><br><span class="line">10.         adapter: classification</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">12.     datasets:</span><br><span class="line">    </span><br><span class="line">13.       #下面这部分是有关数据集的路径，数据集的格式(imagenet，VOC或者其他)以及标注文件的名字</span><br><span class="line">    </span><br><span class="line">14.      - name: Flower</span><br><span class="line">    </span><br><span class="line">15.         data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">    </span><br><span class="line">16.         annotation_conversion:</span><br><span class="line">    </span><br><span class="line">17.           converter: imagenet</span><br><span class="line">    </span><br><span class="line">18.           annotation_file: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt&quot;</span><br><span class="line">    </span><br><span class="line">19.         #预处理告诉ac_checker工具在把数据集图片送进模型前要做那些预处理，比如缩放，剪切或者调整RGB/BGR顺序之类</span><br><span class="line">    </span><br><span class="line">20.         reader: opencv_imread # default setting</span><br><span class="line">    </span><br><span class="line">21.         preprocessing:</span><br><span class="line">    </span><br><span class="line">22.          - type: resize</span><br><span class="line">    </span><br><span class="line">23.             size: 256</span><br><span class="line">    </span><br><span class="line">24.             aspect_ratio_scale: greater</span><br><span class="line">    </span><br><span class="line">25.          - type: crop</span><br><span class="line">    </span><br><span class="line">26.             size: 224</span><br><span class="line">    </span><br><span class="line">27.          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">    </span><br><span class="line">28.          - type: normalization</span><br><span class="line">    </span><br><span class="line">29.             # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">    </span><br><span class="line">30.             mean: (123.675, 116.28, 103.53)</span><br><span class="line">    </span><br><span class="line">31.             std: (58.395, 57.12, 57.375)</span><br><span class="line">    </span><br><span class="line">32.         #这里定义统计准确度用的算法，这里要看2种准确度，一���是top1的，还一个是top5的</span><br><span class="line">    </span><br><span class="line">33.         metrics:</span><br><span class="line">    </span><br><span class="line">34.          - name: accuracy @ top1</span><br><span class="line">    </span><br><span class="line">35.             type: accuracy</span><br><span class="line">    </span><br><span class="line">36.             top_k: 1</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>model：存放你的xml的路径，在精度测试中可以先不用放weight,这个model也可以是你的onnx文件</p>
-<p>adapter:选择你的网络类型我这里是分类网络，openvino还支持目标检测网络具体可以看看config下面的配置</p>
-<p>datasource:下面存放的是你的数据集的根路径（这里有个坑就是这个文件夹下面存放的图片路径要和你上面生成的annotion.txt对应起来包括你的类别还有路径，相当于就是你把你数据集所有的图片全部放在这个路径下面，验证的时候由annotion.txt里面的东西验证）</p>
-<p>convert:我直接写imagenet没有什么影响</p>
-<p>preprocessing：里面的是写的是你预处理操作（记得颜色通道的转换不然的话精确度一直和训练的时候验证都是错的）这里有的预处理很傻逼我官网也没有找到如果有人找到的话欢迎评论区和我说一声哈哈哈哈哈</p>
-<p>&nbsp;metrics:定义的是评价指标这里是分类网络所以我采用的是accuary这里的top1表示，评分排名前1中能正确分出的概率。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">accuracy_check -c 你的yaml文件 -s ./ -td CPU</span><br></pre></td></tr></table></figure>
-
-<p>可以得到正确率了，之后int8量化也需要用到这个进行评估。</p>
-<h3 id="3-2-yaml文件以及json文件的准备"><a href="#3-2-yaml文件以及json文件的准备" class="headerlink" title="3.2.yaml文件以及json文件的准备"></a><a href="#"></a>3.2.yaml文件以及json文件的准备</h3><p>这里int8有两种量化方式一种是全int8量化还有一种是混精度量化首先先准备一下model.yaml文件</p>
-<p>这里的yaml文件和刚刚那个yaml文件大差不差</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  models:</span><br><span class="line">    </span><br><span class="line">2.   - name: mobileNetV3</span><br><span class="line">    </span><br><span class="line">3.      launchers:</span><br><span class="line">    </span><br><span class="line">4.       - framework: dlsdk</span><br><span class="line">    </span><br><span class="line">5.          device: CPU</span><br><span class="line">    </span><br><span class="line">6.          adapter: classification</span><br><span class="line">    </span><br><span class="line">7.      #定义数据集</span><br><span class="line">    </span><br><span class="line">8.      datasets:</span><br><span class="line">    </span><br><span class="line">9.       - name: classification_dataset</span><br><span class="line">    </span><br><span class="line">10.         #定义数据集路径</span><br><span class="line">    </span><br><span class="line">11.         data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">    </span><br><span class="line">12.         #定义annotation路径</span><br><span class="line">    </span><br><span class="line">13.         annotation_conversion:</span><br><span class="line">    </span><br><span class="line">14.           converter: imagenet</span><br><span class="line">    </span><br><span class="line">15.           annotation_file: /home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">17.         reader: opencv_imread # default setting</span><br><span class="line">    </span><br><span class="line">18.         #这里需要提前定义预处理</span><br><span class="line">    </span><br><span class="line">19.         preprocessing:</span><br><span class="line">    </span><br><span class="line">20.          - type: resize</span><br><span class="line">    </span><br><span class="line">21.             size: 256</span><br><span class="line">    </span><br><span class="line">22.             aspect_ratio_scale: greater</span><br><span class="line">    </span><br><span class="line">23.          - type: crop</span><br><span class="line">    </span><br><span class="line">24.             size: 224</span><br><span class="line">    </span><br><span class="line">25.          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">    </span><br><span class="line">26.          - type: normalization</span><br><span class="line">    </span><br><span class="line">27.             # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">    </span><br><span class="line">28.             mean: (123.675, 116.28, 103.53)</span><br><span class="line">    </span><br><span class="line">29.             std: (58.395, 57.12, 57.375)</span><br><span class="line">    </span><br><span class="line">30.         metrics:</span><br><span class="line">    </span><br><span class="line">31.          - name: accuracy @ top1</span><br><span class="line">    </span><br><span class="line">32.             type: accuracy</span><br><span class="line">    </span><br><span class="line">33.             top_k: 1</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后就是json文件的编写</p>
-<h4 id="3-2-1-DefaultQuantization"><a href="#3-2-1-DefaultQuantization" class="headerlink" title="3.2.1 DefaultQuantization"></a><a href="#"></a>3.2.1 DefaultQuantization</h4><p>这个应该是openvino中的全int8的量化</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  &#123;</span><br><span class="line">    </span><br><span class="line">2.      &quot;model&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">3.          &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">    </span><br><span class="line">4.          &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">    </span><br><span class="line">5.          &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    </span><br><span class="line">6.      &#125;,</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">10.     &quot;engine&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">11.         &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/defualtQuantization/model.yaml&quot;</span><br><span class="line">    </span><br><span class="line">12.     &#125;,</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">15.     &quot;compression&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">16.         &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">18.         &quot;algorithms&quot;: [</span><br><span class="line">    </span><br><span class="line">19.             &#123;</span><br><span class="line">    </span><br><span class="line">20.                 &quot;name&quot;: &quot;DefaultQuantization&quot;, </span><br><span class="line">    </span><br><span class="line">21.                 &quot;params&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">22.                     &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">    </span><br><span class="line">23.                     &quot;stat_subset_size&quot;: 300  </span><br><span class="line">    </span><br><span class="line">24.                 &#125;</span><br><span class="line">    </span><br><span class="line">25.             &#125;</span><br><span class="line">    </span><br><span class="line">26.         ]</span><br><span class="line">    </span><br><span class="line">27.     &#125;</span><br><span class="line">    </span><br><span class="line">28. &#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>model：里面定义的是你最开始量化后的xml和bin的路径以及指定你的设备</p>
-<p>engine:就是你刚刚写好的yaml文件了</p>
-<p>target_device：就是你要量化的设备</p>
-<p>algorithms –</p>
-<p>&nbsp;                       name：这里指定的是你的量化方式</p>
-<p>&nbsp;                       preset：我也不知道什么意思</p>
-<p>&nbsp;                       stat_subset_size: 好像是采取多少张数据集的意思</p>
-<h4 id="3-2-2-AccuracyAwareQuantization"><a href="#3-2-2-AccuracyAwareQuantization" class="headerlink" title="3.2.2 AccuracyAwareQuantization"></a><a href="#"></a>3.2.2 AccuracyAwareQuantization</h4><p>先放一下json文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  &#123;</span><br><span class="line">    </span><br><span class="line">2.      &quot;model&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">3.          &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">    </span><br><span class="line">4.          &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">    </span><br><span class="line">5.          &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    </span><br><span class="line">6.      &#125;,</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">10.     &quot;engine&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">11.         &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/AccuracyAwareQuantization/model.yaml&quot;</span><br><span class="line">    </span><br><span class="line">12.     &#125;,</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">15.     &quot;compression&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">16.         &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">18.         &quot;algorithms&quot;: [</span><br><span class="line">    </span><br><span class="line">19.             &#123;</span><br><span class="line">    </span><br><span class="line">20.                 &quot;name&quot;: &quot;AccuracyAwareQuantization&quot;, </span><br><span class="line">    </span><br><span class="line">21.                 &quot;params&quot;: &#123;</span><br><span class="line">    </span><br><span class="line">22.                     &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">    </span><br><span class="line">23.                     &quot;stat_subset_size&quot;: 300  ,</span><br><span class="line">    </span><br><span class="line">24.                     &quot;maximal_drop&quot;: 0.1 </span><br><span class="line">    </span><br><span class="line">25.                 &#125;</span><br><span class="line">    </span><br><span class="line">26.             &#125;</span><br><span class="line">    </span><br><span class="line">27.         ]</span><br><span class="line">    </span><br><span class="line">28.     &#125;</span><br><span class="line">    </span><br><span class="line">29. &#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>想比于DefaultQuantization就是name里面那个不一样以及多了一个maximal_drop,这个参数的意义是运行你的模型下降多少指标</p>
-<p>准确度的测试脚本可以用我3.1讲到的那个部分来测试只要把模型替换掉就OK了</p>
-<p>但是Openvino的量化好像只支撑分类网络和目标检测，后续找个时间写一下有关Pytorch自带的QAT的量化方法</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Openvino</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ubuntu19 Openvion cmake源码编译</title>
-    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
-    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">    </span><br><span class="line">2.  cd openvino</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>解压后的结构目录</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
-<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line">2.  ./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后安装外部依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  chmod +x install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line">2.  sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">  1.    cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">    </span><br><span class="line">2.    make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
-
-<p>我中间报了一些黄的的警告我没有管他之后</p>
-<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  #根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">    </span><br><span class="line">2.  #如果需要的话可以指定一下位置</span><br><span class="line">    </span><br><span class="line">3.  cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">    </span><br><span class="line">4.  -DENABLE_PYTHON=ON \</span><br><span class="line">    </span><br><span class="line">5.  -DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">    </span><br><span class="line">6.  -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">    </span><br><span class="line">7.  -DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
-<p>&nbsp;没有报错就好，然后开始编译库</p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
-<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
-<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
-<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Openvino</tag>
       </tags>
   </entry>
   <entry>
@@ -387,6 +387,174 @@
 <p>直接pip目录中的uff，python(注意选择和你conda创建python的版本相对应) ，graphsurgeon下的whl就可以了</p>
 <p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5fdfb1069d5c433781f5f8abf04410eb_48a6f8c2ba974c2db.png"></p>
 <p>我这里是一次就成功了可能出现问题的话可以参考这位大佬:<a href="https://blog.csdn.net/lilin020401/article/details/126475351#t4" title="Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客">Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Ubuntu</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</title>
+    <url>/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/</url>
+    <content><![CDATA[<h1 id="ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）"><a href="#ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）" class="headerlink" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）"></a>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</h1><hr>
+<p>cudann一定要配置好不然<a href="https://so.csdn.net/so/search?q=opencv%E9%85%8D%E7%BD%AE&spm=1001.2101.3001.7020">opencv配置</a>cuda会失败的</p>
+<p>我这里采用的是<a href="https://so.csdn.net/so/search?q=opencv4&spm=1001.2101.3001.7020">opencv4</a>.5.5和相同版本的contribure</p>
+<h2 id="一-软件的安装"><a href="#一-软件的安装" class="headerlink" title="一.软件的安装"></a><a href="#"></a>一.软件的安装</h2><p>这个部分我装了太多的依赖具体是那些我已经记不清了所以先放我成功配置看的那篇博客的依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo apt-get update</span><br><span class="line">    </span><br><span class="line">2.  sudo apt-get upgrade</span><br><span class="line">    </span><br><span class="line">3.  sudo apt-get install build-essential cmake cmake-gui unzip pkg-config</span><br><span class="line">    </span><br><span class="line">4.  sudo apt-get install libjpeg-dev libpng-dev libtiff-dev</span><br><span class="line">    </span><br><span class="line">5.  sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libgtk2.0-dev</span><br><span class="line">    </span><br><span class="line">6.  sudo apt-get install libv4l-dev libxvidcore-dev libx264-dev libtbb2 libtbb-dev libdc1394-22-dev libjasper-dev</span><br><span class="line">    </span><br><span class="line">7.  sudo apt-get install libgtk-3-dev</span><br><span class="line">    </span><br><span class="line">8.  sudo apt-get install libatlas-base-dev liblapacke-dev gfortran</span><br><span class="line">    </span><br><span class="line">9.  sudo apt-get install python3-dev</span><br><span class="line">    </span><br><span class="line">10. sudo apt-get install ffmpeg </span><br></pre></td></tr></table></figure>
+
+<p>cmake的安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install cmake-gui</span><br></pre></td></tr></table></figure>
+
+<h2 id="二-cmake配置"><a href="#二-cmake配置" class="headerlink" title="二.cmake配置"></a><a href="#"></a>二.cmake配置</h2><p>这里我采用的的是.cache用的别人下好的东西来进行配置不然有些东西很难下载，白嫖某个大佬的连接</p>
+<blockquote>
+<p><strong>百度云：链接：<a href="https://pan.baidu.com/s/1XaYIAc6wDoWrtLaHRJs5Qg?pwd=kksk">https://pan.baidu.com/s/1XaYIAc6wDoWrtLaHRJs5Qg?pwd=kksk</a> 提取码：kksk</strong></p>
+</blockquote>
+<p>下载好后复制到opencv的文件夹下，如果没有显示的话输入critl+H就可以了。contrib也可以放在这个文件夹下面</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4ed2bb74aaf545c18d602ca74ede3b84_71bc944cdd274fdf8.png"></p>
+<p>创建文件夹并进入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  mkdir myopencv</span><br><span class="line">    </span><br><span class="line">2.  cd myopencv</span><br><span class="line">    </span><br><span class="line">3.  cmake-gui</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>进入后的c++界面</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0472a495d99846828b3986bfecc7d8fd_5de0ec3948a74a2b8.png"></p>
+<p>&nbsp;点击configure</p>
+<p>如果卡在下载ippvc可以自己去下载对应版本的我这里放出我的版本的ippvc</p>
+<blockquote>
+<p>链接: <a href="https://pan.baidu.com/s/1C05qBz-eSAUIxdwljce0kw">https://pan.baidu.com/s/1C05qBz-eSAUIxdwljce0kw</a> 密码: 4q33</p>
+</blockquote>
+<p>&nbsp;然后修改&#x2F;home&#x2F;yuesang&#x2F;software&#x2F;opencv-4.5.5&#x2F;3rdparty&#x2F;ippicv下的ippicv的cmake文件，先把下载好的ippicv放入这个文件夹</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/328ea0150b7542ecbf36430f735ca833_0761ea1ef8544f239.png"></p>
+<p>&nbsp;然后编辑ippicv.cmake文件</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/aef7fbdb1238444bb37c4c35289e51a7_46abcd7c861c43c39.png"></p>
+<p>这里我把本来的download注释了并且增加了set（res TRUE）</p>
+<p>成功后的界面</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/936743654649409f8e917c8de590983f_fffdf7d79f1d4890b.png"></p>
+<p>&nbsp;<em><strong>OPENCV_GENERATE_PKGCONFIG这个选项记得要勾起来<br>OpenCV4以上默认不使用pkg-config，该编译选项开启生成opencv4.pc文件，支持pkg-config功能（这个没有勾选的话可能无法配置到clion）</strong></em></p>
+<p>去掉这些选项(可以搜索java,python，calib3d把这些包去除)</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e81eeebba7fc4eafae2eed6ad1855c24_6d47f402ffd449499.png"></p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ac8d01495e34fac9162c89a7b607d10_880c16b2825b411fb.png"></p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/227a715872bb4fa78503e5162b302389_827982292f8e4267a.png"></p>
+<p>contrib路径的添加**（记得要定位到contib下的modules）**</p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f65aba7efe2e424285692dc00991a1c8_ccd6e1133b124b56b.png"></p>
+<p>直接搜索cuda</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e3227b17018949fc8fb3a02658b23459_f4c07cd2b00d47c4b.png"></p>
+<p>configure完成后</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/82a89c18e4c940f0b4e853bf611b246c_7552b034cf61484b8.png"></p>
+<p>再次点击cofigure</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0d7519cdb7c44bf3b62ee3cacb8b8641_2f29425fc15146fd8.png"></p>
+<p>没有报错且变成白色应该就成功了吧然后点击generate生成</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b69983b5a5f14b3d98edc543b3dd3d2e_3aafc392458744408.png"></p>
+<p>&nbsp;进入刚刚创建的文件夹，并且打开终端</p>
+<img width="1200" height="507" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a242254fd7c04137a97c5c2b42f281bb_ec80974e8b4942759.png" class="jop-noMdConv">
+
+<p>&nbsp;输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo make -j20</span><br><span class="line">    </span><br><span class="line">2.  #这个20是你的核心数</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>人生没有一帆风顺出现报错了怎么办</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/640e54d53f744d64b31a6f379f35b343_c7968622ef7f4e058.png"></p>
+<p>&nbsp;进入这个页面找到报错的地方把他删掉（就像人生一样要学会合理的放弃）</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ee76c8de33284ebeb7e988f267ad52a6_4c8ea8dcd4cd40e68.png"></p>
+<p>&nbsp;重新配置和生成，然后继续cmake,重复以上操作直到编译成功为止</p>
+<p>calib3d和stereo好像是关联的两个包可以取消(这两个包是双目相机标定的好像)</p>
+<p>终于完成了真心不容易阿</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7c8443fb3b1d4b358066e24ad096ebff_f71e0235c8b54bcd8.png"></p>
+<p>&nbsp;安装以下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>可能会出现这个报错，缺啥我们就给他啥<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8e9c066d4137478d8c2dcb669d4c1ad4_366f64ce4b8645c99.png"></p>
+<p>解压刚刚下载的ippicv进入找到ippicv_lnx</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6603ed573fc043a882d58f828ce9b93b_be2ce786bb3b439e8.png"></p>
+<p>&nbsp;没有这个文件夹我们就建立一个</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f2928c99636c4b549f0e6db5170ce4d5_4d24900670f4437e8.png"></p>
+<p>&nbsp;复制进来</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1891e85eec6f4852a13d162325ff00ab_387a976ffda043539.png"></p>
+<p>重新下载 （大功告成）</p>
+<img width="1200" height="748" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e53e216feba469da077d32c289d8dc5_d26e2e72753143bab.png" class="jop-noMdConv">
+
+<h3 id="环境变量的配置"><a href="#环境变量的配置" class="headerlink" title=" 环境变量的配置"></a><a href="#"></a> 环境变量的配置</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/ld.so.conf</span><br></pre></td></tr></table></figure>
+
+<p>输入这两行</p>
+<blockquote>
+<p>include &#x2F;etc&#x2F;ld.so.conf.d&#x2F;*.conf<br>include &#x2F;usr&#x2F;local&#x2F;lib</p>
+</blockquote>
+<p>然后再输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo ldconfig</span><br><span class="line">    </span><br><span class="line">2.  sudo gedit /etc/profile   </span><br></pre></td></tr></table></figure>
+
+<p>添加这两行</p>
+<blockquote>
+<p>#opencv<br>PKG_CONFIG_PATH&#x3D;$PKG_CONFIG_PATH:&#x2F;usr&#x2F;local&#x2F;lib&#x2F;pkgconfig  <br>export PKG_CONFIG_PATH</p>
+</blockquote>
+<p>然后编译一下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置pkg-config环境"><a href="#配置pkg-config环境" class="headerlink" title="配置pkg-config环境"></a><a href="#"></a>配置pkg-config环境</h3><p>opencv4.pc文件的默认路径：&#x2F;usr&#x2F;local&#x2F;lib&#x2F;pkgconfig&#x2F;opencv4.pc<br>若此目录下没有，可以使用以下命令搜索：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo find / -iname opencv4.pc</span><br></pre></td></tr></table></figure>
+
+<p>确实有</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e80b0db2cdc84671b913554df497433b_1afe6cc0adce45bab.png"></p>
+<p>&nbsp;将路径加入到PKG_CONFIG_PATH</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/profile.d/pkgconfig.sh</span><br></pre></td></tr></table></figure>
+
+<p>输入</p>
+<blockquote>
+<p>export PKG_CONFIG_PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;lib&#x2F;pkgconfig:$PKG_CONFIG_PATH</p>
+</blockquote>
+<p>激活一下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>验证是否成功</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pkg-config --libs opencv4</span><br></pre></td></tr></table></figure>
+
+<p>成功啦</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/105397d32dd347458a012ce89866535e_dbfd667b1bff49718.png"></p>
+<h3 id="配置动态库环境"><a href="#配置动态库环境" class="headerlink" title=" 配置动态库环境"></a><a href="#"></a> 配置动态库环境</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/ld.so.conf.d/opencv4.conf</span><br></pre></td></tr></table></figure>
+
+<p>加入下面这行</p>
+<blockquote>
+<p>&#x2F;usr&#x2F;local&#x2F;lib</p>
+</blockquote>
+<p>生效一下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo ldconfig</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a><a href="#"></a>测试</h3><p>进入到&#x2F;samples&#x2F;cpp&#x2F;example_cmake下面</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7edec46e81b942efb251c4c55bc5d9dc_80ff8371a2394b309.png"></p>
+<p>打开终端输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake .</span><br></pre></td></tr></table></figure>
+
+<img width="1200" height="737" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a7e9eb67d22d4560a8fea57410e1440a_0226f308080a40a2b.png" class="jop-noMdConv">
+
+<p>&nbsp;然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">make .</span><br></pre></td></tr></table></figure>
+
+<p>应该是成功了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e3c3ed6ed184395a59d87b9a59ae8fd_59857ab2eee7490c9.png"></p>
+<p>这个时候我们看一下文件夹下面出现了一个opencv-example</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3e48d766bf3447c0ace30494fd4f89ee_6b3985a4f64044fb9.png"><br> 运行后出现我人太丑就不放照片了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/18ecd3fa40b5495895406a508c23bd9d_f4c0eca51cfe498fb.png"></p>
+<p>&nbsp;这样opencv的编译到此完成。</p>
+<h2 id="三-Clion"><a href="#三-Clion" class="headerlink" title=" 三.Clion"></a><a href="#"></a> 三.Clion</h2><p>创建desktop文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  cd ~/.local/share/applications/</span><br><span class="line">    </span><br><span class="line">2.  sudo gedit Clion.desktop</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>注意看注释</p>
+<blockquote>
+<p>[Desktop Entry]<br>Version&#x3D;1.0<br>Terminal&#x3D;false<br>Type&#x3D;Application<br>Name&#x3D;Clion<br>Exec&#x3D;&#x2F;home&#x2F;yuesang&#x2F;software&#x2F;clion-2022.2.1&#x2F;bin&#x2F;clion.sh<br># 注意：Exec表示安装软件的**启动快捷方式**文件路径<br># 注意：Icon表示安装软件的图标路径<br>Icon&#x3D;&#x2F;home&#x2F;yuesang&#x2F;software&#x2F;clion-2022.2.1&#x2F;bin&#x2F;clion.png<br>NoDisplay&#x3D;false<br>StartupWMClass&#x3D;</p>
+</blockquote>
+<p>接下来是cmakelist的文件编写</p>
+<p>这里我放上我的cmakelist</p>
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.23)</span><br><span class="line">project(test)</span><br><span class="line"></span><br><span class="line">find_package(OpenCV REQUIRED) #加这一句</span><br><span class="line">include_directories($&#123;OpenCV_INCLUDE_DIRS&#125;) #加这一句</span><br><span class="line"></span><br><span class="line">set(CMAKE_CXX_STANDARD 14)</span><br><span class="line"></span><br><span class="line">add_executable(test main.cpp)</span><br><span class="line"></span><br><span class="line">target_link_libraries(test $&#123;OpenCV_LIBS&#125;)#加这一句</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>测试代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  #include&lt;opencv2/opencv.hpp&gt;</span><br><span class="line">    </span><br><span class="line">2.  #include&lt;iostream&gt;</span><br><span class="line">    </span><br><span class="line">3.  using namespace std;</span><br><span class="line">    </span><br><span class="line">4.  using namespace cv;</span><br><span class="line">    </span><br><span class="line">5.  int main(int argc,char** argv)&#123;</span><br><span class="line">    </span><br><span class="line">6.      Mat src = imread(&quot;/home/yuesang/CLionProjects/test/1.jpg&quot;); //读取图片</span><br><span class="line">    </span><br><span class="line">7.      if (src.empty()) &#123;                     //判断是否找到图片</span><br><span class="line">    </span><br><span class="line">8.          printf(&quot;没有找到图片 &quot;);           //输出文字</span><br><span class="line">    </span><br><span class="line">9.          return -1;</span><br><span class="line">    </span><br><span class="line">10.     &#125;</span><br><span class="line">    </span><br><span class="line">11.     else</span><br><span class="line">    </span><br><span class="line">12.     &#123;</span><br><span class="line">    </span><br><span class="line">13.         namedWindow(&quot;input&quot;,WINDOW_AUTOSIZE);// 显示窗口命名为input ；WINDOW_AUTOSIZE显示大小为图片自定义大小，且不可以更改大小</span><br><span class="line">    </span><br><span class="line">14.         imshow(&quot;input&quot;,src); //显示</span><br><span class="line">    </span><br><span class="line">15.         waitKey(0);//显示的毫秒时间，如果函数参数&lt;=0表示一直显示。&gt;0表示显示的时间</span><br><span class="line">    </span><br><span class="line">16.         destroyAllWindows();</span><br><span class="line">    </span><br><span class="line">17.         return 0;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">19.     &#125;</span><br><span class="line">    </span><br><span class="line">20. &#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>终于配完了</p>
+<img width="1200" height="733" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1f36240ab5a6449d840a1a9f21fe6bd6_308a181b3d5141879.png" class="jop-noMdConv">
+
+<h2 id="四-opencv的卸载"><a href="#四-opencv的卸载" class="headerlink" title="四.opencv的卸载"></a><a href="#"></a>四.opencv的卸载</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo make uninstall</span><br><span class="line">    </span><br><span class="line">2.  cd ..</span><br><span class="line">    </span><br><span class="line">3.  sudo rm -r mybuild</span><br><span class="line">    </span><br><span class="line">4.  sudo rm -r /usr/local/include/opencv2 /usr/local/include/opencv /usr/include/opencv /usr/include/opencv2 /usr/local/share/opencv /usr/local/share/OpenCV /usr/share/opencv /usr/share/OpenCV /usr/local/bin/opencv* /usr/local/lib/libopencv*</span><br><span class="line">    </span><br><span class="line">5.  cd /usr/</span><br><span class="line">    </span><br><span class="line">6.  find . -name &quot;*opencv*&quot; | xargs sudo rm -rf</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>环境变量那块 之前是忘记配置opencv4.pc了所以导致实例可以正常运行但是clion里面运行不了代码，环境变量那块自己也弄得有点迷糊</p>
+<p>ubuntu22的坑还是有一些的，比如openvion好像是没办法装到上面因为openvion只支持到20，有什么错误或者不懂的欢迎大家给我指出</p>
 ]]></content>
       <categories>
         <category>环境配置</category>
@@ -562,6 +730,40 @@
       </tags>
   </entry>
   <entry>
+    <title>YoloV3 Anchor生成正负样本</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/</url>
+    <content><![CDATA[<p>关于手撸YoloV3代码的可以看一下b站一个up主：深度学习麋了鹿<br>这里主要讲的是YoloV3中正负样本的生成以及我个人的理解。</p>
+<h1 id="1-正负样本生成的原理"><a href="#1-正负样本生成的原理" class="headerlink" title="1.正负样本生成的原理"></a>1.正负样本生成的原理</h1><h2 id="1-1正样本的选择"><a href="#1-1正样本的选择" class="headerlink" title="1.1正样本的选择"></a>1.1正样本的选择</h2><p>首先先计算$gt$的中心落在哪个$grid$上，总共有3个特征层以及3个$anchor$总共生成9个先验框，选出与$gt$的$IOU$最大的那个先验框做为正样本。</p>
+<h2 id="1-2负样本的选择"><a href="#1-2负样本的选择" class="headerlink" title="1.2负样本的选择"></a>1.2负样本的选择</h2><p>计算各个先验框和所有的目标$gt$之间的$IOU$，如果某先验框和图像中所有物体最大的IOU都小于阈值（一般0.5），那么就认为该先验框不含目标，记作负样本，其置信度应当为0</p>
+<h2 id="1-3其他样本"><a href="#1-3其他样本" class="headerlink" title="1.3其他样本"></a>1.3其他样本</h2><p>对于剩下$IOU$大于阈值但不是与$gt$的$IOU$最大的那部分，这句话可能有点绕，可以这样简单理解，这个班上只要第一名作为学习的榜样，分数低于60分的大家作为反面教材，剩下大于60分但又不是第一名的那些人大家就不用管他了。</p>
+<h1 id="2-代码部分的讲解"><a href="#2-代码部分的讲解" class="headerlink" title="2.代码部分的讲解"></a>2.代码部分的讲解</h1><p>这里贴一下麋鹿的手撸代码这部分就是$label$的生成，我个人也是按照他的视频讲解来写的</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">  labels=&#123;&#125;</span><br><span class="line">w,h=img.size</span><br><span class="line">  <span class="keyword">case</span>=<span class="number">416</span>/w</span><br><span class="line">  <span class="keyword">for</span> feature_size,_antors <span class="keyword">in</span> antors.items():</span><br><span class="line">      labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> box <span class="keyword">in</span> boxes:</span><br><span class="line">          cls,cx,cy,w,h=box</span><br><span class="line">          cx, cy,w,h=cx*<span class="keyword">case</span>,cy*<span class="keyword">case</span>,w*<span class="keyword">case</span>,h*<span class="keyword">case</span></span><br><span class="line">          _x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">          _y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br><span class="line">          <span class="keyword">for</span> i,antor <span class="keyword">in</span> <span class="built_in">enumerate</span>(_antors):</span><br><span class="line">              area=w*h</span><br><span class="line">              iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br><span class="line">              p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br><span class="line">              labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">w,h=img.size</span><br><span class="line"><span class="keyword">case</span>=<span class="number">416</span>/w</span><br></pre></td></tr></table></figure>
+
+<p>这部分主要将中心点和宽高转移到对应尺寸上，比如当你图像的$size$是$(3.,3)$的时候你的中心点是$(2,2)$,当你reisze成$(9,9)$的时候，你的中心点应该转换成$(5,5)$</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br></pre></td></tr></table></figure>
+<p>个人理解首先每个$grid$里面都应该对应一个宽高中心的置信度类别，所以最后的一个维度是:5+CLASS_NUM,然后3对应的是RGB三个通道，feature_size就是对应我们将图像分成几个部分。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">_x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">_y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br></pre></td></tr></table></figure>
+<p>这个部分是将中心点转换到对应的grid中并且获得他的偏移量拿下面这个例子来说，假设图像的size是39*39的$gt$的中心为$(20,20)$那么此时中心点坐标其实转换到了$(1,1)$再加上$(7,7)$的偏移。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9573740d47f359fa58f705e02e5ec1f8.png"></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br></pre></td></tr></table></figure>
+
+<p>他这里的$IOU$的计算有点问题，我之后会一期关于各种IOU的讲解。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
+<p>这里的主要计算的是$gt$的宽高和$anchor$宽高的比值，注意这里损失函数的时候宽高做了$\log$处理是为了防止过宽或者过高影响网络。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
+
+<p>这部分主要是吧刚刚算出来正样本加入进去用之前得到的$x,y$的中心格位置，或者你这边直接归一化也可以。</p>
+<p>这里讲一句对于正负样本不均匀的理解，举个例子就像小时候父母告诉我们做这个不好，做那个不好，实际上需要怎么做的好有时候他们并不会告诉我，导致我们只知道这样做是不好的，但是不知道怎么往好的方面发展。</p>
+]]></content>
+      <categories>
+        <category>神经网络</category>
+      </categories>
+      <tags>
+        <tag>Yolo</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>IOU和他们儿子们</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/</url>
     <content><![CDATA[<h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
@@ -604,40 +806,6 @@
       </tags>
   </entry>
   <entry>
-    <title>YoloV3 Anchor生成正负样本</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/</url>
-    <content><![CDATA[<p>关于手撸YoloV3代码的可以看一下b站一个up主：深度学习麋了鹿<br>这里主要讲的是YoloV3中正负样本的生成以及我个人的理解。</p>
-<h1 id="1-正负样本生成的原理"><a href="#1-正负样本生成的原理" class="headerlink" title="1.正负样本生成的原理"></a>1.正负样本生成的原理</h1><h2 id="1-1正样本的选择"><a href="#1-1正样本的选择" class="headerlink" title="1.1正样本的选择"></a>1.1正样本的选择</h2><p>首先先计算$gt$的中心落在哪个$grid$上，总共有3个特征层以及3个$anchor$总共生成9个先验框，选出与$gt$的$IOU$最大的那个先验框做为正样本。</p>
-<h2 id="1-2负样本的选择"><a href="#1-2负样本的选择" class="headerlink" title="1.2负样本的选择"></a>1.2负样本的选择</h2><p>计算各个先验框和所有的目标$gt$之间的$IOU$，如果某先验框和图像中所有物体最大的IOU都小于阈值（一般0.5），那么就认为该先验框不含目标，记作负样本，其置信度应当为0</p>
-<h2 id="1-3其他样本"><a href="#1-3其他样本" class="headerlink" title="1.3其他样本"></a>1.3其他样本</h2><p>对于剩下$IOU$大于阈值但不是与$gt$的$IOU$最大的那部分，这句话可能有点绕，可以这样简单理解，这个班上只要第一名作为学习的榜样，分数低于60分的大家作为反面教材，剩下大于60分但又不是第一名的那些人大家就不用管他了。</p>
-<h1 id="2-代码部分的讲解"><a href="#2-代码部分的讲解" class="headerlink" title="2.代码部分的讲解"></a>2.代码部分的讲解</h1><p>这里贴一下麋鹿的手撸代码这部分就是$label$的生成，我个人也是按照他的视频讲解来写的</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">  labels=&#123;&#125;</span><br><span class="line">w,h=img.size</span><br><span class="line">  <span class="keyword">case</span>=<span class="number">416</span>/w</span><br><span class="line">  <span class="keyword">for</span> feature_size,_antors <span class="keyword">in</span> antors.items():</span><br><span class="line">      labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> box <span class="keyword">in</span> boxes:</span><br><span class="line">          cls,cx,cy,w,h=box</span><br><span class="line">          cx, cy,w,h=cx*<span class="keyword">case</span>,cy*<span class="keyword">case</span>,w*<span class="keyword">case</span>,h*<span class="keyword">case</span></span><br><span class="line">          _x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">          _y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br><span class="line">          <span class="keyword">for</span> i,antor <span class="keyword">in</span> <span class="built_in">enumerate</span>(_antors):</span><br><span class="line">              area=w*h</span><br><span class="line">              iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br><span class="line">              p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br><span class="line">              labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">w,h=img.size</span><br><span class="line"><span class="keyword">case</span>=<span class="number">416</span>/w</span><br></pre></td></tr></table></figure>
-
-<p>这部分主要将中心点和宽高转移到对应尺寸上，比如当你图像的$size$是$(3.,3)$的时候你的中心点是$(2,2)$,当你reisze成$(9,9)$的时候，你的中心点应该转换成$(5,5)$</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br></pre></td></tr></table></figure>
-<p>个人理解首先每个$grid$里面都应该对应一个宽高中心的置信度类别，所以最后的一个维度是:5+CLASS_NUM,然后3对应的是RGB三个通道，feature_size就是对应我们将图像分成几个部分。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">_x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">_y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br></pre></td></tr></table></figure>
-<p>这个部分是将中心点转换到对应的grid中并且获得他的偏移量拿下面这个例子来说，假设图像的size是39*39的$gt$的中心为$(20,20)$那么此时中心点坐标其实转换到了$(1,1)$再加上$(7,7)$的偏移。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9573740d47f359fa58f705e02e5ec1f8.png"></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br></pre></td></tr></table></figure>
-
-<p>他这里的$IOU$的计算有点问题，我之后会一期关于各种IOU的讲解。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
-<p>这里的主要计算的是$gt$的宽高和$anchor$宽高的比值，注意这里损失函数的时候宽高做了$\log$处理是为了防止过宽或者过高影响网络。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
-
-<p>这部分主要是吧刚刚算出来正样本加入进去用之前得到的$x,y$的中心格位置，或者你这边直接归一化也可以。</p>
-<p>这里讲一句对于正负样本不均匀的理解，举个例子就像小时候父母告诉我们做这个不好，做那个不好，实际上需要怎么做的好有时候他们并不会告诉我，导致我们只知道这样做是不好的，但是不知道怎么往好的方面发展。</p>
-]]></content>
-      <categories>
-        <category>神经网络</category>
-      </categories>
-      <tags>
-        <tag>Yolo</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>交叉熵损失</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
     <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
@@ -650,174 +818,6 @@
       </categories>
       <tags>
         <tag>交叉熵损失</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</title>
-    <url>/2024/01/09/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/</url>
-    <content><![CDATA[<h1 id="ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）"><a href="#ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）" class="headerlink" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）"></a>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</h1><hr>
-<p>cudann一定要配置好不然<a href="https://so.csdn.net/so/search?q=opencv%E9%85%8D%E7%BD%AE&spm=1001.2101.3001.7020">opencv配置</a>cuda会失败的</p>
-<p>我这里采用的是<a href="https://so.csdn.net/so/search?q=opencv4&spm=1001.2101.3001.7020">opencv4</a>.5.5和相同版本的contribure</p>
-<h2 id="一-软件的安装"><a href="#一-软件的安装" class="headerlink" title="一.软件的安装"></a><a href="#"></a>一.软件的安装</h2><p>这个部分我装了太多的依赖具体是那些我已经记不清了所以先放我成功配置看的那篇博客的依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo apt-get update</span><br><span class="line">    </span><br><span class="line">2.  sudo apt-get upgrade</span><br><span class="line">    </span><br><span class="line">3.  sudo apt-get install build-essential cmake cmake-gui unzip pkg-config</span><br><span class="line">    </span><br><span class="line">4.  sudo apt-get install libjpeg-dev libpng-dev libtiff-dev</span><br><span class="line">    </span><br><span class="line">5.  sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libgtk2.0-dev</span><br><span class="line">    </span><br><span class="line">6.  sudo apt-get install libv4l-dev libxvidcore-dev libx264-dev libtbb2 libtbb-dev libdc1394-22-dev libjasper-dev</span><br><span class="line">    </span><br><span class="line">7.  sudo apt-get install libgtk-3-dev</span><br><span class="line">    </span><br><span class="line">8.  sudo apt-get install libatlas-base-dev liblapacke-dev gfortran</span><br><span class="line">    </span><br><span class="line">9.  sudo apt-get install python3-dev</span><br><span class="line">    </span><br><span class="line">10. sudo apt-get install ffmpeg </span><br></pre></td></tr></table></figure>
-
-<p>cmake的安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install cmake-gui</span><br></pre></td></tr></table></figure>
-
-<h2 id="二-cmake配置"><a href="#二-cmake配置" class="headerlink" title="二.cmake配置"></a><a href="#"></a>二.cmake配置</h2><p>这里我采用的的是.cache用的别人下好的东西来进行配置不然有些东西很难下载，白嫖某个大佬的连接</p>
-<blockquote>
-<p><strong>百度云：链接：<a href="https://pan.baidu.com/s/1XaYIAc6wDoWrtLaHRJs5Qg?pwd=kksk">https://pan.baidu.com/s/1XaYIAc6wDoWrtLaHRJs5Qg?pwd=kksk</a> 提取码：kksk</strong></p>
-</blockquote>
-<p>下载好后复制到opencv的文件夹下，如果没有显示的话输入critl+H就可以了。contrib也可以放在这个文件夹下面</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4ed2bb74aaf545c18d602ca74ede3b84_71bc944cdd274fdf8.png"></p>
-<p>创建文件夹并进入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  mkdir myopencv</span><br><span class="line">    </span><br><span class="line">2.  cd myopencv</span><br><span class="line">    </span><br><span class="line">3.  cmake-gui</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>进入后的c++界面</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0472a495d99846828b3986bfecc7d8fd_5de0ec3948a74a2b8.png"></p>
-<p>&nbsp;点击configure</p>
-<p>如果卡在下载ippvc可以自己去下载对应版本的我这里放出我的版本的ippvc</p>
-<blockquote>
-<p>链接: <a href="https://pan.baidu.com/s/1C05qBz-eSAUIxdwljce0kw">https://pan.baidu.com/s/1C05qBz-eSAUIxdwljce0kw</a> 密码: 4q33</p>
-</blockquote>
-<p>&nbsp;然后修改&#x2F;home&#x2F;yuesang&#x2F;software&#x2F;opencv-4.5.5&#x2F;3rdparty&#x2F;ippicv下的ippicv的cmake文件，先把下载好的ippicv放入这个文件夹</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/328ea0150b7542ecbf36430f735ca833_0761ea1ef8544f239.png"></p>
-<p>&nbsp;然后编辑ippicv.cmake文件</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/aef7fbdb1238444bb37c4c35289e51a7_46abcd7c861c43c39.png"></p>
-<p>这里我把本来的download注释了并且增加了set（res TRUE）</p>
-<p>成功后的界面</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/936743654649409f8e917c8de590983f_fffdf7d79f1d4890b.png"></p>
-<p>&nbsp;<em><strong>OPENCV_GENERATE_PKGCONFIG这个选项记得要勾起来<br>OpenCV4以上默认不使用pkg-config，该编译选项开启生成opencv4.pc文件，支持pkg-config功能（这个没有勾选的话可能无法配置到clion）</strong></em></p>
-<p>去掉这些选项(可以搜索java,python，calib3d把这些包去除)</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e81eeebba7fc4eafae2eed6ad1855c24_6d47f402ffd449499.png"></p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ac8d01495e34fac9162c89a7b607d10_880c16b2825b411fb.png"></p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/227a715872bb4fa78503e5162b302389_827982292f8e4267a.png"></p>
-<p>contrib路径的添加**（记得要定位到contib下的modules）**</p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f65aba7efe2e424285692dc00991a1c8_ccd6e1133b124b56b.png"></p>
-<p>直接搜索cuda</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e3227b17018949fc8fb3a02658b23459_f4c07cd2b00d47c4b.png"></p>
-<p>configure完成后</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/82a89c18e4c940f0b4e853bf611b246c_7552b034cf61484b8.png"></p>
-<p>再次点击cofigure</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0d7519cdb7c44bf3b62ee3cacb8b8641_2f29425fc15146fd8.png"></p>
-<p>没有报错且变成白色应该就成功了吧然后点击generate生成</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b69983b5a5f14b3d98edc543b3dd3d2e_3aafc392458744408.png"></p>
-<p>&nbsp;进入刚刚创建的文件夹，并且打开终端</p>
-<img width="1200" height="507" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a242254fd7c04137a97c5c2b42f281bb_ec80974e8b4942759.png" class="jop-noMdConv">
-
-<p>&nbsp;输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo make -j20</span><br><span class="line">    </span><br><span class="line">2.  #这个20是你的核心数</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>人生没有一帆风顺出现报错了怎么办</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/640e54d53f744d64b31a6f379f35b343_c7968622ef7f4e058.png"></p>
-<p>&nbsp;进入这个页面找到报错的地方把他删掉（就像人生一样要学会合理的放弃）</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ee76c8de33284ebeb7e988f267ad52a6_4c8ea8dcd4cd40e68.png"></p>
-<p>&nbsp;重新配置和生成，然后继续cmake,重复以上操作直到编译成功为止</p>
-<p>calib3d和stereo好像是关联的两个包可以取消(这两个包是双目相机标定的好像)</p>
-<p>终于完成了真心不容易阿</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7c8443fb3b1d4b358066e24ad096ebff_f71e0235c8b54bcd8.png"></p>
-<p>&nbsp;安装以下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-
-<p>可能会出现这个报错，缺啥我们就给他啥<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8e9c066d4137478d8c2dcb669d4c1ad4_366f64ce4b8645c99.png"></p>
-<p>解压刚刚下载的ippicv进入找到ippicv_lnx</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6603ed573fc043a882d58f828ce9b93b_be2ce786bb3b439e8.png"></p>
-<p>&nbsp;没有这个文件夹我们就建立一个</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f2928c99636c4b549f0e6db5170ce4d5_4d24900670f4437e8.png"></p>
-<p>&nbsp;复制进来</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1891e85eec6f4852a13d162325ff00ab_387a976ffda043539.png"></p>
-<p>重新下载 （大功告成）</p>
-<img width="1200" height="748" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e53e216feba469da077d32c289d8dc5_d26e2e72753143bab.png" class="jop-noMdConv">
-
-<h3 id="环境变量的配置"><a href="#环境变量的配置" class="headerlink" title=" 环境变量的配置"></a><a href="#"></a> 环境变量的配置</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/ld.so.conf</span><br></pre></td></tr></table></figure>
-
-<p>输入这两行</p>
-<blockquote>
-<p>include &#x2F;etc&#x2F;ld.so.conf.d&#x2F;*.conf<br>include &#x2F;usr&#x2F;local&#x2F;lib</p>
-</blockquote>
-<p>然后再输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo ldconfig</span><br><span class="line">    </span><br><span class="line">2.  sudo gedit /etc/profile   </span><br></pre></td></tr></table></figure>
-
-<p>添加这两行</p>
-<blockquote>
-<p>#opencv<br>PKG_CONFIG_PATH&#x3D;$PKG_CONFIG_PATH:&#x2F;usr&#x2F;local&#x2F;lib&#x2F;pkgconfig  <br>export PKG_CONFIG_PATH</p>
-</blockquote>
-<p>然后编译一下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
-
-<h3 id="配置pkg-config环境"><a href="#配置pkg-config环境" class="headerlink" title="配置pkg-config环境"></a><a href="#"></a>配置pkg-config环境</h3><p>opencv4.pc文件的默认路径：&#x2F;usr&#x2F;local&#x2F;lib&#x2F;pkgconfig&#x2F;opencv4.pc<br>若此目录下没有，可以使用以下命令搜索：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo find / -iname opencv4.pc</span><br></pre></td></tr></table></figure>
-
-<p>确实有</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e80b0db2cdc84671b913554df497433b_1afe6cc0adce45bab.png"></p>
-<p>&nbsp;将路径加入到PKG_CONFIG_PATH</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/profile.d/pkgconfig.sh</span><br></pre></td></tr></table></figure>
-
-<p>输入</p>
-<blockquote>
-<p>export PKG_CONFIG_PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;lib&#x2F;pkgconfig:$PKG_CONFIG_PATH</p>
-</blockquote>
-<p>激活一下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
-
-<p>验证是否成功</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pkg-config --libs opencv4</span><br></pre></td></tr></table></figure>
-
-<p>成功啦</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/105397d32dd347458a012ce89866535e_dbfd667b1bff49718.png"></p>
-<h3 id="配置动态库环境"><a href="#配置动态库环境" class="headerlink" title=" 配置动态库环境"></a><a href="#"></a> 配置动态库环境</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/ld.so.conf.d/opencv4.conf</span><br></pre></td></tr></table></figure>
-
-<p>加入下面这行</p>
-<blockquote>
-<p>&#x2F;usr&#x2F;local&#x2F;lib</p>
-</blockquote>
-<p>生效一下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo ldconfig</span><br></pre></td></tr></table></figure>
-
-<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a><a href="#"></a>测试</h3><p>进入到&#x2F;samples&#x2F;cpp&#x2F;example_cmake下面</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7edec46e81b942efb251c4c55bc5d9dc_80ff8371a2394b309.png"></p>
-<p>打开终端输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake .</span><br></pre></td></tr></table></figure>
-
-<img width="1200" height="737" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a7e9eb67d22d4560a8fea57410e1440a_0226f308080a40a2b.png" class="jop-noMdConv">
-
-<p>&nbsp;然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">make .</span><br></pre></td></tr></table></figure>
-
-<p>应该是成功了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e3c3ed6ed184395a59d87b9a59ae8fd_59857ab2eee7490c9.png"></p>
-<p>这个时候我们看一下文件夹下面出现了一个opencv-example</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3e48d766bf3447c0ace30494fd4f89ee_6b3985a4f64044fb9.png"><br> 运行后出现我人太丑就不放照片了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/18ecd3fa40b5495895406a508c23bd9d_f4c0eca51cfe498fb.png"></p>
-<p>&nbsp;这样opencv的编译到此完成。</p>
-<h2 id="三-Clion"><a href="#三-Clion" class="headerlink" title=" 三.Clion"></a><a href="#"></a> 三.Clion</h2><p>创建desktop文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  cd ~/.local/share/applications/</span><br><span class="line">    </span><br><span class="line">2.  sudo gedit Clion.desktop</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>注意看注释</p>
-<blockquote>
-<p>[Desktop Entry]<br>Version&#x3D;1.0<br>Terminal&#x3D;false<br>Type&#x3D;Application<br>Name&#x3D;Clion<br>Exec&#x3D;&#x2F;home&#x2F;yuesang&#x2F;software&#x2F;clion-2022.2.1&#x2F;bin&#x2F;clion.sh<br># 注意：Exec表示安装软件的**启动快捷方式**文件路径<br># 注意：Icon表示安装软件的图标路径<br>Icon&#x3D;&#x2F;home&#x2F;yuesang&#x2F;software&#x2F;clion-2022.2.1&#x2F;bin&#x2F;clion.png<br>NoDisplay&#x3D;false<br>StartupWMClass&#x3D;</p>
-</blockquote>
-<p>接下来是cmakelist的文件编写</p>
-<p>这里我放上我的cmakelist</p>
-<blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.23)</span><br><span class="line">project(test)</span><br><span class="line"></span><br><span class="line">find_package(OpenCV REQUIRED) #加这一句</span><br><span class="line">include_directories($&#123;OpenCV_INCLUDE_DIRS&#125;) #加这一句</span><br><span class="line"></span><br><span class="line">set(CMAKE_CXX_STANDARD 14)</span><br><span class="line"></span><br><span class="line">add_executable(test main.cpp)</span><br><span class="line"></span><br><span class="line">target_link_libraries(test $&#123;OpenCV_LIBS&#125;)#加这一句</span><br></pre></td></tr></table></figure>
-</blockquote>
-<p>测试代码</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  #include&lt;opencv2/opencv.hpp&gt;</span><br><span class="line">    </span><br><span class="line">2.  #include&lt;iostream&gt;</span><br><span class="line">    </span><br><span class="line">3.  using namespace std;</span><br><span class="line">    </span><br><span class="line">4.  using namespace cv;</span><br><span class="line">    </span><br><span class="line">5.  int main(int argc,char** argv)&#123;</span><br><span class="line">    </span><br><span class="line">6.      Mat src = imread(&quot;/home/yuesang/CLionProjects/test/1.jpg&quot;); //读取图片</span><br><span class="line">    </span><br><span class="line">7.      if (src.empty()) &#123;                     //判断是否找到图片</span><br><span class="line">    </span><br><span class="line">8.          printf(&quot;没有找到图片 &quot;);           //输出文字</span><br><span class="line">    </span><br><span class="line">9.          return -1;</span><br><span class="line">    </span><br><span class="line">10.     &#125;</span><br><span class="line">    </span><br><span class="line">11.     else</span><br><span class="line">    </span><br><span class="line">12.     &#123;</span><br><span class="line">    </span><br><span class="line">13.         namedWindow(&quot;input&quot;,WINDOW_AUTOSIZE);// 显示窗口命名为input ；WINDOW_AUTOSIZE显示大小为图片自定义大小，且不可以更改大小</span><br><span class="line">    </span><br><span class="line">14.         imshow(&quot;input&quot;,src); //显示</span><br><span class="line">    </span><br><span class="line">15.         waitKey(0);//显示的毫秒时间，如果函数参数&lt;=0表示一直显示。&gt;0表示显示的时间</span><br><span class="line">    </span><br><span class="line">16.         destroyAllWindows();</span><br><span class="line">    </span><br><span class="line">17.         return 0;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">19.     &#125;</span><br><span class="line">    </span><br><span class="line">20. &#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>终于配完了</p>
-<img width="1200" height="733" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1f36240ab5a6449d840a1a9f21fe6bd6_308a181b3d5141879.png" class="jop-noMdConv">
-
-<h2 id="四-opencv的卸载"><a href="#四-opencv的卸载" class="headerlink" title="四.opencv的卸载"></a><a href="#"></a>四.opencv的卸载</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo make uninstall</span><br><span class="line">    </span><br><span class="line">2.  cd ..</span><br><span class="line">    </span><br><span class="line">3.  sudo rm -r mybuild</span><br><span class="line">    </span><br><span class="line">4.  sudo rm -r /usr/local/include/opencv2 /usr/local/include/opencv /usr/include/opencv /usr/include/opencv2 /usr/local/share/opencv /usr/local/share/OpenCV /usr/share/opencv /usr/share/OpenCV /usr/local/bin/opencv* /usr/local/lib/libopencv*</span><br><span class="line">    </span><br><span class="line">5.  cd /usr/</span><br><span class="line">    </span><br><span class="line">6.  find . -name &quot;*opencv*&quot; | xargs sudo rm -rf</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>环境变量那块 之前是忘记配置opencv4.pc了所以导致实例可以正常运行但是clion里面运行不了代码，环境变量那块自己也弄得有点迷糊</p>
-<p>ubuntu22的坑还是有一些的，比如openvion好像是没办法装到上面因为openvion只支持到20，有什么错误或者不懂的欢迎大家给我指出</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Ubuntu</tag>
       </tags>
   </entry>
   <entry>
