@@ -23,3 +23,15 @@ body {
 .main-inner {
   opacity: 0.8;
 }
+.brand {
+  border-bottom: none;
+  background-color: rgba(255,255,255,0); /* 添加背景色，替换 "your-color" 为您想要的颜色值 */
+  color: #000 !important;
+  display: inline-block;
+  line-height: $font-size-title;
+  padding: 0 40px;
+  position: relative;
+}
+.brand:hover {
+  color: var(--brand-hover-color);
+}
