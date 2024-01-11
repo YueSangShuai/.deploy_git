@@ -375,6 +375,54 @@
       </tags>
   </entry>
   <entry>
+    <title>hexo基础版搭建</title>
+    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<h1 id="hexo基础版搭建"><a href="#hexo基础版搭建" class="headerlink" title="hexo基础版搭建"></a>hexo基础版搭建</h1><h2 id="1-前置准备"><a href="#1-前置准备" class="headerlink" title="1.前置准备"></a>1.前置准备</h2><p>1.git <a href="https://registry.npmmirror.com/binary.html?path=git-for-windows/">git</a><br>2.Node.js <a href="https://nodejs.org/en/">Node.js</a><br>3.hexo<br>hexo是一款大家都在用网上教程多的博客平台，所以我们采用这一款。<br>首先先创建一个空白文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//25073589eed32f584d36ae6a0ab62f5d.png" alt="25073589eed32f584d36ae6a0ab62f5d.png"><br>然后git bash here之后输入以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-cli -g#使用npm下载hexo</span><br><span class="line">hexo init blog#hexo的初始化</span><br><span class="line">cd blog#进入这个文件夹</span><br><span class="line">npm install #安装npm的那些包</span><br><span class="line">hexo server #启动hexo服务</span><br></pre></td></tr></table></figure>
+<p>最终会生成一个文件夹如下:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7e45e1465e138298cfd38441ef094034.png" alt="7e45e1465e138298cfd38441ef094034.png"><br>文件夹功能</p>
+<ul>
+<li>node_modules: 依赖包</li>
+<li>public：存放生成的页面</li>
+<li>scaffolds：生成文章的一些模板</li>
+<li>source：用来存放你的文章</li>
+<li>themes：主题</li>
+</ul>
+<p>然后输入这两条命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+
+<p>完成后会显示如下内容，则说明<strong>配置成功</strong>!<br>（这里我是已经添加过主题了之后会说）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9b8ea34415f558f8522f8ed9a909912b.png" alt="9b8ea34415f558f8522f8ed9a909912b.png"></p>
+<h2 id="GitHub创建仓库"><a href="#GitHub创建仓库" class="headerlink" title="GitHub创建仓库"></a>GitHub创建仓库</h2><p>首先注册一个GitHub的仓库，然后在个人主页中选择 new 新建仓库<br><span style="color: red;">注意： 仓库名称的前半部分与你的用户名一致,即 YueSangShuai，后半部分为 <a href="http://git.io/">http://git.io</a> 固定格式</span><br>（忽略红色警告，因为我已经创建过了！），可以选择一个readme为说明文件（随便），然后点击创建仓库<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//645b92b2b22cd9b4c583876d8657f00a.png" alt="645b92b2b22cd9b4c583876d8657f00a.png"></p>
+<p> 回到 git bash黑窗口中，<strong>输入以下两个命令</strong>：<br>yourname改为你的<strong>GitHub的用户名</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot;</span><br></pre></td></tr></table></figure>
+
+<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+
+<p>  <strong>创建 ssh，输入命令，然后一直回车</strong></p>
+<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+
+<p>之后会提示你已完成 ssh的创建，在文件中找到这个路径<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e25ae687593ee8ffc37aff1f0042aa51.png" alt="e25ae687593ee8ffc37aff1f0042aa51.png"><br>记住你的id_rsa.pub,<br>进入你的github setting<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d9fad9c8f3c86666cb30788bca8f4f61.png" alt="d9fad9c8f3c86666cb30788bca8f4f61.png"><br>创建你的ssh-key<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//819d5aeaf13bfec2870c7dfaf59cd1ba.png" alt="819d5aeaf13bfec2870c7dfaf59cd1ba.png"><br>将你的id_rsa.pub的内容输入到下面即可完成<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d7d89bd60289f494e668f0e2e2cbe12a.png" alt="d7d89bd60289f494e668f0e2e2cbe12a.png"></p>
+<h2 id="hexo部署到github"><a href="#hexo部署到github" class="headerlink" title="hexo部署到github"></a>hexo部署到github</h2><p>找到刚刚那个文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//239cf8c656328a94d51c78f784a1af1c.png" alt="239cf8c656328a94d51c78f784a1af1c.png"><br>找到下面的内容</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line"># deploy:</span><br><span class="line">#   type: &#x27;&#x27;</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/username/username.github.io.git</span><br></pre></td></tr></table></figure>
+<p>然后在这个位置设置一下你的博客链接：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6c388e576a7599c3d7e7efe858faa024.png" alt="6c388e576a7599c3d7e7efe858faa024.png"></p>
+<p><strong>安装 git部署命令工具</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+<p>然后：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>hexo clean</code>清除了你之前生成的东西，也可以不加。 <code>hexo generate</code> 顾名思义，生成静态文章，可以用 <code>hexo g</code>缩写 <code>hexo deploy</code> 部署文章，可以用<code>hexo d</code>缩写<br><strong>如果是在离线端即 localhost:4000端测试你的博客，则只需要 hexo g + hexo s 即可，无需 hexo d</strong><br>输入完成后会出现一堆内容，不用管他，只要最后内容如下所示，就表示成功了！<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6028bb5fe0b8b6917a408ffe53a27c81.png" alt="6028bb5fe0b8b6917a408ffe53a27c81.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username.github.io  # https://username.github.io</span><br></pre></td></tr></table></figure>
+<p><strong>访问到你的博客了，其中username是你GitHub用户名，这个网站不是离线的，其他人都可以访问到！！！</strong></p>
+]]></content>
+      <categories>
+        <category>hexo配置</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</title>
     <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/</url>
     <content><![CDATA[<h1 id="ubuntu22-pycharm-cuda-cudnn，tensorrt的安装"><a href="#ubuntu22-pycharm-cuda-cudnn，tensorrt的安装" class="headerlink" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装"></a>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</h1><p>（写这篇博客的意义在于之后方便之后重装不用再重新看一大堆博客了）</p>
@@ -521,54 +569,6 @@
         <tag>cuda</tag>
         <tag>cudnn</tag>
         <tag>tensorrt</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hexo基础版搭建</title>
-    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<h1 id="hexo基础版搭建"><a href="#hexo基础版搭建" class="headerlink" title="hexo基础版搭建"></a>hexo基础版搭建</h1><h2 id="1-前置准备"><a href="#1-前置准备" class="headerlink" title="1.前置准备"></a>1.前置准备</h2><p>1.git <a href="https://registry.npmmirror.com/binary.html?path=git-for-windows/">git</a><br>2.Node.js <a href="https://nodejs.org/en/">Node.js</a><br>3.hexo<br>hexo是一款大家都在用网上教程多的博客平台，所以我们采用这一款。<br>首先先创建一个空白文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//25073589eed32f584d36ae6a0ab62f5d.png" alt="25073589eed32f584d36ae6a0ab62f5d.png"><br>然后git bash here之后输入以下命令</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-cli -g#使用npm下载hexo</span><br><span class="line">hexo init blog#hexo的初始化</span><br><span class="line">cd blog#进入这个文件夹</span><br><span class="line">npm install #安装npm的那些包</span><br><span class="line">hexo server #启动hexo服务</span><br></pre></td></tr></table></figure>
-<p>最终会生成一个文件夹如下:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7e45e1465e138298cfd38441ef094034.png" alt="7e45e1465e138298cfd38441ef094034.png"><br>文件夹功能</p>
-<ul>
-<li>node_modules: 依赖包</li>
-<li>public：存放生成的页面</li>
-<li>scaffolds：生成文章的一些模板</li>
-<li>source：用来存放你的文章</li>
-<li>themes：主题</li>
-</ul>
-<p>然后输入这两条命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-
-<p>完成后会显示如下内容，则说明<strong>配置成功</strong>!<br>（这里我是已经添加过主题了之后会说）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9b8ea34415f558f8522f8ed9a909912b.png" alt="9b8ea34415f558f8522f8ed9a909912b.png"></p>
-<h2 id="GitHub创建仓库"><a href="#GitHub创建仓库" class="headerlink" title="GitHub创建仓库"></a>GitHub创建仓库</h2><p>首先注册一个GitHub的仓库，然后在个人主页中选择 new 新建仓库<br><span style="color: red;">注意： 仓库名称的前半部分与你的用户名一致,即 YueSangShuai，后半部分为 <a href="http://git.io/">http://git.io</a> 固定格式</span><br>（忽略红色警告，因为我已经创建过了！），可以选择一个readme为说明文件（随便），然后点击创建仓库<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//645b92b2b22cd9b4c583876d8657f00a.png" alt="645b92b2b22cd9b4c583876d8657f00a.png"></p>
-<p> 回到 git bash黑窗口中，<strong>输入以下两个命令</strong>：<br>yourname改为你的<strong>GitHub的用户名</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot;</span><br></pre></td></tr></table></figure>
-
-<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
-
-<p>  <strong>创建 ssh，输入命令，然后一直回车</strong></p>
-<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
-
-<p>之后会提示你已完成 ssh的创建，在文件中找到这个路径<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e25ae687593ee8ffc37aff1f0042aa51.png" alt="e25ae687593ee8ffc37aff1f0042aa51.png"><br>记住你的id_rsa.pub,<br>进入你的github setting<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d9fad9c8f3c86666cb30788bca8f4f61.png" alt="d9fad9c8f3c86666cb30788bca8f4f61.png"><br>创建你的ssh-key<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//819d5aeaf13bfec2870c7dfaf59cd1ba.png" alt="819d5aeaf13bfec2870c7dfaf59cd1ba.png"><br>将你的id_rsa.pub的内容输入到下面即可完成<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d7d89bd60289f494e668f0e2e2cbe12a.png" alt="d7d89bd60289f494e668f0e2e2cbe12a.png"></p>
-<h2 id="hexo部署到github"><a href="#hexo部署到github" class="headerlink" title="hexo部署到github"></a>hexo部署到github</h2><p>找到刚刚那个文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//239cf8c656328a94d51c78f784a1af1c.png" alt="239cf8c656328a94d51c78f784a1af1c.png"><br>找到下面的内容</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line"># deploy:</span><br><span class="line">#   type: &#x27;&#x27;</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/username/username.github.io.git</span><br></pre></td></tr></table></figure>
-<p>然后在这个位置设置一下你的博客链接：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6c388e576a7599c3d7e7efe858faa024.png" alt="6c388e576a7599c3d7e7efe858faa024.png"></p>
-<p><strong>安装 git部署命令工具</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
-<p>然后：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-
-<p>其中 <code>hexo clean</code>清除了你之前生成的东西，也可以不加。 <code>hexo generate</code> 顾名思义，生成静态文章，可以用 <code>hexo g</code>缩写 <code>hexo deploy</code> 部署文章，可以用<code>hexo d</code>缩写<br><strong>如果是在离线端即 localhost:4000端测试你的博客，则只需要 hexo g + hexo s 即可，无需 hexo d</strong><br>输入完成后会出现一堆内容，不用管他，只要最后内容如下所示，就表示成功了！<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6028bb5fe0b8b6917a408ffe53a27c81.png" alt="6028bb5fe0b8b6917a408ffe53a27c81.png"></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username.github.io  # https://username.github.io</span><br></pre></td></tr></table></figure>
-<p><strong>访问到你的博客了，其中username是你GitHub用户名，这个网站不是离线的，其他人都可以访问到！！！</strong></p>
-]]></content>
-      <categories>
-        <category>hexo配置</category>
-      </categories>
-      <tags>
-        <tag>hexo</tag>
       </tags>
   </entry>
   <entry>
@@ -908,31 +908,6 @@
       </tags>
   </entry>
   <entry>
-    <title>IOU和他们儿子们</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/</url>
-    <content><![CDATA[<h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">IoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    <span class="comment">#这里的box是xyxy形式的</span></span><br><span class="line">    <span class="comment"># 计算中间矩形的宽高</span></span><br><span class="line">    in_h = <span class="built_in">min</span>(box1[<span class="number">2</span>], box2[<span class="number">2</span>]) - <span class="built_in">max</span>(box1[<span class="number">0</span>], box2[<span class="number">0</span>])</span><br><span class="line">    in_w = <span class="built_in">min</span>(box1[<span class="number">3</span>], box2[<span class="number">3</span>]) - <span class="built_in">max</span>(box1[<span class="number">1</span>], box2[<span class="number">1</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算交集、并集面积</span></span><br><span class="line">    inter = <span class="number">0</span> <span class="keyword">if</span> in_h &lt; <span class="number">0</span> <span class="keyword">or</span> in_w &lt; <span class="number">0</span> <span class="keyword">else</span> in_h * in_w</span><br><span class="line">    union = (box1[<span class="number">2</span>] - box1[<span class="number">0</span>]) * (box1[<span class="number">3</span>] - box1[<span class="number">1</span>]) + \</span><br><span class="line">            (box2[<span class="number">2</span>] - box2[<span class="number">0</span>]) * (box2[<span class="number">3</span>] - box2[<span class="number">1</span>]) - inter</span><br><span class="line">    <span class="comment"># 计算IoU</span></span><br><span class="line">    iou = inter / union</span><br><span class="line">    <span class="keyword">return</span> iou</span><br></pre></td></tr></table></figure>
-
-<p>$IOU$的两个缺点：<br>(1).当预测框和真实框的不存在交集的时候，如下图所示.如何使用$IOU$进行计算的话，其定位损失就为0，导致梯度为0无法进行优化。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4982c9882af8a4b2b2e28115e835c5ee.png"><br>(2).IoU无法精确的反映两者的重合度大小。如下图所示，三种情况IoU都相等，但看得出来他们的重合度是不一样的，左边的图回归的效果最好，右边的最差。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bccccb77b50dc6571d7c2a69c99521a5.png"></p>
-<h2 id="GIOU"><a href="#GIOU" class="headerlink" title="GIOU"></a>GIOU</h2><p>$GIOU$的提出解决了$IOU$的第一个缺点，给出$GIOU$的定义<br>$$<br>GIOU&#x3D;IOU-\frac {C-|A\cap B |}{C}<br>$$<br>$C$为这两个框的最小外接矩形<br>下面还用刚刚那个例子来进行计算<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1898684fd46507d18bf54b1ab6e32b8a.png"></p>
-<p>$$<br>GIOU&#x3D;IOU-\frac {红框-(黄色+蓝色-绿色)}{红框}<br>$$<br>给出$GIOU$的代码</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">GIoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    <span class="comment"># 计算最小包庇面积</span></span><br><span class="line">    y1,x1,y2,x2 = box1 </span><br><span class="line">    y3,x3,y4,x4 = box2</span><br><span class="line">    area_C = (<span class="built_in">max</span>(x1,x2,x3,x4)-<span class="built_in">min</span>(x1,x2,x3,x4)) * \</span><br><span class="line">             (<span class="built_in">max</span>(y1,y2,y3,y4)-<span class="built_in">min</span>(y1,y2,y3,y4))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算IoU</span></span><br><span class="line">    in_h = <span class="built_in">min</span>(box1[<span class="number">2</span>], box2[<span class="number">2</span>]) - <span class="built_in">max</span>(box1[<span class="number">0</span>], box2[<span class="number">0</span>])</span><br><span class="line">    in_w = <span class="built_in">min</span>(box1[<span class="number">3</span>], box2[<span class="number">3</span>]) - <span class="built_in">max</span>(box1[<span class="number">1</span>], box2[<span class="number">1</span>])</span><br><span class="line">    inter = <span class="number">0</span> <span class="keyword">if</span> in_h &lt; <span class="number">0</span> <span class="keyword">or</span> in_w &lt; <span class="number">0</span> <span class="keyword">else</span> in_h * in_w</span><br><span class="line">    union = (box1[<span class="number">2</span>] - box1[<span class="number">0</span>]) * (box1[<span class="number">3</span>] - box1[<span class="number">1</span>]) + \</span><br><span class="line">            (box2[<span class="number">2</span>] - box2[<span class="number">0</span>]) * (box2[<span class="number">3</span>] - box2[<span class="number">1</span>]) - inter</span><br><span class="line">    iou = inter / union</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算空白部分占比</span></span><br><span class="line">    end_area = (area_C - union)/area_C</span><br><span class="line">    giou = iou - end_area</span><br><span class="line">    <span class="keyword">return</span> giou</span><br></pre></td></tr></table></figure>
-
-<p>$GIOU$的缺点：当两个框处于下图状态的时候$GIOU$就退化成了$IOU$。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f9a2f71e516b4c83c9a784a62638f5bd.png"></p>
-<h2 id="DIOU"><a href="#DIOU" class="headerlink" title="DIOU"></a>DIOU</h2><p>$DIOU$在$GIOU$加上了预测框与真实框之间的距离，给出他的定义：<br>$$<br>DIOU&#x3D;IOU-\frac {ρ^2·(b,b^gt)}{c^2}<br>$$<br>其中$b$，$b^gt$分别代表两个框的中心点，$ρ$代表两个中心点之间的欧氏距离，$C$代表最小包庇矩形的对角线，即如下图所示：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1e384bc0859353374e8d0cd3a653a4a2.png"></p>
-<p>$DIOU$实现的代码</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">DIoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    <span class="comment"># 计算对角线长度</span></span><br><span class="line">    y1,x1,y2,x2 = box1 </span><br><span class="line">    y3,x3,y4,x4 = box2</span><br><span class="line">    C = np.sqrt((<span class="built_in">max</span>(x1,x2,x3,x4)-<span class="built_in">min</span>(x1,x2,x3,x4))**<span class="number">2</span> + \</span><br><span class="line">                (<span class="built_in">max</span>(y1,y2,y3,y4)-<span class="built_in">min</span>(y1,y2,y3,y4))**<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算中心点间距</span></span><br><span class="line">    point_1 = ((x2+x1)/<span class="number">2</span>, (y2+y1)/<span class="number">2</span>)</span><br><span class="line">    point_2 = ((x4+x3)/<span class="number">2</span>, (y4+y3)/<span class="number">2</span>)</span><br><span class="line">    D = np.sqrt((point_2[<span class="number">0</span>]-point_1[<span class="number">0</span>])**<span class="number">2</span> + \</span><br><span class="line">                (point_2[<span class="number">1</span>]-point_1[<span class="number">1</span>])**<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 计算IoU</span></span><br><span class="line">    iou = IoU(box1, box2)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 计算空白部分占比</span></span><br><span class="line">    lens = D**<span class="number">2</span> / C**<span class="number">2</span></span><br><span class="line">    diou = iou - lens</span><br><span class="line">    <span class="keyword">return</span> diou</span><br></pre></td></tr></table></figure>
-
-<h2 id="CIOU"><a href="#CIOU" class="headerlink" title="CIOU"></a>CIOU</h2><p>在$GIOU$的基础之上加入了形状的相似度：<br>$$<br>CIOU&#x3D;IOU-\frac {ρ^2·(b,b^gt)}{c^2}-\alpha\upsilon<br>$$<br>其中$\alpha$是权重函数，而$\upsilon$用来度量长宽比的相似性：<br>$$<br>\upsilon&#x3D; \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right)^2<br>$$<br>$$<br>\alpha&#x3D; \frac{\upsilon}{(1-IOU)+\upsilon}<br>$$<br>在使用$CIOU$作为Loss的时候，$\upsilon$的梯度同样会参与反向传播的计算，其中：<br>$$<br>\begin{aligned}<br>\frac{\partial v}{\partial w} &amp; &#x3D;2 * \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{1}{1+\left(\frac{w}{h}\right)^{2}} * \frac{1}{h} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{h^{2}}{w^{2}+h^{2}} * \frac{1}{h} \<br>&amp; &#x3D;-\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{h}{w^{2}+h^{2}}<br>\end{aligned}<br>$$<br>$$<br>\begin{aligned}<br>\frac{\partial v}{\partial h} &amp; &#x3D;2 * \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{1}{1+\left(\frac{w}{h}\right)^{2}} * w *(-1) * h^{-2} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{h^{2}}{w^{2}+h^{2}} * w * h^{-2} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{w}{w^{2}+h^{2}}<br>\end{aligned}<br>$$</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">CIoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    y1,x1,y2,x2 = box1 </span><br><span class="line">    y3,x3,y4,x4 = box2</span><br><span class="line">    </span><br><span class="line">    iou = IoU(box1, box2)</span><br><span class="line">    diou = DIoU(box1, box2)</span><br><span class="line"></span><br><span class="line">    v = <span class="number">4</span> / math.pi**<span class="number">2</span> * (math.atan((x2-x1)/(y2-y1)) - \</span><br><span class="line">                          math.atan((x4-x3)/(y4-y3)))**<span class="number">2</span> + <span class="number">1e-5</span></span><br><span class="line">    alpha = v / ((<span class="number">1</span>-iou) + v)</span><br><span class="line">    </span><br><span class="line">    ciou = diou - alpha * v</span><br><span class="line">    <span class="keyword">return</span> ciou</span><br><span class="line">CIoU(box1, box2)</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>神经网络</category>
-      </categories>
-      <tags>
-        <tag>IOU</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>YOLOV8和YOLOV5对比</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/</url>
     <content><![CDATA[<h1 id="YOLOV8和YOLOV5对比"><a href="#YOLOV8和YOLOV5对比" class="headerlink" title="YOLOV8和YOLOV5对比"></a>YOLOV8和YOLOV5对比</h1><h2 id="正负样本匹配策略"><a href="#正负样本匹配策略" class="headerlink" title="正负样本匹配策略"></a>正负样本匹配策略</h2><h3 id="yolov5"><a href="#yolov5" class="headerlink" title="yolov5"></a>yolov5</h3><p>yolov5:采用anchor-base策略</p>
@@ -984,18 +959,28 @@
       </tags>
   </entry>
   <entry>
-    <title>交叉熵损失</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
-    <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
-<h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
-<h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
-<p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
-]]></content>
+    <title>IOU和他们儿子们</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/</url>
+    <content><![CDATA[<h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">IoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    <span class="comment">#这里的box是xyxy形式的</span></span><br><span class="line">    <span class="comment"># 计算中间矩形的宽高</span></span><br><span class="line">    in_h = <span class="built_in">min</span>(box1[<span class="number">2</span>], box2[<span class="number">2</span>]) - <span class="built_in">max</span>(box1[<span class="number">0</span>], box2[<span class="number">0</span>])</span><br><span class="line">    in_w = <span class="built_in">min</span>(box1[<span class="number">3</span>], box2[<span class="number">3</span>]) - <span class="built_in">max</span>(box1[<span class="number">1</span>], box2[<span class="number">1</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算交集、并集面积</span></span><br><span class="line">    inter = <span class="number">0</span> <span class="keyword">if</span> in_h &lt; <span class="number">0</span> <span class="keyword">or</span> in_w &lt; <span class="number">0</span> <span class="keyword">else</span> in_h * in_w</span><br><span class="line">    union = (box1[<span class="number">2</span>] - box1[<span class="number">0</span>]) * (box1[<span class="number">3</span>] - box1[<span class="number">1</span>]) + \</span><br><span class="line">            (box2[<span class="number">2</span>] - box2[<span class="number">0</span>]) * (box2[<span class="number">3</span>] - box2[<span class="number">1</span>]) - inter</span><br><span class="line">    <span class="comment"># 计算IoU</span></span><br><span class="line">    iou = inter / union</span><br><span class="line">    <span class="keyword">return</span> iou</span><br></pre></td></tr></table></figure>
+
+<p>$IOU$的两个缺点：<br>(1).当预测框和真实框的不存在交集的时候，如下图所示.如何使用$IOU$进行计算的话，其定位损失就为0，导致梯度为0无法进行优化。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4982c9882af8a4b2b2e28115e835c5ee.png"><br>(2).IoU无法精确的反映两者的重合度大小。如下图所示，三种情况IoU都相等，但看得出来他们的重合度是不一样的，左边的图回归的效果最好，右边的最差。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bccccb77b50dc6571d7c2a69c99521a5.png"></p>
+<h2 id="GIOU"><a href="#GIOU" class="headerlink" title="GIOU"></a>GIOU</h2><p>$GIOU$的提出解决了$IOU$的第一个缺点，给出$GIOU$的定义<br>$$<br>GIOU&#x3D;IOU-\frac {C-|A\cap B |}{C}<br>$$<br>$C$为这两个框的最小外接矩形<br>下面还用刚刚那个例子来进行计算<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1898684fd46507d18bf54b1ab6e32b8a.png"></p>
+<p>$$<br>GIOU&#x3D;IOU-\frac {红框-(黄色+蓝色-绿色)}{红框}<br>$$<br>给出$GIOU$的代码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">GIoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    <span class="comment"># 计算最小包庇面积</span></span><br><span class="line">    y1,x1,y2,x2 = box1 </span><br><span class="line">    y3,x3,y4,x4 = box2</span><br><span class="line">    area_C = (<span class="built_in">max</span>(x1,x2,x3,x4)-<span class="built_in">min</span>(x1,x2,x3,x4)) * \</span><br><span class="line">             (<span class="built_in">max</span>(y1,y2,y3,y4)-<span class="built_in">min</span>(y1,y2,y3,y4))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算IoU</span></span><br><span class="line">    in_h = <span class="built_in">min</span>(box1[<span class="number">2</span>], box2[<span class="number">2</span>]) - <span class="built_in">max</span>(box1[<span class="number">0</span>], box2[<span class="number">0</span>])</span><br><span class="line">    in_w = <span class="built_in">min</span>(box1[<span class="number">3</span>], box2[<span class="number">3</span>]) - <span class="built_in">max</span>(box1[<span class="number">1</span>], box2[<span class="number">1</span>])</span><br><span class="line">    inter = <span class="number">0</span> <span class="keyword">if</span> in_h &lt; <span class="number">0</span> <span class="keyword">or</span> in_w &lt; <span class="number">0</span> <span class="keyword">else</span> in_h * in_w</span><br><span class="line">    union = (box1[<span class="number">2</span>] - box1[<span class="number">0</span>]) * (box1[<span class="number">3</span>] - box1[<span class="number">1</span>]) + \</span><br><span class="line">            (box2[<span class="number">2</span>] - box2[<span class="number">0</span>]) * (box2[<span class="number">3</span>] - box2[<span class="number">1</span>]) - inter</span><br><span class="line">    iou = inter / union</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算空白部分占比</span></span><br><span class="line">    end_area = (area_C - union)/area_C</span><br><span class="line">    giou = iou - end_area</span><br><span class="line">    <span class="keyword">return</span> giou</span><br></pre></td></tr></table></figure>
+
+<p>$GIOU$的缺点：当两个框处于下图状态的时候$GIOU$就退化成了$IOU$。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f9a2f71e516b4c83c9a784a62638f5bd.png"></p>
+<h2 id="DIOU"><a href="#DIOU" class="headerlink" title="DIOU"></a>DIOU</h2><p>$DIOU$在$GIOU$加上了预测框与真实框之间的距离，给出他的定义：<br>$$<br>DIOU&#x3D;IOU-\frac {ρ^2·(b,b^gt)}{c^2}<br>$$<br>其中$b$，$b^gt$分别代表两个框的中心点，$ρ$代表两个中心点之间的欧氏距离，$C$代表最小包庇矩形的对角线，即如下图所示：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1e384bc0859353374e8d0cd3a653a4a2.png"></p>
+<p>$DIOU$实现的代码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">DIoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    <span class="comment"># 计算对角线长度</span></span><br><span class="line">    y1,x1,y2,x2 = box1 </span><br><span class="line">    y3,x3,y4,x4 = box2</span><br><span class="line">    C = np.sqrt((<span class="built_in">max</span>(x1,x2,x3,x4)-<span class="built_in">min</span>(x1,x2,x3,x4))**<span class="number">2</span> + \</span><br><span class="line">                (<span class="built_in">max</span>(y1,y2,y3,y4)-<span class="built_in">min</span>(y1,y2,y3,y4))**<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算中心点间距</span></span><br><span class="line">    point_1 = ((x2+x1)/<span class="number">2</span>, (y2+y1)/<span class="number">2</span>)</span><br><span class="line">    point_2 = ((x4+x3)/<span class="number">2</span>, (y4+y3)/<span class="number">2</span>)</span><br><span class="line">    D = np.sqrt((point_2[<span class="number">0</span>]-point_1[<span class="number">0</span>])**<span class="number">2</span> + \</span><br><span class="line">                (point_2[<span class="number">1</span>]-point_1[<span class="number">1</span>])**<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 计算IoU</span></span><br><span class="line">    iou = IoU(box1, box2)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 计算空白部分占比</span></span><br><span class="line">    lens = D**<span class="number">2</span> / C**<span class="number">2</span></span><br><span class="line">    diou = iou - lens</span><br><span class="line">    <span class="keyword">return</span> diou</span><br></pre></td></tr></table></figure>
+
+<h2 id="CIOU"><a href="#CIOU" class="headerlink" title="CIOU"></a>CIOU</h2><p>在$GIOU$的基础之上加入了形状的相似度：<br>$$<br>CIOU&#x3D;IOU-\frac {ρ^2·(b,b^gt)}{c^2}-\alpha\upsilon<br>$$<br>其中$\alpha$是权重函数，而$\upsilon$用来度量长宽比的相似性：<br>$$<br>\upsilon&#x3D; \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right)^2<br>$$<br>$$<br>\alpha&#x3D; \frac{\upsilon}{(1-IOU)+\upsilon}<br>$$<br>在使用$CIOU$作为Loss的时候，$\upsilon$的梯度同样会参与反向传播的计算，其中：<br>$$<br>\begin{aligned}<br>\frac{\partial v}{\partial w} &amp; &#x3D;2 * \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{1}{1+\left(\frac{w}{h}\right)^{2}} * \frac{1}{h} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{h^{2}}{w^{2}+h^{2}} * \frac{1}{h} \<br>&amp; &#x3D;-\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{h}{w^{2}+h^{2}}<br>\end{aligned}<br>$$<br>$$<br>\begin{aligned}<br>\frac{\partial v}{\partial h} &amp; &#x3D;2 * \frac{4}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) *(-1) * \frac{1}{1+\left(\frac{w}{h}\right)^{2}} * w *(-1) * h^{-2} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{h^{2}}{w^{2}+h^{2}} * w * h^{-2} \<br>&amp; &#x3D;\frac{8}{\pi^{2}} *\left(\arctan \frac{w^{g t}}{h^{g t}}-\arctan \frac{w}{h}\right) * \frac{w}{w^{2}+h^{2}}<br>\end{aligned}<br>$$</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">CIoU</span>(<span class="params">box1, box2</span>):</span><br><span class="line">    y1,x1,y2,x2 = box1 </span><br><span class="line">    y3,x3,y4,x4 = box2</span><br><span class="line">    </span><br><span class="line">    iou = IoU(box1, box2)</span><br><span class="line">    diou = DIoU(box1, box2)</span><br><span class="line"></span><br><span class="line">    v = <span class="number">4</span> / math.pi**<span class="number">2</span> * (math.atan((x2-x1)/(y2-y1)) - \</span><br><span class="line">                          math.atan((x4-x3)/(y4-y3)))**<span class="number">2</span> + <span class="number">1e-5</span></span><br><span class="line">    alpha = v / ((<span class="number">1</span>-iou) + v)</span><br><span class="line">    </span><br><span class="line">    ciou = diou - alpha * v</span><br><span class="line">    <span class="keyword">return</span> ciou</span><br><span class="line">CIoU(box1, box2)</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>神经网络</category>
       </categories>
       <tags>
-        <tag>交叉熵损失</tag>
+        <tag>IOU</tag>
       </tags>
   </entry>
   <entry>
@@ -1025,6 +1010,21 @@
       </categories>
       <tags>
         <tag>优化器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>交叉熵损失</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
+    <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
+<h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
+<h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
+<p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
+]]></content>
+      <categories>
+        <category>神经网络</category>
+      </categories>
+      <tags>
+        <tag>交叉熵损失</tag>
       </tags>
   </entry>
 </search>
