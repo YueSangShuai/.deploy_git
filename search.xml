@@ -127,6 +127,45 @@
       </tags>
   </entry>
   <entry>
+    <title>Ubuntu19 Openvion cmake源码编译</title>
+    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
+    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>解压后的结构目录</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
+<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后安装外部依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
+
+<p>我中间报了一些黄的的警告我没有管他之后</p>
+<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
+<p>&nbsp;没有报错就好，然后开始编译库</p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
+<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
+<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
+<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
     <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
     <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
@@ -210,45 +249,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Ubuntu19 Openvion cmake源码编译</title>
-    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
-    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>解压后的结构目录</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
-<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后安装外部依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
-
-<p>我中间报了一些黄的的警告我没有管他之后</p>
-<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
-<p>&nbsp;没有报错就好，然后开始编译库</p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
-<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
-<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
-<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Openvino</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Markdown图床</title>
     <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/</url>
     <content><![CDATA[<h1 id="Markdown图床"><a href="#Markdown图床" class="headerlink" title="Markdown图床"></a>Markdown图床</h1><h2 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h2><ul>
@@ -259,6 +259,54 @@
 <h2 id="2-github"><a href="#2-github" class="headerlink" title="2. github"></a>2. github</h2><p>首先创建一个好记的仓库名<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e6618bcabea3c60d34e724c0bfe3a66f.png" alt="e6618bcabea3c60d34e724c0bfe3a66f.png"><br>分支部分默认:master就行<br>然后是获取token进入setting:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7013512526adb5c659dd17fa635b2a91.png" alt="7013512526adb5c659dd17fa635b2a91.png"><br>最底下有个<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3f3574d1bbd20c1604e28fce611abc8b.png" alt="3f3574d1bbd20c1604e28fce611abc8b.png"><br>然后<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//07fe2a9fdec1257c0853fc71301175e2.png" alt="07fe2a9fdec1257c0853fc71301175e2.png"><br>之后这样勾选<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7a876b7bab2841dd4b8b8546cf785fd.png" alt="a7a876b7bab2841dd4b8b8546cf785fd.png"><br>这样你就可以得到一个token，记得保存这个token，这个token只能看一次。<br>将这个token塞到刚刚pigo里面之后就可以上传图片了。</p>
 <h2 id="可能会出现的问题"><a href="#可能会出现的问题" class="headerlink" title="可能会出现的问题"></a>可能会出现的问题</h2><p>链接失败：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7deb1860493cfa28ec0f0496cda9839.png" alt="a7deb1860493cfa28ec0f0496cda9839.png"><br>记得点开这里面这样勾选</p>
 <p>上传失败：<br>仓库的设置有问题或者网不好没传上去</p>
+]]></content>
+      <categories>
+        <category>hexo配置</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>hexo基础版搭建</title>
+    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<h1 id="hexo基础版搭建"><a href="#hexo基础版搭建" class="headerlink" title="hexo基础版搭建"></a>hexo基础版搭建</h1><h2 id="1-前置准备"><a href="#1-前置准备" class="headerlink" title="1.前置准备"></a>1.前置准备</h2><p>1.git <a href="https://registry.npmmirror.com/binary.html?path=git-for-windows/">git</a><br>2.Node.js <a href="https://nodejs.org/en/">Node.js</a><br>3.hexo<br>hexo是一款大家都在用网上教程多的博客平台，所以我们采用这一款。<br>首先先创建一个空白文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//25073589eed32f584d36ae6a0ab62f5d.png" alt="25073589eed32f584d36ae6a0ab62f5d.png"><br>然后git bash here之后输入以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-cli -g#使用npm下载hexo</span><br><span class="line">hexo init blog#hexo的初始化</span><br><span class="line">cd blog#进入这个文件夹</span><br><span class="line">npm install #安装npm的那些包</span><br><span class="line">hexo server #启动hexo服务</span><br></pre></td></tr></table></figure>
+<p>最终会生成一个文件夹如下:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7e45e1465e138298cfd38441ef094034.png" alt="7e45e1465e138298cfd38441ef094034.png"><br>文件夹功能</p>
+<ul>
+<li>node_modules: 依赖包</li>
+<li>public：存放生成的页面</li>
+<li>scaffolds：生成文章的一些模板</li>
+<li>source：用来存放你的文章</li>
+<li>themes：主题</li>
+</ul>
+<p>然后输入这两条命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+
+<p>完成后会显示如下内容，则说明<strong>配置成功</strong>!<br>（这里我是已经添加过主题了之后会说）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9b8ea34415f558f8522f8ed9a909912b.png" alt="9b8ea34415f558f8522f8ed9a909912b.png"></p>
+<h2 id="GitHub创建仓库"><a href="#GitHub创建仓库" class="headerlink" title="GitHub创建仓库"></a>GitHub创建仓库</h2><p>首先注册一个GitHub的仓库，然后在个人主页中选择 new 新建仓库<br><span style="color: red;">注意： 仓库名称的前半部分与你的用户名一致,即 YueSangShuai，后半部分为 <a href="http://git.io/">http://git.io</a> 固定格式</span><br>（忽略红色警告，因为我已经创建过了！），可以选择一个readme为说明文件（随便），然后点击创建仓库<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//645b92b2b22cd9b4c583876d8657f00a.png" alt="645b92b2b22cd9b4c583876d8657f00a.png"></p>
+<p> 回到 git bash黑窗口中，<strong>输入以下两个命令</strong>：<br>yourname改为你的<strong>GitHub的用户名</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot;</span><br></pre></td></tr></table></figure>
+
+<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+
+<p>  <strong>创建 ssh，输入命令，然后一直回车</strong></p>
+<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+
+<p>之后会提示你已完成 ssh的创建，在文件中找到这个路径<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e25ae687593ee8ffc37aff1f0042aa51.png" alt="e25ae687593ee8ffc37aff1f0042aa51.png"><br>记住你的id_rsa.pub,<br>进入你的github setting<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d9fad9c8f3c86666cb30788bca8f4f61.png" alt="d9fad9c8f3c86666cb30788bca8f4f61.png"><br>创建你的ssh-key<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//819d5aeaf13bfec2870c7dfaf59cd1ba.png" alt="819d5aeaf13bfec2870c7dfaf59cd1ba.png"><br>将你的id_rsa.pub的内容输入到下面即可完成<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d7d89bd60289f494e668f0e2e2cbe12a.png" alt="d7d89bd60289f494e668f0e2e2cbe12a.png"></p>
+<h2 id="hexo部署到github"><a href="#hexo部署到github" class="headerlink" title="hexo部署到github"></a>hexo部署到github</h2><p>找到刚刚那个文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//239cf8c656328a94d51c78f784a1af1c.png" alt="239cf8c656328a94d51c78f784a1af1c.png"><br>找到下面的内容</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line"># deploy:</span><br><span class="line">#   type: &#x27;&#x27;</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/username/username.github.io.git</span><br></pre></td></tr></table></figure>
+<p>然后在这个位置设置一下你的博客链接：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6c388e576a7599c3d7e7efe858faa024.png" alt="6c388e576a7599c3d7e7efe858faa024.png"></p>
+<p><strong>安装 git部署命令工具</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+<p>然后：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>hexo clean</code>清除了你之前生成的东西，也可以不加。 <code>hexo generate</code> 顾名思义，生成静态文章，可以用 <code>hexo g</code>缩写 <code>hexo deploy</code> 部署文章，可以用<code>hexo d</code>缩写<br><strong>如果是在离线端即 localhost:4000端测试你的博客，则只需要 hexo g + hexo s 即可，无需 hexo d</strong><br>输入完成后会出现一堆内容，不用管他，只要最后内容如下所示，就表示成功了！<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6028bb5fe0b8b6917a408ffe53a27c81.png" alt="6028bb5fe0b8b6917a408ffe53a27c81.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username.github.io  # https://username.github.io</span><br></pre></td></tr></table></figure>
+<p><strong>访问到你的博客了，其中username是你GitHub用户名，这个网站不是离线的，其他人都可以访问到！！！</strong></p>
 ]]></content>
       <categories>
         <category>hexo配置</category>
@@ -367,54 +415,6 @@
 <p>效果图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//93efb444c021774abc52076ae0e2ea89.png" alt="93efb444c021774abc52076ae0e2ea89.png"></p>
 <h2 id="标签放到首页"><a href="#标签放到首页" class="headerlink" title="标签放到首页"></a>标签放到首页</h2><p>在路径：<code>/themes/next/layout/index.swig </code>中<code>&#123;% block content %&#125;</code>下面添加下方代码</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;% block content %&#125;</span><br><span class="line"></span><br><span class="line">	&lt;div class=&quot;tag-cloud&quot;&gt;</span><br><span class="line">	  &lt;div class=&quot;tag-cloud-tags&quot; id=&quot;tags&quot;&gt;</span><br><span class="line">		&#123;&#123; tagcloud(&#123;min_font: 16, max_font: 16, amount: 300, color: true, start_color: &#x27;#fff&#x27;, end_color: &#x27;#fff&#x27;&#125;) &#125;&#125;</span><br><span class="line">	  &lt;/div&gt;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">	&lt;br&gt;</span><br><span class="line">	</span><br><span class="line">	&#123;% include &#x27;tag-color.swig&#x27; %&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>hexo配置</category>
-      </categories>
-      <tags>
-        <tag>hexo</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hexo基础版搭建</title>
-    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<h1 id="hexo基础版搭建"><a href="#hexo基础版搭建" class="headerlink" title="hexo基础版搭建"></a>hexo基础版搭建</h1><h2 id="1-前置准备"><a href="#1-前置准备" class="headerlink" title="1.前置准备"></a>1.前置准备</h2><p>1.git <a href="https://registry.npmmirror.com/binary.html?path=git-for-windows/">git</a><br>2.Node.js <a href="https://nodejs.org/en/">Node.js</a><br>3.hexo<br>hexo是一款大家都在用网上教程多的博客平台，所以我们采用这一款。<br>首先先创建一个空白文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//25073589eed32f584d36ae6a0ab62f5d.png" alt="25073589eed32f584d36ae6a0ab62f5d.png"><br>然后git bash here之后输入以下命令</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-cli -g#使用npm下载hexo</span><br><span class="line">hexo init blog#hexo的初始化</span><br><span class="line">cd blog#进入这个文件夹</span><br><span class="line">npm install #安装npm的那些包</span><br><span class="line">hexo server #启动hexo服务</span><br></pre></td></tr></table></figure>
-<p>最终会生成一个文件夹如下:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7e45e1465e138298cfd38441ef094034.png" alt="7e45e1465e138298cfd38441ef094034.png"><br>文件夹功能</p>
-<ul>
-<li>node_modules: 依赖包</li>
-<li>public：存放生成的页面</li>
-<li>scaffolds：生成文章的一些模板</li>
-<li>source：用来存放你的文章</li>
-<li>themes：主题</li>
-</ul>
-<p>然后输入这两条命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-
-<p>完成后会显示如下内容，则说明<strong>配置成功</strong>!<br>（这里我是已经添加过主题了之后会说）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9b8ea34415f558f8522f8ed9a909912b.png" alt="9b8ea34415f558f8522f8ed9a909912b.png"></p>
-<h2 id="GitHub创建仓库"><a href="#GitHub创建仓库" class="headerlink" title="GitHub创建仓库"></a>GitHub创建仓库</h2><p>首先注册一个GitHub的仓库，然后在个人主页中选择 new 新建仓库<br><span style="color: red;">注意： 仓库名称的前半部分与你的用户名一致,即 YueSangShuai，后半部分为 <a href="http://git.io/">http://git.io</a> 固定格式</span><br>（忽略红色警告，因为我已经创建过了！），可以选择一个readme为说明文件（随便），然后点击创建仓库<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//645b92b2b22cd9b4c583876d8657f00a.png" alt="645b92b2b22cd9b4c583876d8657f00a.png"></p>
-<p> 回到 git bash黑窗口中，<strong>输入以下两个命令</strong>：<br>yourname改为你的<strong>GitHub的用户名</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot;</span><br></pre></td></tr></table></figure>
-
-<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
-
-<p>  <strong>创建 ssh，输入命令，然后一直回车</strong></p>
-<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
-
-<p>之后会提示你已完成 ssh的创建，在文件中找到这个路径<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e25ae687593ee8ffc37aff1f0042aa51.png" alt="e25ae687593ee8ffc37aff1f0042aa51.png"><br>记住你的id_rsa.pub,<br>进入你的github setting<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d9fad9c8f3c86666cb30788bca8f4f61.png" alt="d9fad9c8f3c86666cb30788bca8f4f61.png"><br>创建你的ssh-key<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//819d5aeaf13bfec2870c7dfaf59cd1ba.png" alt="819d5aeaf13bfec2870c7dfaf59cd1ba.png"><br>将你的id_rsa.pub的内容输入到下面即可完成<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d7d89bd60289f494e668f0e2e2cbe12a.png" alt="d7d89bd60289f494e668f0e2e2cbe12a.png"></p>
-<h2 id="hexo部署到github"><a href="#hexo部署到github" class="headerlink" title="hexo部署到github"></a>hexo部署到github</h2><p>找到刚刚那个文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//239cf8c656328a94d51c78f784a1af1c.png" alt="239cf8c656328a94d51c78f784a1af1c.png"><br>找到下面的内容</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line"># deploy:</span><br><span class="line">#   type: &#x27;&#x27;</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/username/username.github.io.git</span><br></pre></td></tr></table></figure>
-<p>然后在这个位置设置一下你的博客链接：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6c388e576a7599c3d7e7efe858faa024.png" alt="6c388e576a7599c3d7e7efe858faa024.png"></p>
-<p><strong>安装 git部署命令工具</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
-<p>然后：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-
-<p>其中 <code>hexo clean</code>清除了你之前生成的东西，也可以不加。 <code>hexo generate</code> 顾名思义，生成静态文章，可以用 <code>hexo g</code>缩写 <code>hexo deploy</code> 部署文章，可以用<code>hexo d</code>缩写<br><strong>如果是在离线端即 localhost:4000端测试你的博客，则只需要 hexo g + hexo s 即可，无需 hexo d</strong><br>输入完成后会出现一堆内容，不用管他，只要最后内容如下所示，就表示成功了！<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6028bb5fe0b8b6917a408ffe53a27c81.png" alt="6028bb5fe0b8b6917a408ffe53a27c81.png"></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username.github.io  # https://username.github.io</span><br></pre></td></tr></table></figure>
-<p><strong>访问到你的博客了，其中username是你GitHub用户名，这个网站不是离线的，其他人都可以访问到！！！</strong></p>
-]]></content>
       <categories>
         <category>hexo配置</category>
       </categories>
