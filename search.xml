@@ -127,25 +127,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Markdown图床</title>
-    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/</url>
-    <content><![CDATA[<h1 id="Markdown图床"><a href="#Markdown图床" class="headerlink" title="Markdown图床"></a>Markdown图床</h1><h2 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h2><ul>
-<li>PicGo</li>
-<li><h3 id="首先打开picgo官网，下载安装包"><a href="#首先打开picgo官网，下载安装包" class="headerlink" title="首先打开picgo官网，下载安装包"></a>首先打开<a href="https://link.zhihu.com/?target=https://github.com/Molunerfinn/PicGo">picgo官网</a>，下载安装包</h3></li>
-</ul>
-<p>界面如下：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//42b06d30b078093c44af1bcfa69adeac.png" alt="42b06d30b078093c44af1bcfa69adeac.png"><br>点开图床设置<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//5c6ff7c000e84da4137e7b418bfb42ba.png" alt="5c6ff7c000e84da4137e7b418bfb42ba.png"><br>接下来我会一一描述如何从github中获取这些东西<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9aa122338e571e381e3d5d12b422aded.png" alt="9aa122338e571e381e3d5d12b422aded.png"></p>
-<h2 id="2-github"><a href="#2-github" class="headerlink" title="2. github"></a>2. github</h2><p>首先创建一个好记的仓库名<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e6618bcabea3c60d34e724c0bfe3a66f.png" alt="e6618bcabea3c60d34e724c0bfe3a66f.png"><br>分支部分默认:master就行<br>然后是获取token进入setting:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7013512526adb5c659dd17fa635b2a91.png" alt="7013512526adb5c659dd17fa635b2a91.png"><br>最底下有个<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3f3574d1bbd20c1604e28fce611abc8b.png" alt="3f3574d1bbd20c1604e28fce611abc8b.png"><br>然后<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//07fe2a9fdec1257c0853fc71301175e2.png" alt="07fe2a9fdec1257c0853fc71301175e2.png"><br>之后这样勾选<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7a876b7bab2841dd4b8b8546cf785fd.png" alt="a7a876b7bab2841dd4b8b8546cf785fd.png"><br>这样你就可以得到一个token，记得保存这个token，这个token只能看一次。<br>将这个token塞到刚刚pigo里面之后就可以上传图片了。</p>
-<h2 id="可能会出现的问题"><a href="#可能会出现的问题" class="headerlink" title="可能会出现的问题"></a>可能会出现的问题</h2><p>链接失败：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7deb1860493cfa28ec0f0496cda9839.png" alt="a7deb1860493cfa28ec0f0496cda9839.png"><br>记得点开这里面这样勾选</p>
-<p>上传失败：<br>仓库的设置有问题或者网不好没传上去</p>
-]]></content>
-      <categories>
-        <category>hexo配置</category>
-      </categories>
-      <tags>
-        <tag>hexo</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
     <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
     <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
@@ -265,6 +246,25 @@
       </categories>
       <tags>
         <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Markdown图床</title>
+    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/</url>
+    <content><![CDATA[<h1 id="Markdown图床"><a href="#Markdown图床" class="headerlink" title="Markdown图床"></a>Markdown图床</h1><h2 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h2><ul>
+<li>PicGo</li>
+<li><h3 id="首先打开picgo官网，下载安装包"><a href="#首先打开picgo官网，下载安装包" class="headerlink" title="首先打开picgo官网，下载安装包"></a>首先打开<a href="https://link.zhihu.com/?target=https://github.com/Molunerfinn/PicGo">picgo官网</a>，下载安装包</h3></li>
+</ul>
+<p>界面如下：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//42b06d30b078093c44af1bcfa69adeac.png" alt="42b06d30b078093c44af1bcfa69adeac.png"><br>点开图床设置<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//5c6ff7c000e84da4137e7b418bfb42ba.png" alt="5c6ff7c000e84da4137e7b418bfb42ba.png"><br>接下来我会一一描述如何从github中获取这些东西<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9aa122338e571e381e3d5d12b422aded.png" alt="9aa122338e571e381e3d5d12b422aded.png"></p>
+<h2 id="2-github"><a href="#2-github" class="headerlink" title="2. github"></a>2. github</h2><p>首先创建一个好记的仓库名<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e6618bcabea3c60d34e724c0bfe3a66f.png" alt="e6618bcabea3c60d34e724c0bfe3a66f.png"><br>分支部分默认:master就行<br>然后是获取token进入setting:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7013512526adb5c659dd17fa635b2a91.png" alt="7013512526adb5c659dd17fa635b2a91.png"><br>最底下有个<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3f3574d1bbd20c1604e28fce611abc8b.png" alt="3f3574d1bbd20c1604e28fce611abc8b.png"><br>然后<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//07fe2a9fdec1257c0853fc71301175e2.png" alt="07fe2a9fdec1257c0853fc71301175e2.png"><br>之后这样勾选<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7a876b7bab2841dd4b8b8546cf785fd.png" alt="a7a876b7bab2841dd4b8b8546cf785fd.png"><br>这样你就可以得到一个token，记得保存这个token，这个token只能看一次。<br>将这个token塞到刚刚pigo里面之后就可以上传图片了。</p>
+<h2 id="可能会出现的问题"><a href="#可能会出现的问题" class="headerlink" title="可能会出现的问题"></a>可能会出现的问题</h2><p>链接失败：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7deb1860493cfa28ec0f0496cda9839.png" alt="a7deb1860493cfa28ec0f0496cda9839.png"><br>记得点开这里面这样勾选</p>
+<p>上传失败：<br>仓库的设置有问题或者网不好没传上去</p>
+]]></content>
+      <categories>
+        <category>hexo配置</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
       </tags>
   </entry>
   <entry>

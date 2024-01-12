@@ -118,8 +118,8 @@ function show(basicInfo) {
 
 $(document).ready(function () {
     //部分自定义
-    $("#myscoll").nekoScroll({
-        bgcolor: 'rgb(0 0 0 / .5)', //背景颜色，没有绳子背景图片时有效
+    $("#catcat").nekoScroll({
+        bgcolor: 'rgb(255 255 255)', //背景颜色，没有绳子背景图片时有效
         borderRadius: '2em',
         zoom: 0.9
     }
