@@ -423,155 +423,6 @@
       </tags>
   </entry>
   <entry>
-    <title>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</title>
-    <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/</url>
-    <content><![CDATA[<h1 id="ubuntu22-pycharm-cuda-cudnn，tensorrt的安装"><a href="#ubuntu22-pycharm-cuda-cudnn，tensorrt的安装" class="headerlink" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装"></a>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</h1><p>（写这篇博客的意义在于之后方便之后重装不用再重新看一大堆博客了）</p>
-<p><strong>我的电脑配置为y9000p(2022),12i7,3060的显卡 pycharm版本为2022.2,cuda版本为11.6.2</strong></p>
-<p><strong>cudnn版本为8.4.1,tensorrt版本为8.4.1</strong></p>
-<h2 id="一-pycharm的安装"><a href="#一-pycharm的安装" class="headerlink" title="一.pycharm的安装"></a><a href="#"></a>一.pycharm的安装</h2><p>官方的安装连接:<a href="https://www.jetbrains.com/pycharm/download/#section=linux" title="Download PyCharm: Python IDE for Professional Developers by JetBrains">Download PyCharm: Python IDE for Professional Developers by JetBrains</a></p>
-<p>下载下来后先不着急可以先把pycharm固定到收藏夹上</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ~/.local/share/applications/</span><br><span class="line">sudo gedit Pycharm.desktop</span><br></pre></td></tr></table></figure>
-
-<p><strong>之后将下方文字复制进去（注意注释!）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Desktop Entry]</span><br><span class="line">Version=1.0</span><br><span class="line">Terminal=false</span><br><span class="line">Type=Application</span><br><span class="line">Name=Pycharm</span><br><span class="line">Exec=/opt/pycharm/bin/pycharm.sh</span><br><span class="line"># 注意：Exec表示安装软件的**启动快捷方式**文件路径</span><br><span class="line"># 注意：Icon表示安装软件的图标路径</span><br><span class="line">Icon=/opt/pycharm/bin/pycharm.png</span><br><span class="line">NoDisplay=false</span><br><span class="line">StartupWMClass=</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>之后就可以把pycharm固定到收藏夹上</p>
-<h2 id="二-minconda的安装"><a href="#二-minconda的安装" class="headerlink" title="二.minconda的安装"></a><a href="#"></a>二.minconda的安装</h2><p>miniconda安装的时候如果采用sudo则以后使用conda命令需要加sudo</p>
-<p>这里选择的是miniconda因为我服务器上面之前配置的也是miniconda为了向服务器看齐，这里的话如果安装的是anconda的话window环境下anconda的env拷贝进来好像是可以直接用的，这个我还没有尝试过。</p>
-<p><strong>miniconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/" title="Index of /anaconda/miniconda/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;miniconda&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
-<p><strong>anconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/" title="Index of /anaconda/archive/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;archive&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
-<p>minconda和anconda的差别就是anconda的base环境包括了conda管理器、Pyhon编译器、常用的包和Spyder IDE等，而miniconda的base环境选择只包括conda管理器和Python编译器</p>
-<p>然后选择你下载下来的sh进行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo bash Miniconda3-py39_4.9.2-Linux-x86_64.sh</span><br></pre></td></tr></table></figure>
-
-<h2 id="三-Nvdia显卡的安装"><a href="#三-Nvdia显卡的安装" class="headerlink" title="三.Nvdia显卡的安装"></a><a href="#"></a>三.Nvdia显卡的安装</h2><p>首先是关于显卡的卸载，我们可以进入附加驱动中选择x.org选项就相当于把本来的显卡驱动删除了，如果你有两个显示屏的话安装完显卡驱动后副屏才可以用因为副屏是挂载在你的独显上</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6c0b69b61bf14dd6a0b2c3a5d2caefd0_79a070ed217a4622b.png"></p>
-<p>&nbsp;显卡安装不建议用附加驱动，因为很慢，所以可以换源后直接用命令行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ubuntu-drivers devices</span><br></pre></td></tr></table></figure>
-
-<p>这是可用的显卡</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/deedfe2db2f7493d850087f8eb3af135_3bac9215b4b745b7b.png"></p>
-<p>&nbsp;<strong>在安装NVIDIA驱动以前需要禁止系统自带显卡驱动nouveau：可以先通过指令<code>lsmod | grep nouveau</code>查看nouveau驱动的启用情况，如果有输出表示nouveau驱动正在工作，如果没有内容输出则表示已经禁用了nouveau</strong>**(这里我没有图所以找了一张网上的)**</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/17c7cfc464b54a90b6fb8e4257c7ca2a_259f95930526495c8.png"></p>
-<p>&nbsp;电脑有有输出，表示nouveau启动了，下面进行nouveau的禁用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/modprobe.d/blacklist.conf</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4107bb0291614f308aa2cfa11b25eb48_bc486b7a284541d48.png"></p>
-<p>在blacklist.conf文件末尾加上这两行，并保存：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">blacklist nouveau</span><br><span class="line">options nouveau modeset=0</span><br></pre></td></tr></table></figure>
-
-<p>然后在终端中输入：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo update-initramfs -u  #应用更改</span><br></pre></td></tr></table></figure>
-
-<p><strong>选择合适的显卡进行下载（可以进入官网查看cuda和显卡的对应版本:<a href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html" title="Release Notes :: CUDA Toolkit Documentation">Release Notes :: CUDA Toolkit Documentation</a>）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install nvidia-driver-510 # 根据自己的n卡可选驱动下载显卡驱动</span><br></pre></td></tr></table></figure>
-
-<p>重启电脑后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvidia-smi </span><br></pre></td></tr></table></figure>
-
-<p>查看是否安装完成</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/14d411a70a8a496db4597f6b75c2bf16_906040e8175e420aa.png"></p>
-<p><strong>（这里有一点需要特别注意：右上角的CUDA Version的意思是你的装的显卡驱动最大支持11.6的cuda）</strong></p>
-<h2 id="四：CUDA的安装"><a href="#四：CUDA的安装" class="headerlink" title="四：CUDA的安装"></a><a href="#"></a><strong>四：CUDA的安装</strong></h2><h3 id="CUDA下载"><a href="#CUDA下载" class="headerlink" title="CUDA下载"></a><a href="#"></a><strong>CUDA下载</strong></h3><p>我们进入<a href="https://developer.nvidia.cn/cuda-toolkit-archive" title="CUDA Toolkit Archive | NVIDIA Developer">CUDA Toolkit Archive | NVIDIA Developer</a>选择我们适合的cuda这里我选择11.6.2版本的</p>
-<img width="1200" height="654" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/472f848107ea4535bd4249ef515ebcb4_5c8286c7ed0b46989.png" class="jop-noMdConv">
-
-<p>&nbsp;安装的命令如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>细节的地方来了，你的tmp空间可能不够你可以在你的home文件夹下建立一个tmp然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run --tmpdir=这里填写你的新建立的tmp位置</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>使用完以后删掉这个tmp即可因为tmp文件夹重启后里面的文件默认不保存</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7b9eaf1e05594a15ab45ae4ccfd5b97b_12b269e7bf4445879.png"></p>
-<p>等待一会这个时间可能会有点长</p>
-<p>选择continue</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c33c5596287f4f7e99b292b501636093_b631af5dcf9e426b9.png"> 输入accept</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/be2fd1ea55654298a1e054707fa019c2_1390615b7701418d8.png"></p>
-<p>&nbsp;因为刚开始我们已经安装完驱动所以这里可以不用选择（之前安装的时候出现了一个小问题就是我当初重装显卡驱动的时候把显卡驱动删了想着能不能用run里面自带的但是我是没有成功，之后用下面这个方法也同样成功运行）</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/cdc3b1056f874696b16b61351371eb6e_842dcbddc6794f779.png"></p>
-<h3 id="配置cuda环境"><a href="#配置cuda环境" class="headerlink" title="配置cuda环境"></a><a href="#"></a><strong>配置cuda环境</strong></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<p>添加以下到末尾</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
-
-<p>然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<p>在终端输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvcc -V</span><br></pre></td></tr></table></figure>
-
-<p>显示以下则为成功（记得V要大写）</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7dc6f3364ff94039ace3ef3ffc66113b_92618f1fc8ac48ed9.png"></p>
-<p><strong>如果不成功，重新source ~&#x2F;.bashrc然后输入nvcc -V成功的话，细节的地方来了！！！！！</strong></p>
-<p><strong>首先，我们需要搞明白Linux启动时读取配置文件的顺序。在刚登录Linux时，首先启动<code>/etc/profile</code> 文件，然后再启动用户目录下的 <code>~/.bash_profile</code>、<code>~/.bash_login</code>或 <code>~/.profile</code>文件中的其中一个，<br>执行的顺序为：<code>~/.bash_profile</code>、<code>~/.bash_login</code>、 <code>~/.profile</code></strong></p>
-<p><code>所以如果行不同我们可以：</code></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/profile</span><br></pre></td></tr></table></figure>
-
-<p>然后输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
-
-<p>最后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
-
-<p>之后应该就能显示了</p>
-<h3 id="CUDA的测试"><a href="#CUDA的测试" class="headerlink" title="CUDA的测试"></a><a href="#"></a>CUDA的测试</h3><p>下载测试文件：<a href="https://github.com/nvidia/cuda-samples" title="GitHub - NVIDIA/cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit">GitHub - NVIDIA&#x2F;cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit</a></p>
-<p>下载解压后make一下</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c812c23a6ee4fd69748eb91a128dc05_39a5e78576a14f1ca.png"></p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5ea6dfd19d964fa9ac7b7f95183dbf1d_1475ea4225a84c158.png"></p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a6886047066744b08e2fa1cfc9af2df0_63d7e9f5fdd8445bb.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b54f4a317fc64aa795e66bf71163d97e_d0876e270e6e47f28.png"></p>
-<p>出现这个结果就是成功了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4373d4bbf57445989e5004d3bd6ad751_cd458d6cee7a44d79.png"></p>
-<h2 id="四-CUDANN的安装"><a href="#四-CUDANN的安装" class="headerlink" title="四.CUDANN的安装"></a><a href="#"></a>四.CUDANN的安装</h2><h3 id="CUDANN下载"><a href="#CUDANN下载" class="headerlink" title="CUDANN下载"></a><a href="#"></a>CUDANN下载</h3><p>下载连接：<a href="https://developer.nvidia.com/rdp/cudnn-download">https://developer.nvidia.com/rdp/cudnn-download</a></p>
-<p>这里我下在的是cudann8.4.1</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9f24be3dde60443f9a18839b76218bdb_6e701b31e177461eb.png"></p>
-<p>&nbsp;下载Linux x86-64(tar)</p>
-<p>进入解压后的界面，然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda-11.6/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda-11.6/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda-11.6/lib64/libcudnn*</span><br><span class="line">#下面这个是方便后面opencv配置cuda</span><br><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>之后查看<a href="https://so.csdn.net/so/search?q=CUDNN&spm=1001.2101.3001.7020">CUDNN</a>版本</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /usr/local/cuda-11.6/include/cudnn_version.h | grep CUDNN_MAJOR -A 2</span><br></pre></td></tr></table></figure>
-
-<h3 id="CUDNN依赖"><a href="#CUDNN依赖" class="headerlink" title="CUDNN依赖"></a><a href="#"></a>CUDNN依赖</h3><p>依赖网站：<a href="https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/" title="Index of /compute/cuda/repos/ubuntu2004/x86_64">Index of &#x2F;compute&#x2F;cuda&#x2F;repos&#x2F;ubuntu2004&#x2F;x86_64</a></p>
-<p>找到对应的依赖（一个带dev一个不带）</p>
-<p>或者使用命令行进行下载</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>安装依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<h2 id="五-Tensortrt的安装"><a href="#五-Tensortrt的安装" class="headerlink" title="五.Tensortrt的安装"></a><a href="#"></a>五.Tensortrt的安装</h2><h3 id="1-下载"><a href="#1-下载" class="headerlink" title="1.下载"></a><a href="#"></a>1.下载</h3><p>这里是tensorrt的下载连接:<a href="https://developer.nvidia.com/nvidia-tensorrt-8x-download">https://developer.nvidia.com/nvidia-tensorrt-8x-download</a></p>
-<p>下载tar包解压后的到的连接</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e435b363bc446c886e43e5b21292e23_54c963cc1b2a438ab.png"></p>
-<p>修改环境变量:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo gedit ~/.bashrc </span><br></pre></td></tr></table></figure>
-
-<p>在文件末尾加入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH：/home/stand/Software/TensorRT-8.4.1.5/lib</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-测试样例"><a href="#2-测试样例" class="headerlink" title="2. 测试样例"></a><a href="#"></a>2. 测试样例</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd TensorRT-8.4.1.5/samples/sampleMNIST</span><br><span class="line">make -j16</span><br><span class="line">cd ../../bin/</span><br><span class="line">./sample_mnist</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这样就成功了</p>
-<img width="1200" height="1242" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3eb8c7cdcede4fdead0f60fb785bad68_4fb7033780c548148.png" class="jop-noMdConv">
-
-<h3 id="3-python部分的安装"><a href="#3-python部分的安装" class="headerlink" title="3.python部分的安装"></a><a href="#"></a>3.python部分的安装</h3><p>用miniconda创建完环境之后</p>
-<p>直接pip目录中的uff，python(注意选择和你conda创建python的版本相对应) ，graphsurgeon下的whl就可以了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5fdfb1069d5c433781f5f8abf04410eb_48a6f8c2ba974c2db.png"></p>
-<p>我这里是一次就成功了可能出现问题的话可以参考这位大佬:<a href="https://blog.csdn.net/lilin020401/article/details/126475351#t4" title="Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客">Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>cuda</tag>
-        <tag>cudnn</tag>
-        <tag>tensorrt</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</title>
     <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/</url>
     <content><![CDATA[<h1 id="ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）"><a href="#ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）" class="headerlink" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）"></a>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</h1><hr>
@@ -736,9 +587,9 @@
         <category>环境配置</category>
       </categories>
       <tags>
-        <tag>cuda</tag>
         <tag>opencv</tag>
         <tag>opencv_contrib</tag>
+        <tag>cuda</tag>
       </tags>
   </entry>
   <entry>
@@ -908,20 +759,152 @@
       </tags>
   </entry>
   <entry>
-    <title>YOLOV8和YOLOV5对比</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/</url>
-    <content><![CDATA[<h1 id="YOLOV8和YOLOV5对比"><a href="#YOLOV8和YOLOV5对比" class="headerlink" title="YOLOV8和YOLOV5对比"></a>YOLOV8和YOLOV5对比</h1><h2 id="正负样本匹配策略"><a href="#正负样本匹配策略" class="headerlink" title="正负样本匹配策略"></a>正负样本匹配策略</h2><h3 id="yolov5"><a href="#yolov5" class="headerlink" title="yolov5"></a>yolov5</h3><p>yolov5:采用anchor-base策略</p>
-<h4 id="1-跨anchor预测"><a href="#1-跨anchor预测" class="headerlink" title="1.跨anchor预测"></a>1.跨anchor预测</h4><p>在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。<br>在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:<br>$<br>\frac {GT宽高}{anchors宽高}&#x3D;ration_1<br>$</p>
-<p>$<br>\frac {anchors宽高}{GT宽高}&#x3D;ration_2<br>$<br>取ratio1和ratio2的最大值作为最后的宽高比，该宽高比和设定阈值（默认为4）比较，小于设定阈值的anchor则为匹配到的anchor。<br>给出一位老哥的代码比较能直观的理解这个<br>  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">anchor_boxes=torch.tensor([[<span class="number">1.25000</span>, <span class="number">1.62500</span>],[<span class="number">2.00000</span>, <span class="number">3.75000</span>],[<span class="number">4.12500</span>, <span class="number">2.87500</span>]])</span><br><span class="line">gt_box=torch.tensor([<span class="number">5</span>,<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">ratio1=gt_box/anchor_boxes</span><br><span class="line">ratio2=anchor_boxes/gt_box</span><br><span class="line"><span class="comment">#这里的max最后取[0]代表着取值[1]是索引</span></span><br><span class="line">ratio=torch.<span class="built_in">max</span>(ratio1, ratio2).<span class="built_in">max</span>(<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(ratio)</span><br><span class="line"> </span><br><span class="line">anchor_t=<span class="number">4</span></span><br><span class="line">res=ratio&lt;anchor_t</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure></p>
-<h4 id="2-跨grid预测"><a href="#2-跨grid预测" class="headerlink" title="2.跨grid预测"></a>2.跨grid预测</h4><p>  在v5之前的yolo都是假设GT落入某个预测分支的某个网格(预测分支在这里的意思就是yolo的三个检测头)，该网格有左、上、右、下4个邻域网格，根据GT框的中心位置，将最近的2个邻域网格也作为预测网格，也即一个GT框可以由3个网格来预测。<br>  (偷个别人的例子)<br> 计算例子：<br>GT box中心点处于grid1中，grid1被选中，为了增加增样本，grid1的上下左右grid为候选网格，因为GT中心点更靠近grid2和grid3，grid2和grid3也作为匹配到的网格，根据上步的anchor匹配结果，GT与anchor2、anchor3相匹配，因此GT在当前层匹配到的正样本有6个，分别为：grid1_anchor2，grid1_anchor3，grid2_anchor2，grid2_anchor3，grid3_anchor2，grid3_anchor3。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/731986cd924df77e562fa23f6460f3ec.png"></p>
-<h4 id="3-跨分支预测"><a href="#3-跨分支预测" class="headerlink" title="3.跨分支预测"></a>3.跨分支预测</h4><p>原先一个GT只能由一个分支进行预测，现在我们在每个分支上进行anchor的匹配和grid的匹配，只要满足上述的条件即为正样本。<br>详细的匹配策略可以根据这位大佬的debug一步步进行<br> [大佬教程]:<a href="https://blog.csdn.net/u013066730/article/details/126969286">https://blog.csdn.net/u013066730/article/details/126969286</a></p>
-<h3 id="yolov8"><a href="#yolov8" class="headerlink" title="yolov8"></a>yolov8</h3><p> yolov8采用的是anchor-free，其核心思路就是每个grid作为一个anchor,<br> $$<br>\text { alignmetric }&#x3D;s^\alpha +u^\beta<br>$$<br>其中，s 是预测类别分值，u 是预测框和真实框的ciou值，另外两个就是权重超参数了对于每个真实框，然后直接对align_metric匹配程度排序，选取topK个预测框作为正样本。</p>
+    <title>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</title>
+    <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/</url>
+    <content><![CDATA[<h1 id="ubuntu22-pycharm-cuda-cudnn，tensorrt的安装"><a href="#ubuntu22-pycharm-cuda-cudnn，tensorrt的安装" class="headerlink" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装"></a>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</h1><p>（写这篇博客的意义在于之后方便之后重装不用再重新看一大堆博客了）</p>
+<p><strong>我的电脑配置为y9000p(2022),12i7,3060的显卡 pycharm版本为2022.2,cuda版本为11.6.2</strong></p>
+<p><strong>cudnn版本为8.4.1,tensorrt版本为8.4.1</strong></p>
+<h2 id="一-pycharm的安装"><a href="#一-pycharm的安装" class="headerlink" title="一.pycharm的安装"></a><a href="#"></a>一.pycharm的安装</h2><p>官方的安装连接:<a href="https://www.jetbrains.com/pycharm/download/#section=linux" title="Download PyCharm: Python IDE for Professional Developers by JetBrains">Download PyCharm: Python IDE for Professional Developers by JetBrains</a></p>
+<p>下载下来后先不着急可以先把pycharm固定到收藏夹上</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ~/.local/share/applications/</span><br><span class="line">sudo gedit Pycharm.desktop</span><br></pre></td></tr></table></figure>
+
+<p><strong>之后将下方文字复制进去（注意注释!）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Desktop Entry]</span><br><span class="line">Version=1.0</span><br><span class="line">Terminal=false</span><br><span class="line">Type=Application</span><br><span class="line">Name=Pycharm</span><br><span class="line">Exec=/opt/pycharm/bin/pycharm.sh</span><br><span class="line"># 注意：Exec表示安装软件的**启动快捷方式**文件路径</span><br><span class="line"># 注意：Icon表示安装软件的图标路径</span><br><span class="line">Icon=/opt/pycharm/bin/pycharm.png</span><br><span class="line">NoDisplay=false</span><br><span class="line">StartupWMClass=</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>之后就可以把pycharm固定到收藏夹上</p>
+<h2 id="二-minconda的安装"><a href="#二-minconda的安装" class="headerlink" title="二.minconda的安装"></a><a href="#"></a>二.minconda的安装</h2><p>miniconda安装的时候如果采用sudo则以后使用conda命令需要加sudo</p>
+<p>这里选择的是miniconda因为我服务器上面之前配置的也是miniconda为了向服务器看齐，这里的话如果安装的是anconda的话window环境下anconda的env拷贝进来好像是可以直接用的，这个我还没有尝试过。</p>
+<p><strong>miniconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/" title="Index of /anaconda/miniconda/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;miniconda&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
+<p><strong>anconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/" title="Index of /anaconda/archive/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;archive&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
+<p>minconda和anconda的差别就是anconda的base环境包括了conda管理器、Pyhon编译器、常用的包和Spyder IDE等，而miniconda的base环境选择只包括conda管理器和Python编译器</p>
+<p>然后选择你下载下来的sh进行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo bash Miniconda3-py39_4.9.2-Linux-x86_64.sh</span><br></pre></td></tr></table></figure>
+
+<h2 id="三-Nvdia显卡的安装"><a href="#三-Nvdia显卡的安装" class="headerlink" title="三.Nvdia显卡的安装"></a><a href="#"></a>三.Nvdia显卡的安装</h2><p>首先是关于显卡的卸载，我们可以进入附加驱动中选择x.org选项就相当于把本来的显卡驱动删除了，如果你有两个显示屏的话安装完显卡驱动后副屏才可以用因为副屏是挂载在你的独显上</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6c0b69b61bf14dd6a0b2c3a5d2caefd0_79a070ed217a4622b.png"></p>
+<p>&nbsp;显卡安装不建议用附加驱动，因为很慢，所以可以换源后直接用命令行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ubuntu-drivers devices</span><br></pre></td></tr></table></figure>
+
+<p>这是可用的显卡</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/deedfe2db2f7493d850087f8eb3af135_3bac9215b4b745b7b.png"></p>
+<p>&nbsp;<strong>在安装NVIDIA驱动以前需要禁止系统自带显卡驱动nouveau：可以先通过指令<code>lsmod | grep nouveau</code>查看nouveau驱动的启用情况，如果有输出表示nouveau驱动正在工作，如果没有内容输出则表示已经禁用了nouveau</strong>**(这里我没有图所以找了一张网上的)**</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/17c7cfc464b54a90b6fb8e4257c7ca2a_259f95930526495c8.png"></p>
+<p>&nbsp;电脑有有输出，表示nouveau启动了，下面进行nouveau的禁用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/modprobe.d/blacklist.conf</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4107bb0291614f308aa2cfa11b25eb48_bc486b7a284541d48.png"></p>
+<p>在blacklist.conf文件末尾加上这两行，并保存：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">blacklist nouveau</span><br><span class="line">options nouveau modeset=0</span><br></pre></td></tr></table></figure>
+
+<p>然后在终端中输入：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo update-initramfs -u  #应用更改</span><br></pre></td></tr></table></figure>
+
+<p><strong>选择合适的显卡进行下载（可以进入官网查看cuda和显卡的对应版本:<a href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html" title="Release Notes :: CUDA Toolkit Documentation">Release Notes :: CUDA Toolkit Documentation</a>）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install nvidia-driver-510 # 根据自己的n卡可选驱动下载显卡驱动</span><br></pre></td></tr></table></figure>
+
+<p>重启电脑后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvidia-smi </span><br></pre></td></tr></table></figure>
+
+<p>查看是否安装完成</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/14d411a70a8a496db4597f6b75c2bf16_906040e8175e420aa.png"></p>
+<p><strong>（这里有一点需要特别注意：右上角的CUDA Version的意思是你的装的显卡驱动最大支持11.6的cuda）</strong></p>
+<h2 id="四：CUDA的安装"><a href="#四：CUDA的安装" class="headerlink" title="四：CUDA的安装"></a><a href="#"></a><strong>四：CUDA的安装</strong></h2><h3 id="CUDA下载"><a href="#CUDA下载" class="headerlink" title="CUDA下载"></a><a href="#"></a><strong>CUDA下载</strong></h3><p>我们进入<a href="https://developer.nvidia.cn/cuda-toolkit-archive" title="CUDA Toolkit Archive | NVIDIA Developer">CUDA Toolkit Archive | NVIDIA Developer</a>选择我们适合的cuda这里我选择11.6.2版本的</p>
+<img width="1200" height="654" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/472f848107ea4535bd4249ef515ebcb4_5c8286c7ed0b46989.png" class="jop-noMdConv">
+
+<p>&nbsp;安装的命令如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>细节的地方来了，你的tmp空间可能不够你可以在你的home文件夹下建立一个tmp然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run --tmpdir=这里填写你的新建立的tmp位置</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>使用完以后删掉这个tmp即可因为tmp文件夹重启后里面的文件默认不保存</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7b9eaf1e05594a15ab45ae4ccfd5b97b_12b269e7bf4445879.png"></p>
+<p>等待一会这个时间可能会有点长</p>
+<p>选择continue</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c33c5596287f4f7e99b292b501636093_b631af5dcf9e426b9.png"> 输入accept</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/be2fd1ea55654298a1e054707fa019c2_1390615b7701418d8.png"></p>
+<p>&nbsp;因为刚开始我们已经安装完驱动所以这里可以不用选择（之前安装的时候出现了一个小问题就是我当初重装显卡驱动的时候把显卡驱动删了想着能不能用run里面自带的但是我是没有成功，之后用下面这个方法也同样成功运行）</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/cdc3b1056f874696b16b61351371eb6e_842dcbddc6794f779.png"></p>
+<h3 id="配置cuda环境"><a href="#配置cuda环境" class="headerlink" title="配置cuda环境"></a><a href="#"></a><strong>配置cuda环境</strong></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>添加以下到末尾</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
+
+<p>然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>在终端输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvcc -V</span><br></pre></td></tr></table></figure>
+
+<p>显示以下则为成功（记得V要大写）</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7dc6f3364ff94039ace3ef3ffc66113b_92618f1fc8ac48ed9.png"></p>
+<p><strong>如果不成功，重新source ~&#x2F;.bashrc然后输入nvcc -V成功的话，细节的地方来了！！！！！</strong></p>
+<p><strong>首先，我们需要搞明白Linux启动时读取配置文件的顺序。在刚登录Linux时，首先启动<code>/etc/profile</code> 文件，然后再启动用户目录下的 <code>~/.bash_profile</code>、<code>~/.bash_login</code>或 <code>~/.profile</code>文件中的其中一个，<br>执行的顺序为：<code>~/.bash_profile</code>、<code>~/.bash_login</code>、 <code>~/.profile</code></strong></p>
+<p><code>所以如果行不同我们可以：</code></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>然后输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
+
+<p>最后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>之后应该就能显示了</p>
+<h3 id="CUDA的测试"><a href="#CUDA的测试" class="headerlink" title="CUDA的测试"></a><a href="#"></a>CUDA的测试</h3><p>下载测试文件：<a href="https://github.com/nvidia/cuda-samples" title="GitHub - NVIDIA/cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit">GitHub - NVIDIA&#x2F;cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit</a></p>
+<p>下载解压后make一下</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c812c23a6ee4fd69748eb91a128dc05_39a5e78576a14f1ca.png"></p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5ea6dfd19d964fa9ac7b7f95183dbf1d_1475ea4225a84c158.png"></p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a6886047066744b08e2fa1cfc9af2df0_63d7e9f5fdd8445bb.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b54f4a317fc64aa795e66bf71163d97e_d0876e270e6e47f28.png"></p>
+<p>出现这个结果就是成功了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4373d4bbf57445989e5004d3bd6ad751_cd458d6cee7a44d79.png"></p>
+<h2 id="四-CUDANN的安装"><a href="#四-CUDANN的安装" class="headerlink" title="四.CUDANN的安装"></a><a href="#"></a>四.CUDANN的安装</h2><h3 id="CUDANN下载"><a href="#CUDANN下载" class="headerlink" title="CUDANN下载"></a><a href="#"></a>CUDANN下载</h3><p>下载连接：<a href="https://developer.nvidia.com/rdp/cudnn-download">https://developer.nvidia.com/rdp/cudnn-download</a></p>
+<p>这里我下在的是cudann8.4.1</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9f24be3dde60443f9a18839b76218bdb_6e701b31e177461eb.png"></p>
+<p>&nbsp;下载Linux x86-64(tar)</p>
+<p>进入解压后的界面，然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda-11.6/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda-11.6/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda-11.6/lib64/libcudnn*</span><br><span class="line">#下面这个是方便后面opencv配置cuda</span><br><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>之后查看<a href="https://so.csdn.net/so/search?q=CUDNN&spm=1001.2101.3001.7020">CUDNN</a>版本</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /usr/local/cuda-11.6/include/cudnn_version.h | grep CUDNN_MAJOR -A 2</span><br></pre></td></tr></table></figure>
+
+<h3 id="CUDNN依赖"><a href="#CUDNN依赖" class="headerlink" title="CUDNN依赖"></a><a href="#"></a>CUDNN依赖</h3><p>依赖网站：<a href="https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/" title="Index of /compute/cuda/repos/ubuntu2004/x86_64">Index of &#x2F;compute&#x2F;cuda&#x2F;repos&#x2F;ubuntu2004&#x2F;x86_64</a></p>
+<p>找到对应的依赖（一个带dev一个不带）</p>
+<p>或者使用命令行进行下载</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>安装依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<h2 id="五-Tensortrt的安装"><a href="#五-Tensortrt的安装" class="headerlink" title="五.Tensortrt的安装"></a><a href="#"></a>五.Tensortrt的安装</h2><h3 id="1-下载"><a href="#1-下载" class="headerlink" title="1.下载"></a><a href="#"></a>1.下载</h3><p>这里是tensorrt的下载连接:<a href="https://developer.nvidia.com/nvidia-tensorrt-8x-download">https://developer.nvidia.com/nvidia-tensorrt-8x-download</a></p>
+<p>下载tar包解压后的到的连接</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e435b363bc446c886e43e5b21292e23_54c963cc1b2a438ab.png"></p>
+<p>修改环境变量:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo gedit ~/.bashrc </span><br></pre></td></tr></table></figure>
+
+<p>在文件末尾加入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH：/home/stand/Software/TensorRT-8.4.1.5/lib</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-测试样例"><a href="#2-测试样例" class="headerlink" title="2. 测试样例"></a><a href="#"></a>2. 测试样例</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd TensorRT-8.4.1.5/samples/sampleMNIST</span><br><span class="line">make -j16</span><br><span class="line">cd ../../bin/</span><br><span class="line">./sample_mnist</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样就成功了</p>
+<img width="1200" height="1242" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3eb8c7cdcede4fdead0f60fb785bad68_4fb7033780c548148.png" class="jop-noMdConv">
+
+<h3 id="3-python部分的安装"><a href="#3-python部分的安装" class="headerlink" title="3.python部分的安装"></a><a href="#"></a>3.python部分的安装</h3><p>用miniconda创建完环境之后</p>
+<p>直接pip目录中的uff，python(注意选择和你conda创建python的版本相对应) ，graphsurgeon下的whl就可以了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5fdfb1069d5c433781f5f8abf04410eb_48a6f8c2ba974c2db.png"></p>
+<p>我这里是一次就成功了可能出现问题的话可以参考这位大佬:<a href="https://blog.csdn.net/lilin020401/article/details/126475351#t4" title="Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客">Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客</a></p>
 ]]></content>
       <categories>
-        <category>神经网络</category>
+        <category>环境配置</category>
       </categories>
       <tags>
-        <tag>Yolo</tag>
+        <tag>cuda</tag>
+        <tag>cudnn</tag>
+        <tag>tensorrt</tag>
       </tags>
   </entry>
   <entry>
@@ -947,6 +930,23 @@
       </categories>
       <tags>
         <tag>IOU</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>YOLOV8和YOLOV5对比</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/</url>
+    <content><![CDATA[<h1 id="YOLOV8和YOLOV5对比"><a href="#YOLOV8和YOLOV5对比" class="headerlink" title="YOLOV8和YOLOV5对比"></a>YOLOV8和YOLOV5对比</h1><h2 id="正负样本匹配策略"><a href="#正负样本匹配策略" class="headerlink" title="正负样本匹配策略"></a>正负样本匹配策略</h2><h3 id="yolov5"><a href="#yolov5" class="headerlink" title="yolov5"></a>yolov5</h3><p>yolov5:采用anchor-base策略</p>
+<h4 id="1-跨anchor预测"><a href="#1-跨anchor预测" class="headerlink" title="1.跨anchor预测"></a>1.跨anchor预测</h4><p>在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。<br>在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:<br>$<br>\frac {GT宽高}{anchors宽高}&#x3D;ration_1<br>$</p>
+<p>$<br>\frac {anchors宽高}{GT宽高}&#x3D;ration_2<br>$<br>取ratio1和ratio2的最大值作为最后的宽高比，该宽高比和设定阈值（默认为4）比较，小于设定阈值的anchor则为匹配到的anchor。<br>给出一位老哥的代码比较能直观的理解这个<br>  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">anchor_boxes=torch.tensor([[<span class="number">1.25000</span>, <span class="number">1.62500</span>],[<span class="number">2.00000</span>, <span class="number">3.75000</span>],[<span class="number">4.12500</span>, <span class="number">2.87500</span>]])</span><br><span class="line">gt_box=torch.tensor([<span class="number">5</span>,<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">ratio1=gt_box/anchor_boxes</span><br><span class="line">ratio2=anchor_boxes/gt_box</span><br><span class="line"><span class="comment">#这里的max最后取[0]代表着取值[1]是索引</span></span><br><span class="line">ratio=torch.<span class="built_in">max</span>(ratio1, ratio2).<span class="built_in">max</span>(<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(ratio)</span><br><span class="line"> </span><br><span class="line">anchor_t=<span class="number">4</span></span><br><span class="line">res=ratio&lt;anchor_t</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-跨grid预测"><a href="#2-跨grid预测" class="headerlink" title="2.跨grid预测"></a>2.跨grid预测</h4><p>  在v5之前的yolo都是假设GT落入某个预测分支的某个网格(预测分支在这里的意思就是yolo的三个检测头)，该网格有左、上、右、下4个邻域网格，根据GT框的中心位置，将最近的2个邻域网格也作为预测网格，也即一个GT框可以由3个网格来预测。<br>  (偷个别人的例子)<br> 计算例子：<br>GT box中心点处于grid1中，grid1被选中，为了增加增样本，grid1的上下左右grid为候选网格，因为GT中心点更靠近grid2和grid3，grid2和grid3也作为匹配到的网格，根据上步的anchor匹配结果，GT与anchor2、anchor3相匹配，因此GT在当前层匹配到的正样本有6个，分别为：grid1_anchor2，grid1_anchor3，grid2_anchor2，grid2_anchor3，grid3_anchor2，grid3_anchor3。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/731986cd924df77e562fa23f6460f3ec.png"></p>
+<h4 id="3-跨分支预测"><a href="#3-跨分支预测" class="headerlink" title="3.跨分支预测"></a>3.跨分支预测</h4><p>原先一个GT只能由一个分支进行预测，现在我们在每个分支上进行anchor的匹配和grid的匹配，只要满足上述的条件即为正样本。<br>详细的匹配策略可以根据这位大佬的debug一步步进行<br> [大佬教程]:<a href="https://blog.csdn.net/u013066730/article/details/126969286">https://blog.csdn.net/u013066730/article/details/126969286</a></p>
+<h3 id="yolov8"><a href="#yolov8" class="headerlink" title="yolov8"></a>yolov8</h3><p> yolov8采用的是anchor-free，其核心思路就是每个grid作为一个anchor,<br> $$<br>\text { alignmetric }&#x3D;s^\alpha +u^\beta<br>$$<br>其中，s 是预测类别分值，u 是预测框和真实框的ciou值，另外两个就是权重超参数了对于每个真实框，然后直接对align_metric匹配程度排序，选取topK个预测框作为正样本。</p>
+]]></content>
+      <categories>
+        <category>神经网络</category>
+      </categories>
+      <tags>
+        <tag>Yolo</tag>
       </tags>
   </entry>
   <entry>

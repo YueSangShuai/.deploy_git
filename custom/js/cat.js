@@ -150,7 +150,7 @@ $(document).ready(function () {
     //自定义（去掉以下注释，并注释掉其他的查看效果）
     $("#catcat").nekoScroll({
         nekoname:'neko1', //nekoname，相当于id
-        nekoImg:"https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bachongyingQ.png", //neko的背景图片
+        nekoImg:"https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bachongyingQ2.png", //neko的背景图片
         scImg:"https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/Snipaste_2024-01-12_11-06-29-removebg-preview.png", //绳子的背景图片
         bgcolor:'rgba(0,0,0,0)', //背景颜色，没有绳子背景图片时有效
         zoom:0.9, //绳子长度的缩放值
