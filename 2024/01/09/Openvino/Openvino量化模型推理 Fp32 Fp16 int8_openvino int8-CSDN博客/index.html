@@ -19,7 +19,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="Openvino量化模型推理 Fp32 Fp16 int8我忘记我是哪个版本的openvino了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。 我的OpenVino采用的是源码编译的这里采用的是python代码，之后">
@@ -53,15 +53,20 @@
     lang   : 'zh-CN'
   };
 </script>
+
 <script type="text/javascript" src="/custom/js/love.js"></script>
+
 <script type = "text/javascript" src="/custom/js/snow.js"></script>
+
 <script src="/live2d-widget/autoload.js"></script>
 
 <div id="catcat"></div>
-
 <link rel="stylesheet" href="/custom/css/cat.css">
 <script defer src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script defer data-pjax src="/custom/js/cat.js"></script>
+
+<link rel="stylesheet" href="/custom/css/cursor.css">
+<script defer data-pjax src="/custom/js/cursor.js"></script>
   <title>Openvino量化模型推理 Fp32 Fp16 int8 | 你好陌生人</title>
   
 
@@ -199,10 +204,6 @@
     </header>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
 
 
     <main class="main">
@@ -577,6 +578,10 @@
 
 
       </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
       
     </div>
   </aside>

@@ -71,6 +71,8 @@ function show(basicInfo) {
         var setting = $.extend(defaultSetting, option);
         var getThis = this.prop("className") !== "" ? "." + this.prop("className") : this.prop("id") !== "" ? "#" +
             this.prop("id") : this.prop("nodeName");
+
+            
         if ($(".neko").length == 0) {
             this.after("<div class=\"neko\" id=" + setting.nekoname + " data-msg=\"" + setting.hoverMsg + "\"></div>");
         }
@@ -163,4 +165,5 @@ $(document).ready(function () {
         z_index:100, //不用解释了吧
         during:1200, //从顶部到底部滑动的时长
     });
+
 })

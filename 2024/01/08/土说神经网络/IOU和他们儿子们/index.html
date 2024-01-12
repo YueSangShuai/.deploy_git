@@ -19,7 +19,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="IOU$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。这里给出$IOU$的定义:$$IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}$$这里给出一个别人已经画好的图对于这张图来说$IOU$要如何计算呢$">
@@ -55,15 +55,20 @@
     lang   : 'zh-CN'
   };
 </script>
+
 <script type="text/javascript" src="/custom/js/love.js"></script>
+
 <script type = "text/javascript" src="/custom/js/snow.js"></script>
+
 <script src="/live2d-widget/autoload.js"></script>
 
 <div id="catcat"></div>
-
 <link rel="stylesheet" href="/custom/css/cat.css">
 <script defer src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script defer data-pjax src="/custom/js/cat.js"></script>
+
+<link rel="stylesheet" href="/custom/css/cursor.css">
+<script defer data-pjax src="/custom/js/cursor.js"></script>
   <title>IOU和他们儿子们 | 你好陌生人</title>
   
 
@@ -201,10 +206,6 @@
     </header>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
 
 
     <main class="main">
@@ -518,6 +519,10 @@
 
 
       </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
       
     </div>
   </aside>
