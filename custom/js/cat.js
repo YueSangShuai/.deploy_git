@@ -113,7 +113,7 @@ function show(basicInfo) {
                         "border-radius": setting.borderRadius,
                         'right': setting.right,
                         'background-image': 'url(' + setting.scImg + ')',
-                        'background-image': '-webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%, transparent)', 'border-radius': '2em',
+                        // 'background-image': '-webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%, transparent)', 'border-radius': '2em',
                         'background-size': 'contain'
                     });
                 $("#" + setting.nekoname)
@@ -150,9 +150,9 @@ $(document).ready(function () {
     //自定义（去掉以下注释，并注释掉其他的查看效果）
     $("#catcat").nekoScroll({
         nekoname:'neko1', //nekoname，相当于id
-        nekoImg:"https://bu.dusays.com/2022/07/20/62d812db74be9.png", //neko的背景图片
-        scImg:"img/绳1.png", //绳子的背景图片
-        bgcolor:rgb(240,236,42,0.5), //背景颜色，没有绳子背景图片时有效
+        nekoImg:"https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bachongyingQ.png", //neko的背景图片
+        scImg:"https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/Snipaste_2024-01-12_11-06-29-removebg-preview.png", //绳子的背景图片
+        bgcolor:'rgba(0,0,0,0)', //背景颜色，没有绳子背景图片时有效
         zoom:0.9, //绳子长度的缩放值
         hoverMsg:'你好~喵', //鼠标浮动到neko上方的对话框信息
         right:'100px', //距离页面右边的距离

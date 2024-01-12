@@ -1,6 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</title>
+    <url>/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/</url>
+    <content><![CDATA[<h1 id="Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）"><a href="#Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）" class="headerlink" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）"></a>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1><p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<p>这里有个很狗的坑，我在安装的时候杜邦线忘记拔下来导致系统一直无法被主机识别，ip地址一直不对。</p>
+<p>之后把nx接数据线到主机上面（记得杜邦线不要短接！！！记得杜邦线不要短接！！！记得杜邦线不要短接！！！重要的事情说三遍）</p>
+<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>首先我们先换个源</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<p>注意JetPack5.0.1是ubuntu20了，后缀是focal，开发板还要带上ports：(记得开发板的要是ubuntu-port之前换源一直出错就是因为换错了)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>进入主机的sdk界面host不用勾选（这个选项是为了安装cuda这些东西到你的主机上面，看很多博客说这样安装大概率会用不了）</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/745ba610764a440895475ba8d1aa28d1_2be41ad5b386494d8.png"/>
+
+<p>在这里Jeston os不用勾选，如果你勾选的换就默认重装系统了 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/daf6336878d94e8e8a0f7121b9b452c1_d840294fbb1b49ce9.png"/></p>
+<p>&nbsp;ip地址一般默认不用改变如果实在不知道的话可以</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure>
+
+<p>来查看你的ip如果有连WIFE的话可能会出现两个这里你两个都试试一般就可以了，然后输入你的用户名和密码</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6319a52dd2ab4669a59e17520f708772_839888ab3d0f4cd6a.png"/>
+
+<p>&nbsp;等这三个选项全部打勾以后开始安装<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b59586872bf445afa5219503d1d9181a_89a9e6a610604b49b.png"/></p>
+<p>安装完成后先安装pip3</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br></pre></td></tr></table></figure>
+
+<p>安装jtop(一定要加后面的版本这个版本是支持5.0以上的)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo -H pip install jetson-stats==4.0.0rc2</span><br></pre></td></tr></table></figure>
+
+<h2 id="二-opencv的卸载"><a href="#二-opencv的卸载" class="headerlink" title="二.opencv的卸载"></a><a id="t1"></a>二.opencv的卸载</h2><p>（最近公司加班多找个时间把这个部分补上）</p>
+<p> </p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Jeston nx</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Jetson Xavier NX环境配置ubuntu20.04</title>
+    <url>/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/</url>
+    <content><![CDATA[<h1 id="Jetson-Xavier-NX环境配置ubuntu20-04"><a href="#Jetson-Xavier-NX环境配置ubuntu20-04" class="headerlink" title="Jetson Xavier NX环境配置ubuntu20.04"></a>Jetson Xavier NX环境配置ubuntu20.04</h1><p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
+<p><strong>安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系</strong></p>
+<p><strong>这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。</strong></p>
+<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
+<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a href="https://so.csdn.net/so/search?q=ssd&spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
+<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…..）然后直接把之前安装好的镜像直接导入即可。</p>
+<h2 id="二-虚拟机"><a href="#二-虚拟机" class="headerlink" title="二.虚拟机"></a><a id="t1"></a>二.虚拟机</h2><p>创建一个虚拟机</p>
+<img width="1200" height="716" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png"/>
+
+<p>&nbsp;选择你镜像的位置</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png"></p>
+<p>&nbsp;分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png"></p>
+<p>&nbsp;然后就是Ubuntu的安装</p>
+<img width="1200" height="566" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png"/>
+
+<h2 id="三-Nvidia-sdk的安装"><a href="#三-Nvidia-sdk的安装" class="headerlink" title="三.Nvidia sdk的安装"></a><a id="t2"></a>三.<a href="https://so.csdn.net/so/search?q=Nvidia&spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2><p>进入官网：<a href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
+<p>选择SDK，这里需要登录自己个人的Nvidia账号</p>
+<img width="1200" height="265" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png"/>
+
+<p>或者直接在虚拟机内进行下载，我这里选择直接从主机拖拽到虚拟机内因为我有安装vmware-tools</p>
+<p>输入指令进行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install ./sdkmanager_1.6.1-8175_amd64.deb ./sdkmanager_1.6.1-8175_amd64.deb </span><br></pre></td></tr></table></figure>
+
+<p>安装完成后输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sdkmanager </span><br></pre></td></tr></table></figure>
+
+<p>出现这个页面就代表着安装完成，然后登录一下自己的开发者账号<img width="1200" height="683" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png"/></p>
+<p>&nbsp;成功进入后的界面</p>
+<img width="1200" height="538" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png"/>
+
+<p>&nbsp;之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
+<img width="1200" height="900" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg"/>
+
+<p>&nbsp;接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
+<img width="1200" height="754" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png"/>
+
+<p>&nbsp;<a href="https://so.csdn.net/so/search?q=jetpack&spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
+<img width="1200" height="786" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png"/>
+
+<p>deepstream我也不知道干啥的先装上去吧</p>
+<img width="1200" height="739" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png"/>
+
+<p>&nbsp;然后只装os</p>
+<img width="1200" height="755" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png"/>
+
+<p>&nbsp;到这步应该就没有问题了（网络不好的可以多等等）</p>
+<img width="1200" height="567" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png"/>
+
+<p>&nbsp;完成后跳出了这个页面（按照这个选择）</p>
+<img width="1200" height="708" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png"/>
+
+<p>&nbsp;然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png"/>
+
+<p>查看一下我们装的系统版本是否是正确的.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /etc/lsb-release</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;大功告成</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png"/>
+
+<h2 id="四将SSD设置成默认启动盘"><a href="#四将SSD设置成默认启动盘" class="headerlink" title=" 四将SSD设置成默认启动盘"></a><a id="t3"></a> 四将SSD设置成默认启动盘</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
+
+<p>输入disk,我这里是16g运存所以我分16g，剩下全部给系统就可以了</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png"/>
+
+<p>jinru</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">git clone https://github.com/jetsonhacks/rootOnNVMe.git</span><br><span class="line">    </span><br><span class="line">cd rootOnNVMe</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./copy-rootfs-ssd.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./setup-service.sh</span><br></pre></td></tr></table></figure>
+
+<p>进入新的系统后在root打开属性查看一下空间就知道有没有成功了。</p>
+<p>完成！</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Jeston nx</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Markdown图床</title>
     <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/</url>
     <content><![CDATA[<h1 id="Markdown图床"><a href="#Markdown图床" class="headerlink" title="Markdown图床"></a>Markdown图床</h1><h2 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h2><ul>
@@ -172,132 +298,6 @@
       </categories>
       <tags>
         <tag>hexo</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Jetson Xavier NX环境配置ubuntu20.04</title>
-    <url>/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/</url>
-    <content><![CDATA[<h1 id="Jetson-Xavier-NX环境配置ubuntu20-04"><a href="#Jetson-Xavier-NX环境配置ubuntu20-04" class="headerlink" title="Jetson Xavier NX环境配置ubuntu20.04"></a>Jetson Xavier NX环境配置ubuntu20.04</h1><p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
-<p><strong>安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系</strong></p>
-<p><strong>这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。</strong></p>
-<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
-<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a href="https://so.csdn.net/so/search?q=ssd&spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
-<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…..）然后直接把之前安装好的镜像直接导入即可。</p>
-<h2 id="二-虚拟机"><a href="#二-虚拟机" class="headerlink" title="二.虚拟机"></a><a id="t1"></a>二.虚拟机</h2><p>创建一个虚拟机</p>
-<img width="1200" height="716" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png"/>
-
-<p>&nbsp;选择你镜像的位置</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png"></p>
-<p>&nbsp;分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png"></p>
-<p>&nbsp;然后就是Ubuntu的安装</p>
-<img width="1200" height="566" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png"/>
-
-<h2 id="三-Nvidia-sdk的安装"><a href="#三-Nvidia-sdk的安装" class="headerlink" title="三.Nvidia sdk的安装"></a><a id="t2"></a>三.<a href="https://so.csdn.net/so/search?q=Nvidia&spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2><p>进入官网：<a href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
-<p>选择SDK，这里需要登录自己个人的Nvidia账号</p>
-<img width="1200" height="265" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png"/>
-
-<p>或者直接在虚拟机内进行下载，我这里选择直接从主机拖拽到虚拟机内因为我有安装vmware-tools</p>
-<p>输入指令进行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install ./sdkmanager_1.6.1-8175_amd64.deb ./sdkmanager_1.6.1-8175_amd64.deb </span><br></pre></td></tr></table></figure>
-
-<p>安装完成后输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sdkmanager </span><br></pre></td></tr></table></figure>
-
-<p>出现这个页面就代表着安装完成，然后登录一下自己的开发者账号<img width="1200" height="683" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png"/></p>
-<p>&nbsp;成功进入后的界面</p>
-<img width="1200" height="538" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png"/>
-
-<p>&nbsp;之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
-<img width="1200" height="900" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg"/>
-
-<p>&nbsp;接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
-<img width="1200" height="754" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png"/>
-
-<p>&nbsp;<a href="https://so.csdn.net/so/search?q=jetpack&spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
-<img width="1200" height="786" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png"/>
-
-<p>deepstream我也不知道干啥的先装上去吧</p>
-<img width="1200" height="739" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png"/>
-
-<p>&nbsp;然后只装os</p>
-<img width="1200" height="755" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png"/>
-
-<p>&nbsp;到这步应该就没有问题了（网络不好的可以多等等）</p>
-<img width="1200" height="567" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png"/>
-
-<p>&nbsp;完成后跳出了这个页面（按照这个选择）</p>
-<img width="1200" height="708" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png"/>
-
-<p>&nbsp;然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png"/>
-
-<p>查看一下我们装的系统版本是否是正确的.</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /etc/lsb-release</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;大功告成</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png"/>
-
-<h2 id="四将SSD设置成默认启动盘"><a href="#四将SSD设置成默认启动盘" class="headerlink" title=" 四将SSD设置成默认启动盘"></a><a id="t3"></a> 四将SSD设置成默认启动盘</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
-
-<p>输入disk,我这里是16g运存所以我分16g，剩下全部给系统就可以了</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png"/>
-
-<p>jinru</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">git clone https://github.com/jetsonhacks/rootOnNVMe.git</span><br><span class="line">    </span><br><span class="line">cd rootOnNVMe</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./copy-rootfs-ssd.sh</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./setup-service.sh</span><br></pre></td></tr></table></figure>
-
-<p>进入新的系统后在root打开属性查看一下空间就知道有没有成功了。</p>
-<p>完成！</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Jeston nx</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</title>
-    <url>/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/</url>
-    <content><![CDATA[<h1 id="Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）"><a href="#Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）" class="headerlink" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）"></a>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1><p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<p>这里有个很狗的坑，我在安装的时候杜邦线忘记拔下来导致系统一直无法被主机识别，ip地址一直不对。</p>
-<p>之后把nx接数据线到主机上面（记得杜邦线不要短接！！！记得杜邦线不要短接！！！记得杜邦线不要短接！！！重要的事情说三遍）</p>
-<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>首先我们先换个源</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<p>注意JetPack5.0.1是ubuntu20了，后缀是focal，开发板还要带上ports：(记得开发板的要是ubuntu-port之前换源一直出错就是因为换错了)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>进入主机的sdk界面host不用勾选（这个选项是为了安装cuda这些东西到你的主机上面，看很多博客说这样安装大概率会用不了）</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/745ba610764a440895475ba8d1aa28d1_2be41ad5b386494d8.png"/>
-
-<p>在这里Jeston os不用勾选，如果你勾选的换就默认重装系统了 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/daf6336878d94e8e8a0f7121b9b452c1_d840294fbb1b49ce9.png"/></p>
-<p>&nbsp;ip地址一般默认不用改变如果实在不知道的话可以</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure>
-
-<p>来查看你的ip如果有连WIFE的话可能会出现两个这里你两个都试试一般就可以了，然后输入你的用户名和密码</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6319a52dd2ab4669a59e17520f708772_839888ab3d0f4cd6a.png"/>
-
-<p>&nbsp;等这三个选项全部打勾以后开始安装<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b59586872bf445afa5219503d1d9181a_89a9e6a610604b49b.png"/></p>
-<p>安装完成后先安装pip3</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br></pre></td></tr></table></figure>
-
-<p>安装jtop(一定要加后面的版本这个版本是支持5.0以上的)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo -H pip install jetson-stats==4.0.0rc2</span><br></pre></td></tr></table></figure>
-
-<h2 id="二-opencv的卸载"><a href="#二-opencv的卸载" class="headerlink" title="二.opencv的卸载"></a><a id="t1"></a>二.opencv的卸载</h2><p>（最近公司加班多找个时间把这个部分补上）</p>
-<p> </p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Jeston nx</tag>
       </tags>
   </entry>
   <entry>
@@ -908,6 +908,23 @@
       </tags>
   </entry>
   <entry>
+    <title>YOLOV8和YOLOV5对比</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/</url>
+    <content><![CDATA[<h1 id="YOLOV8和YOLOV5对比"><a href="#YOLOV8和YOLOV5对比" class="headerlink" title="YOLOV8和YOLOV5对比"></a>YOLOV8和YOLOV5对比</h1><h2 id="正负样本匹配策略"><a href="#正负样本匹配策略" class="headerlink" title="正负样本匹配策略"></a>正负样本匹配策略</h2><h3 id="yolov5"><a href="#yolov5" class="headerlink" title="yolov5"></a>yolov5</h3><p>yolov5:采用anchor-base策略</p>
+<h4 id="1-跨anchor预测"><a href="#1-跨anchor预测" class="headerlink" title="1.跨anchor预测"></a>1.跨anchor预测</h4><p>在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。<br>在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:<br>$<br>\frac {GT宽高}{anchors宽高}&#x3D;ration_1<br>$</p>
+<p>$<br>\frac {anchors宽高}{GT宽高}&#x3D;ration_2<br>$<br>取ratio1和ratio2的最大值作为最后的宽高比，该宽高比和设定阈值（默认为4）比较，小于设定阈值的anchor则为匹配到的anchor。<br>给出一位老哥的代码比较能直观的理解这个<br>  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">anchor_boxes=torch.tensor([[<span class="number">1.25000</span>, <span class="number">1.62500</span>],[<span class="number">2.00000</span>, <span class="number">3.75000</span>],[<span class="number">4.12500</span>, <span class="number">2.87500</span>]])</span><br><span class="line">gt_box=torch.tensor([<span class="number">5</span>,<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">ratio1=gt_box/anchor_boxes</span><br><span class="line">ratio2=anchor_boxes/gt_box</span><br><span class="line"><span class="comment">#这里的max最后取[0]代表着取值[1]是索引</span></span><br><span class="line">ratio=torch.<span class="built_in">max</span>(ratio1, ratio2).<span class="built_in">max</span>(<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(ratio)</span><br><span class="line"> </span><br><span class="line">anchor_t=<span class="number">4</span></span><br><span class="line">res=ratio&lt;anchor_t</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-跨grid预测"><a href="#2-跨grid预测" class="headerlink" title="2.跨grid预测"></a>2.跨grid预测</h4><p>  在v5之前的yolo都是假设GT落入某个预测分支的某个网格(预测分支在这里的意思就是yolo的三个检测头)，该网格有左、上、右、下4个邻域网格，根据GT框的中心位置，将最近的2个邻域网格也作为预测网格，也即一个GT框可以由3个网格来预测。<br>  (偷个别人的例子)<br> 计算例子：<br>GT box中心点处于grid1中，grid1被选中，为了增加增样本，grid1的上下左右grid为候选网格，因为GT中心点更靠近grid2和grid3，grid2和grid3也作为匹配到的网格，根据上步的anchor匹配结果，GT与anchor2、anchor3相匹配，因此GT在当前层匹配到的正样本有6个，分别为：grid1_anchor2，grid1_anchor3，grid2_anchor2，grid2_anchor3，grid3_anchor2，grid3_anchor3。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/731986cd924df77e562fa23f6460f3ec.png"></p>
+<h4 id="3-跨分支预测"><a href="#3-跨分支预测" class="headerlink" title="3.跨分支预测"></a>3.跨分支预测</h4><p>原先一个GT只能由一个分支进行预测，现在我们在每个分支上进行anchor的匹配和grid的匹配，只要满足上述的条件即为正样本。<br>详细的匹配策略可以根据这位大佬的debug一步步进行<br> [大佬教程]:<a href="https://blog.csdn.net/u013066730/article/details/126969286">https://blog.csdn.net/u013066730/article/details/126969286</a></p>
+<h3 id="yolov8"><a href="#yolov8" class="headerlink" title="yolov8"></a>yolov8</h3><p> yolov8采用的是anchor-free，其核心思路就是每个grid作为一个anchor,<br> $$<br>\text { alignmetric }&#x3D;s^\alpha +u^\beta<br>$$<br>其中，s 是预测类别分值，u 是预测框和真实框的ciou值，另外两个就是权重超参数了对于每个真实框，然后直接对align_metric匹配程度排序，选取topK个预测框作为正样本。</p>
+]]></content>
+      <categories>
+        <category>神经网络</category>
+      </categories>
+      <tags>
+        <tag>Yolo</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>IOU和他们儿子们</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/</url>
     <content><![CDATA[<h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
@@ -930,23 +947,6 @@
       </categories>
       <tags>
         <tag>IOU</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>YOLOV8和YOLOV5对比</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/</url>
-    <content><![CDATA[<h1 id="YOLOV8和YOLOV5对比"><a href="#YOLOV8和YOLOV5对比" class="headerlink" title="YOLOV8和YOLOV5对比"></a>YOLOV8和YOLOV5对比</h1><h2 id="正负样本匹配策略"><a href="#正负样本匹配策略" class="headerlink" title="正负样本匹配策略"></a>正负样本匹配策略</h2><h3 id="yolov5"><a href="#yolov5" class="headerlink" title="yolov5"></a>yolov5</h3><p>yolov5:采用anchor-base策略</p>
-<h4 id="1-跨anchor预测"><a href="#1-跨anchor预测" class="headerlink" title="1.跨anchor预测"></a>1.跨anchor预测</h4><p>在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。<br>在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:<br>$<br>\frac {GT宽高}{anchors宽高}&#x3D;ration_1<br>$</p>
-<p>$<br>\frac {anchors宽高}{GT宽高}&#x3D;ration_2<br>$<br>取ratio1和ratio2的最大值作为最后的宽高比，该宽高比和设定阈值（默认为4）比较，小于设定阈值的anchor则为匹配到的anchor。<br>给出一位老哥的代码比较能直观的理解这个<br>  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">anchor_boxes=torch.tensor([[<span class="number">1.25000</span>, <span class="number">1.62500</span>],[<span class="number">2.00000</span>, <span class="number">3.75000</span>],[<span class="number">4.12500</span>, <span class="number">2.87500</span>]])</span><br><span class="line">gt_box=torch.tensor([<span class="number">5</span>,<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">ratio1=gt_box/anchor_boxes</span><br><span class="line">ratio2=anchor_boxes/gt_box</span><br><span class="line"><span class="comment">#这里的max最后取[0]代表着取值[1]是索引</span></span><br><span class="line">ratio=torch.<span class="built_in">max</span>(ratio1, ratio2).<span class="built_in">max</span>(<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(ratio)</span><br><span class="line"> </span><br><span class="line">anchor_t=<span class="number">4</span></span><br><span class="line">res=ratio&lt;anchor_t</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure></p>
-<h4 id="2-跨grid预测"><a href="#2-跨grid预测" class="headerlink" title="2.跨grid预测"></a>2.跨grid预测</h4><p>  在v5之前的yolo都是假设GT落入某个预测分支的某个网格(预测分支在这里的意思就是yolo的三个检测头)，该网格有左、上、右、下4个邻域网格，根据GT框的中心位置，将最近的2个邻域网格也作为预测网格，也即一个GT框可以由3个网格来预测。<br>  (偷个别人的例子)<br> 计算例子：<br>GT box中心点处于grid1中，grid1被选中，为了增加增样本，grid1的上下左右grid为候选网格，因为GT中心点更靠近grid2和grid3，grid2和grid3也作为匹配到的网格，根据上步的anchor匹配结果，GT与anchor2、anchor3相匹配，因此GT在当前层匹配到的正样本有6个，分别为：grid1_anchor2，grid1_anchor3，grid2_anchor2，grid2_anchor3，grid3_anchor2，grid3_anchor3。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/731986cd924df77e562fa23f6460f3ec.png"></p>
-<h4 id="3-跨分支预测"><a href="#3-跨分支预测" class="headerlink" title="3.跨分支预测"></a>3.跨分支预测</h4><p>原先一个GT只能由一个分支进行预测，现在我们在每个分支上进行anchor的匹配和grid的匹配，只要满足上述的条件即为正样本。<br>详细的匹配策略可以根据这位大佬的debug一步步进行<br> [大佬教程]:<a href="https://blog.csdn.net/u013066730/article/details/126969286">https://blog.csdn.net/u013066730/article/details/126969286</a></p>
-<h3 id="yolov8"><a href="#yolov8" class="headerlink" title="yolov8"></a>yolov8</h3><p> yolov8采用的是anchor-free，其核心思路就是每个grid作为一个anchor,<br> $$<br>\text { alignmetric }&#x3D;s^\alpha +u^\beta<br>$$<br>其中，s 是预测类别分值，u 是预测框和真实框的ciou值，另外两个就是权重超参数了对于每个真实框，然后直接对align_metric匹配程度排序，选取topK个预测框作为正样本。</p>
-]]></content>
-      <categories>
-        <category>神经网络</category>
-      </categories>
-      <tags>
-        <tag>Yolo</tag>
       </tags>
   </entry>
   <entry>
@@ -984,6 +984,21 @@
       </tags>
   </entry>
   <entry>
+    <title>交叉熵损失</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
+    <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
+<h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
+<h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
+<p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
+]]></content>
+      <categories>
+        <category>神经网络</category>
+      </categories>
+      <tags>
+        <tag>交叉熵损失</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>神经网络优化器</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96%E5%99%A8/</url>
     <content><![CDATA[<h1 id="优化器"><a href="#优化器" class="headerlink" title="优化器"></a>优化器</h1><h2 id="1-神经网络的梯度"><a href="#1-神经网络的梯度" class="headerlink" title="1.神经网络的梯度"></a>1.神经网络的梯度</h2><h3 id="1-1梯度"><a href="#1-1梯度" class="headerlink" title="1.1梯度"></a>1.1梯度</h3><p>下面是如何求解导数</p>
@@ -1010,21 +1025,6 @@
       </categories>
       <tags>
         <tag>优化器</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>交叉熵损失</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
-    <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
-<h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
-<h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
-<p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
-]]></content>
-      <categories>
-        <category>神经网络</category>
-      </categories>
-      <tags>
-        <tag>交叉熵损失</tag>
       </tags>
   </entry>
 </search>
