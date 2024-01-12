@@ -8,9 +8,6 @@ body {
 body {
   color: #000;
 }
-body::-webkit-scrollbar {
-  width: 0;
-}
 .posts-expand .post-title-link {
   color: #000;
 }
