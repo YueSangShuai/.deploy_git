@@ -1,3 +1,32 @@
+function scrollToDest(targetY, duration) {
+    const startingY = window.pageYOffset;
+    const diff = targetY - startingY;
+    let start;
+
+    // 使用 requestAnimationFrame 来平滑动画
+    window.requestAnimationFrame(function step(timestamp) {
+        if (!start) start = timestamp;
+        // 计算动画已进行的时间比例
+        const time = timestamp - start;
+        let percent = Math.min(time / duration, 1);
+
+        // 使用缓动函数（在这里是 easeInOutCubic）进行平滑滚动
+        percent = easeInOutCubic(percent);
+
+        window.scrollTo(0, startingY + diff * percent);
+
+        // 继续动画，直到完成
+        if (time < duration) {
+            window.requestAnimationFrame(step);
+        }
+    });
+}
+
+function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+}
+
+
 function getBasicInfo() {
     /* 窗口高度 */
     var ViewH = $(window).height();
@@ -106,11 +135,11 @@ function show(basicInfo) {
                 }
             });
         this.click(function (e) {
-            btf.scrollToDest(0, 500)
+            scrollToDest(0, 500);
         });
         $("#" + setting.nekoname)
             .click(function () {
-                btf.scrollToDest(0, 500)
+                scrollToDest(0, 500);
             });
         return this;
     }
@@ -118,30 +147,20 @@ function show(basicInfo) {
 
 $(document).ready(function () {
     //部分自定义
-    $("#catcat").nekoScroll({
-        bgcolor: 'rgb(255 255 255)', //背景颜色，没有绳子背景图片时有效
-        borderRadius: '2em',
-        zoom: 0.9
-    }
-    );
     //自定义（去掉以下注释，并注释掉其他的查看效果）
-
-    // $("#myscoll").nekoScroll({
-    //     nekoname:'neko1', //nekoname，相当于id
-    //     nekoImg:'img/猫咪.png', //neko的背景图片
-    //     scImg:"img/绳1.png", //绳子的背景图片
-    //     bgcolor:'#1e90ff', //背景颜色，没有绳子背景图片时有效
-    //     zoom:0.9, //绳子长度的缩放值
-    //     hoverMsg:'你好~喵', //鼠标浮动到neko上方的对话框信息
-    //     right:'100px', //距离页面右边的距离
-    //     fontFamily:'楷体', //对话框字体
-    //     fontSize:'14px', //对话框字体的大小
-    //     color:'#1e90ff', //对话框字体颜色
-    //     scroWidth:'8px', //绳子的宽度
-    //     z_index:100, //不用解释了吧
-    //     during:1200, //从顶部到底部滑动的时长
-    // });
-
+    $("#catcat").nekoScroll({
+        nekoname:'neko1', //nekoname，相当于id
+        nekoImg:"https://bu.dusays.com/2022/07/20/62d812db74be9.png", //neko的背景图片
+        scImg:"img/绳1.png", //绳子的背景图片
+        bgcolor:rgb(240,236,42,0.5), //背景颜色，没有绳子背景图片时有效
+        zoom:0.9, //绳子长度的缩放值
+        hoverMsg:'你好~喵', //鼠标浮动到neko上方的对话框信息
+        right:'100px', //距离页面右边的距离
+        fontFamily:'楷体', //对话框字体
+        fontSize:'14px', //对话框字体的大小
+        color:'#1e90ff', //对话框字体颜色
+        scroWidth:'8px', //绳子的宽度
+        z_index:100, //不用解释了吧
+        during:1200, //从顶部到底部滑动的时长
+    });
 })
-
-
