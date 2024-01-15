@@ -56,7 +56,7 @@
           }),
             (this.position = { x: t - 10, y: i - 20 }),
             (this.initialStyles.color = n),
-            console.log(n),
+            // console.log(n),
             (this.element = document.createElement("span")),
             (this.element.innerHTML = this.character),
             c(this.element, this.initialStyles),
