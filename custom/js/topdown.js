@@ -18,10 +18,10 @@ scrollToTopButton.addEventListener('mouseover', function() {
   // 获取当前页面滚动位置并计算百分比
   var scrollTop = window.scrollY || document.documentElement.scrollTop;
   var scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-  var percentage = (scrollTop / scrollHeight) * 100;
+  var percentage = ((scrollTop / scrollHeight) * 100).toFixed(1);
 
-  // 将按钮内的内容替换为百分比
-  scrollToTopButton.innerText = percentage.toFixed(2) + '%';
+  // 将按钮内的内容替换为格式化后的百分比
+  scrollToTopButton.innerText = percentage + '%';
 });
 
 // 添加鼠标离开事件处理程序
