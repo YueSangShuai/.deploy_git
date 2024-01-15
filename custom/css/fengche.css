@@ -1,32 +1,64 @@
+
 /* 文章页H1-H6图标样式效果 */
 /* 控制风车转动速度 4s那里可以自己调节快慢 */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css');
 h1::before{
-  content: '⭐';
+    content: "";
+    display: inline-block;
+    width: 16px; /* 图标宽度 */
+    height: 16px; /* 图标高度 */
+    background-image: url('/images/background.jpg'); /* 图片路径 */
+    background-size: cover; /* 或者使用contain */
   -webkit-animation: ccc 4s linear infinite;
   animation: ccc 4s linear infinite;
 }
 h2::before{
-  content: '⭐';
+    content: "";
+    display: inline-block;
+    width: 16px; /* 图标宽度 */
+    height: 16px; /* 图标高度 */
+    background-image: url('/images/background.jpg'); /* 图片路径 */
+    background-size: cover; /* 或者使用contain */
   -webkit-animation: ccc 4s linear infinite;
   animation: ccc 4s linear infinite;
 }
 h3::before{
-  content: '⭐';
+    content: "";
+    display: inline-block;
+    width: 16px; /* 图标宽度 */
+    height: 16px; /* 图标高度 */
+    background-image: url('/images/background.jpg'); /* 图片路径 */
+    background-size: cover; /* 或者使用contain */
   -webkit-animation: ccc 4s linear infinite;
   animation: ccc 4s linear infinite;
 }
 h4::before{
-  content: '⭐';
+    content: "";
+    display: inline-block;
+    width: 16px; /* 图标宽度 */
+    height: 16px; /* 图标高度 */
+    background-image: url('/images/background.jpg'); /* 图片路径 */
+    background-size: cover; /* 或者使用contain */
   -webkit-animation: ccc 4s linear infinite;
   animation: ccc 4s linear infinite;
 }
 h5::before{
-  content: '⭐';
+    content: "";
+    display: inline-block;
+    width: 16px; /* 图标宽度 */
+    height: 16px; /* 图标高度 */
+    background-image: url('/images/background.jpg'); /* 图片路径 */
+    background-size: cover; /* 或者使用contain */
   -webkit-animation: ccc 4s linear infinite;
   animation: ccc 4s linear infinite;
 }
 h6::before {
-  content: '⭐';
+    content: "";
+    display: inline-block;
+    width: 16px; /* 图标宽度 */
+    height: 16px; /* 图标高度 */
+    background-image: url('/images/background.jpg'); /* 图片路径 */
+    background-size: cover; /* 或者使用contain */
   -webkit-animation: ccc 4s linear infinite;
   animation: ccc 4s linear infinite;
 }
@@ -90,50 +122,50 @@ h6::before {
 }
 /* s设置风车hover动效 6s那里可以自己调节快慢*/
 h1:hover{
-  color: var(--theme-color);
+  color: #5ec1e0;
 }
 h2:hover{
-  color: var(--theme-color);
+  color: #5ec1e0;
 }
 h3:hover{
-  color: var(--theme-color);
+  color: #5ec1e0;
 }
 h4:hover{
-  color: var(--theme-color);
+  color: #5ec1e0;
 }
 h5:hover{
-  color: var(--theme-color);
+  color: #5ec1e0;
 }
 h6:hover {
-  color: var(--theme-color);
+  color: #5ec1e0;
 }
 h1:hover::before{
-  color: var(--theme-color);
+  color: #5ec1e0;
   -webkit-animation: ccc 6s linear infinite;
   animation: ccc 6s linear infinite;
 }
 h2:hover::before{
-  color: var(--theme-color);
+  color: #5ec1e0;
   -webkit-animation: ccc 6s linear infinite;
   animation: ccc 6s linear infinite;
 }
 h3:hover::before{
-  color: var(--theme-color);
+  color: #5ec1e0;
   -webkit-animation: ccc 6s linear infinite;
   animation: ccc 6s linear infinite;
 }
 h4:hover::before{
-  color: var(--theme-color);
+  color: #5ec1e0;
   -webkit-animation: ccc 6s linear infinite;
   animation: ccc 6s linear infinite;
 }
 h5:hover::before{
-  color: var(--theme-color);
+  color: #5ec1e0;
   -webkit-animation: ccc 6s linear infinite;
   animation: ccc 6s linear infinite;
 }
 h6:hover::before {
-  color: var(--theme-color);
+  color: #5ec1e0;
   -webkit-animation: ccc 6s linear infinite;
   animation: ccc 6s linear infinite;
 }
