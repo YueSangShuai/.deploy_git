@@ -29,3 +29,22 @@ scrollToTopButton.addEventListener('mouseout', function() {
   // 恢复按钮内的内容
   scrollToTopButton.innerText = '↑';
 });
+
+
+
+// 添加鼠标悬停事件处理程序
+scrollToBottomButton.addEventListener('mouseover', function() {
+  // 获取当前页面滚动位置并计算百分比
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  var scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  var percentage = ((1-scrollTop / scrollHeight) * 100).toFixed(1);
+  
+  // 将按钮内的内容替换为格式化后的百分比
+  scrollToBottomButton.innerText = percentage + '%';
+});
+
+// 添加鼠标离开事件处理程序
+scrollToBottomButton.addEventListener('mouseout', function() {
+  // 恢复按钮内的内容
+  scrollToBottomButton.innerText = '↓';
+});
