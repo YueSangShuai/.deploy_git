@@ -19,7 +19,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="IOU$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。这里给出$IOU$的定义:$$IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}$$这里给出一个别人已经画好的图对于这张图来说$IOU$要如何计算呢$">
@@ -94,12 +94,9 @@
 <script defer data-pjax src="/custom/js/cursormove.js"></script>
 
 
-<script defer data-pjax src="/custom/js/fish.js"></script>
-<link rel="stylesheet" href="/custom/css/forter.css">
-<link rel="stylesheet" href="/custom/css/fish_transparent.css">
-
-
 <script defer data-pjax src="/custom/js/funny_title.js"></script>
+
+
 
 
 
@@ -258,10 +255,6 @@
     </header>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
 
 
     <main class="main">
@@ -614,6 +607,16 @@
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
   </div>
+<script defer data-pjax src="/custom/js/fish.js"></script>
+<link rel="stylesheet" href="/custom/css/forter.css">
+<link rel="stylesheet" href="/custom/css/fish_transparent.css">
+
+
+<div id="scroll-buttons">
+  <button id="scroll-to-top">👆</button>
+  <button id="scroll-to-bottom">👇</button>
+</div>
+
 
         
 

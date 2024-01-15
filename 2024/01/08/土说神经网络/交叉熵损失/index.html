@@ -19,7 +19,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="1信息量一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:$$I(x)&#x3D;-\log(P(x))$$$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图由图我们可以看出当log的底大于">
@@ -88,12 +88,9 @@
 <script defer data-pjax src="/custom/js/cursormove.js"></script>
 
 
-<script defer data-pjax src="/custom/js/fish.js"></script>
-<link rel="stylesheet" href="/custom/css/forter.css">
-<link rel="stylesheet" href="/custom/css/fish_transparent.css">
-
-
 <script defer data-pjax src="/custom/js/funny_title.js"></script>
+
+
 
 
 
@@ -252,10 +249,6 @@
     </header>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
 
 
     <main class="main">
@@ -601,6 +594,16 @@
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
   </div>
+<script defer data-pjax src="/custom/js/fish.js"></script>
+<link rel="stylesheet" href="/custom/css/forter.css">
+<link rel="stylesheet" href="/custom/css/fish_transparent.css">
+
+
+<div id="scroll-buttons">
+  <button id="scroll-to-top">👆</button>
+  <button id="scroll-to-bottom">👇</button>
+</div>
+
 
         
 

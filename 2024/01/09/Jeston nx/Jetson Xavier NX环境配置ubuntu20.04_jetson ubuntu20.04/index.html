@@ -19,7 +19,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="Jetson Xavier NX环境配置ubuntu20.04特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。 安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系 这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。 一.准备事项有条件的话最好有台装ubuuntu的主机，因为nx安">
@@ -104,12 +104,9 @@
 <script defer data-pjax src="/custom/js/cursormove.js"></script>
 
 
-<script defer data-pjax src="/custom/js/fish.js"></script>
-<link rel="stylesheet" href="/custom/css/forter.css">
-<link rel="stylesheet" href="/custom/css/fish_transparent.css">
-
-
 <script defer data-pjax src="/custom/js/funny_title.js"></script>
+
+
 
 
 
@@ -268,10 +265,6 @@
     </header>
 
     
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
 
 
     <main class="main">
@@ -687,6 +680,16 @@
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
   </div>
+<script defer data-pjax src="/custom/js/fish.js"></script>
+<link rel="stylesheet" href="/custom/css/forter.css">
+<link rel="stylesheet" href="/custom/css/fish_transparent.css">
+
+
+<div id="scroll-buttons">
+  <button id="scroll-to-top">👆</button>
+  <button id="scroll-to-bottom">👇</button>
+</div>
+
 
         
 

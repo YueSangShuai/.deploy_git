@@ -1,67 +1,19 @@
 
 /* 文章页H1-H6图标样式效果 */
 /* 控制风车转动速度 4s那里可以自己调节快慢 */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css');
-h1::before{
-    content: "";
-    display: inline-block;
-    width: 16px; /* 图标宽度 */
-    height: 16px; /* 图标高度 */
-    background-image: url('/images/background.jpg'); /* 图片路径 */
-    background-size: cover; /* 或者使用contain */
-  -webkit-animation: ccc 4s linear infinite;
-  animation: ccc 4s linear infinite;
-}
 h2::before{
-    content: "";
-    display: inline-block;
-    width: 16px; /* 图标宽度 */
-    height: 16px; /* 图标高度 */
-    background-image: url('/images/background.jpg'); /* 图片路径 */
-    background-size: cover; /* 或者使用contain */
-  -webkit-animation: ccc 4s linear infinite;
-  animation: ccc 4s linear infinite;
+  content:'⭐';
+  -webkit-animation: ccc 4s linear infinite, rotate 4s linear infinite; /* 添加了旋转动画 */
+  animation: ccc 4s linear infinite, rotate 4s linear infinite; /* 添加了旋转动画 */
 }
 h3::before{
-    content: "";
-    display: inline-block;
-    width: 16px; /* 图标宽度 */
-    height: 16px; /* 图标高度 */
-    background-image: url('/images/background.jpg'); /* 图片路径 */
-    background-size: cover; /* 或者使用contain */
-  -webkit-animation: ccc 4s linear infinite;
-  animation: ccc 4s linear infinite;
+  content:'⭐';
+  -webkit-animation: ccc 4s linear infinite, rotate 4s linear infinite; /* 添加了旋转动画 */
+  animation: ccc 4s linear infinite, rotate 4s linear infinite; /* 添加了旋转动画 */
 }
-h4::before{
-    content: "";
-    display: inline-block;
-    width: 16px; /* 图标宽度 */
-    height: 16px; /* 图标高度 */
-    background-image: url('/images/background.jpg'); /* 图片路径 */
-    background-size: cover; /* 或者使用contain */
-  -webkit-animation: ccc 4s linear infinite;
-  animation: ccc 4s linear infinite;
-}
-h5::before{
-    content: "";
-    display: inline-block;
-    width: 16px; /* 图标宽度 */
-    height: 16px; /* 图标高度 */
-    background-image: url('/images/background.jpg'); /* 图片路径 */
-    background-size: cover; /* 或者使用contain */
-  -webkit-animation: ccc 4s linear infinite;
-  animation: ccc 4s linear infinite;
-}
-h6::before {
-    content: "";
-    display: inline-block;
-    width: 16px; /* 图标宽度 */
-    height: 16px; /* 图标高度 */
-    background-image: url('/images/background.jpg'); /* 图片路径 */
-    background-size: cover; /* 或者使用contain */
-  -webkit-animation: ccc 4s linear infinite;
-  animation: ccc 4s linear infinite;
-}
+
+
+
 /* 控制风车转动方向 -1turn 为逆时针转动，1turn 为顺时针转动，相同数字部分记得统一修改 */
 @-webkit-keyframes ccc {
   0% {
@@ -83,7 +35,20 @@ h6::before {
     transform: rotate(-1turn);
   }
 }
-/* 设置风车颜色 */
+
+@keyframes rotate {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg); /* 旋转一圈，可以根据需要调整角度 */
+    transform: rotate(360deg); /* 旋转一圈，可以根据需要调整角度 */
+  }
+}
+
+
+/* 设置风车颜色
 h1::before {
   color: #ef50a8;
   margin-left: -1.55rem;
@@ -119,7 +84,7 @@ h6::before {
   margin-left: -0.9rem;
   font-size: 0.66rem;
   margin-top: 0rem;
-}
+} */
 /* s设置风车hover动效 6s那里可以自己调节快慢*/
 h1:hover{
   color: #5ec1e0;
