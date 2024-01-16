@@ -1,6 +1,428 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
+    <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
+    <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
+<p>我的OpenVino采用的是源码编译的这里采用的是python代码，之后可能会写一份C++代码放上去,先上才艺</p>
+<h2 id="一-将模型转换成onnx模型"><a href="#一-将模型转换成onnx模型" class="headerlink" title="一.将模型转换成onnx模型"></a><a href="#"></a>一.将模型转换成<a href="https://so.csdn.net/so/search?q=onnx%E6%A8%A1%E5%9E%8B&spm=1001.2101.3001.7020">onnx模型</a></h2><p>这里我采用的是pytorch模型文件转成onnx</p>
+<p>模型结构包括参数保存</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br><span class="line">import torch.nn</span><br><span class="line">import os</span><br><span class="line">import sys</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">def export(model_path):</span><br><span class="line">    net = torch.load(</span><br><span class="line">        model_path,</span><br><span class="line">        map_location=torch.device(&#x27;cpu&#x27;),</span><br><span class="line">    )</span><br><span class="line">    net.eval()</span><br><span class="line">    #这里需要指定你输入和输出的名字方便后面推理</span><br><span class="line">    input_names = [&#x27;input&#x27;]</span><br><span class="line">    output_names = [&#x27;output&#x27;]</span><br><span class="line">    #这里需要确定模型的输入</span><br><span class="line">    x = torch.randn(1, 3, 224, 224)</span><br><span class="line"> </span><br><span class="line">    torch.onnx.export(</span><br><span class="line">        net,</span><br><span class="line">        x,</span><br><span class="line">        os.path.join(</span><br><span class="line">            os.path.split(model_path)[0],</span><br><span class="line">            &#x27;best.onnx&#x27;,</span><br><span class="line">        ),</span><br><span class="line">        input_names=input_names,</span><br><span class="line">        output_names=output_names,</span><br><span class="line">        verbose=False,</span><br><span class="line">        opset_version=12,</span><br><span class="line">    )</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">if __name__ == &quot;__main__&quot;:</span><br><span class="line">    model_path = &#x27;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/best.pt&#x27;</span><br><span class="line">    export(model_path)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>模型采用字典保存</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line">import torch</span><br><span class="line">from swin_transformer import *</span><br><span class="line">from collections import OrderedDict</span><br><span class="line"> </span><br><span class="line">DROP_PATH_RATE = 0.5</span><br><span class="line">EMBED_DIM = 192</span><br><span class="line">DEPTHS = [2, 2, 18, 2]</span><br><span class="line">NUM_HEADS = [6, 12, 24, 48]</span><br><span class="line">WINDOW_SIZE = 7</span><br><span class="line"> </span><br><span class="line">model_path = &#x27;&#x27;</span><br><span class="line"> </span><br><span class="line">checkpoint = torch.load(</span><br><span class="line">    model_path,</span><br><span class="line">    map_location=&#x27;cpu&#x27;,</span><br><span class="line">)</span><br><span class="line">model = SwinTransformer(</span><br><span class="line">    img_size=224,</span><br><span class="line">    patch_size=4,</span><br><span class="line">    in_chans=3,</span><br><span class="line">    num_classes=0,</span><br><span class="line">    embed_dim=EMBED_DIM,</span><br><span class="line">    depths=DEPTHS,</span><br><span class="line">    num_heads=NUM_HEADS,</span><br><span class="line">    window_size=WINDOW_SIZE,</span><br><span class="line">    mlp_ratio=4,</span><br><span class="line">    qkv_bias=True,</span><br><span class="line">    qk_scale=None,</span><br><span class="line">    drop_rate=0.0,</span><br><span class="line">    drop_path_rate=DROP_PATH_RATE,</span><br><span class="line">    ape=False,</span><br><span class="line">    patch_norm=True,</span><br><span class="line">)</span><br><span class="line"> </span><br><span class="line">new_state_dict = OrderedDict()</span><br><span class="line">for k, v in checkpoint[&#x27;model&#x27;].items():</span><br><span class="line">    if k != &#x27;head.weight&#x27;:</span><br><span class="line">        new_state_dict[k] = v</span><br><span class="line">    else:</span><br><span class="line">        print(k, v.shape)</span><br><span class="line">model.load_state_dict(new_state_dict, strict=False)</span><br><span class="line"> </span><br><span class="line">model.eval()</span><br><span class="line"> </span><br><span class="line">input_names = [&#x27;input&#x27;]</span><br><span class="line">output_names = [&#x27;output&#x27;]</span><br><span class="line">x = torch.randn(1, 3, 224, 224)</span><br><span class="line"> </span><br><span class="line">torch.onnx.export(</span><br><span class="line">    model,</span><br><span class="line">    x,</span><br><span class="line">    os.path.join(</span><br><span class="line">        os.path.split(model_path)[0],</span><br><span class="line">        &#x27;best.onnx&#x27;,</span><br><span class="line">    ),</span><br><span class="line">    input_names=input_names,</span><br><span class="line">    output_names=output_names,</span><br><span class="line">    verbose=False,</span><br><span class="line">    opset_version=12,</span><br><span class="line">)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>总结来说就是把字典导入到模型的结构里面然后在进行onnx的转换这部分可以自己网上找找教程听多的</p>
+<h2 id="二-模型从onnx模型转ir模型"><a href="#二-模型从onnx模型转ir模型" class="headerlink" title="二.模型从onnx模型转ir模型"></a><a href="#"></a>二.模型从onnx模型转ir模型</h2><p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/397c40c6ae4a4094a2e8dc88cda85f48_cbd8964035d941349.png"></p>
+<p>&nbsp;这里如果你是用python直接pip的话可以直接进入conda的环境去使用她，如果你是源码编译OpenVino的话可能要进入那个目录下载一下，这里我个人觉得如果你只是用来测试的话Python其实就很够用了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python mo_onnx.py --input_model &lt;输入模型路经&gt; --output_dir &lt;输出模型路经&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>（如果需要量化到FP16的话需要额外指定参数 –compress_to_fp16）</strong></p>
+<p>首先先将你的模型转换到Ir格式，这里放一下mo的参数你们可以有道翻译一下我个人英语不太好这里就不解释了</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mo -h #可以查看mo的参数</span><br><span class="line">#或者是进入到mo.py所在的文件夹然后</span><br><span class="line">python mo.py -h</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后测试一下转换完的模型推理速度</p>
+<p>进入Openvino这个文件夹</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/41d7baf4604c49d39d32700025ce258a_3e8eadeb2477454a9.png"></p>
+<p>&nbsp;然后查看一下你模型量化的结果（FP32）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python ./benchmark_app.py -m &lt;量化后的xml文件&gt; -d CPU -api async -i &lt;选择图片路径&gt; -b 1</span><br></pre></td></tr></table></figure>
+
+<p>其中 <strong>-d</strong>指定的是你的设备 -api指定的是你的推理模式（同步还是异步推理）</p>
+<p>看一下FP32模型的速度</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9dbc17d300f143568c3c598f768cc605_dbe4da939502499a9.png"></p>
+<p>&nbsp;FP16</p>
+<img width="598" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bec68d6b955a4401bedf8d1c54e700c6_f4b0436799124d78a.png" class="jop-noMdConv">
+
+<p>&nbsp;ONNX模型推理速度</p>
+<img width="870" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c25101469a364d8e9d8bea60f3dd3142_2ded076e1fd74ad0b.png" class="jop-noMdConv">
+
+<h2 id="三，Int8量化"><a href="#三，Int8量化" class="headerlink" title=" 三，Int8量化"></a><a href="#"></a> 三，<a href="https://so.csdn.net/so/search?q=Int8&spm=1001.2101.3001.7020">Int8</a>量化</h2><p>在转换之前，我们需要准备一下数据（在量化过程中会使用到）。对于自己的数据集首先转换成openvino支持的数据格式，这里使用imagenet数据集格式，对于分类任务需要annotation.txt文件以及labels.txt共两个文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">├── dataset:： 存放数据集的根目录</span><br><span class="line">│     ├── 1：         </span><br><span class="line">│     ├── 2：     </span><br><span class="line">│     ├── 3：         </span><br><span class="line">│     ├── 4：    </span><br><span class="line">│     └── .... ：              </span><br></pre></td></tr></table></figure>
+
+<p>这里给一个生成annotation.txt和labels.txt脚本（霹雳趴拉导师那边抄的）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line">import glob</span><br><span class="line"> </span><br><span class="line">image_dir = &quot;/your_dataset_dir&quot;</span><br><span class="line">assert os.path.exists(image_dir), &quot;image dir does not exist...&quot;</span><br><span class="line"> </span><br><span class="line">img_list = glob.glob(os.path.join(image_dir, &quot;*&quot;, &quot;*.jpg&quot;))</span><br><span class="line">assert len(img_list) &gt; 0, &quot;No images(.jpg) were found in image dir...&quot;</span><br><span class="line"> </span><br><span class="line">classes_info = os.listdir(image_dir)</span><br><span class="line">classes_info.sort()</span><br><span class="line">classes_dict = &#123;&#125;</span><br><span class="line"> </span><br><span class="line"># create label file</span><br><span class="line">with open(&quot;my_labels.txt&quot;, &quot;w&quot;) as lw:</span><br><span class="line">    # 注意，没有背景时，index要从0开始</span><br><span class="line">    for index, c in enumerate(classes_info, start=0):</span><br><span class="line">        txt = &quot;&#123;&#125;:&#123;&#125;&quot;.format(index, c)</span><br><span class="line">        if index != len(classes_info):</span><br><span class="line">            txt += &quot;\n&quot;</span><br><span class="line">        lw.write(txt)</span><br><span class="line">        classes_dict.update(&#123;c: str(index)&#125;)</span><br><span class="line">print(&quot;create my_labels.txt successful...&quot;)</span><br><span class="line"> </span><br><span class="line"># create annotation file</span><br><span class="line">with open(&quot;my_annotation.txt&quot;, &quot;w&quot;) as aw:</span><br><span class="line">    for img in img_list:</span><br><span class="line">        img_classes = classes_dict[img.split(&quot;/&quot;)[-2]]</span><br><span class="line">        txt = &quot;&#123;&#125; &#123;&#125;&quot;.format(img, img_classes)</span><br><span class="line">        if index != len(img_list):</span><br><span class="line">            txt += &quot;\n&quot;</span><br><span class="line">        aw.write(txt)</span><br><span class="line">print(&quot;create my_annotation.txt successful...&quot;)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-模型测试"><a href="#3-1-模型测试" class="headerlink" title="3.1 模型测试"></a><a href="#"></a>3.1 模型测试</h3><p>首先先测试FP32和FP16的模型精度，先准备一份yaml文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">models:</span><br><span class="line">  - name: mobileNetV3Fp32</span><br><span class="line">    launchers:</span><br><span class="line">      #下面指定运行的框架 dlsdk就是openvino， 也可以是tensorflow或者其他框架</span><br><span class="line">      #model/weights是要测试的模型文件名</span><br><span class="line">      #adapter是告诉accuracy checker模型的输出是目标分类还是目标识别或者其他的输出</span><br><span class="line">      - framework: openvino</span><br><span class="line">        model: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml</span><br><span class="line">        weights: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin</span><br><span class="line">        adapter: classification</span><br><span class="line"> </span><br><span class="line">    datasets:</span><br><span class="line">      #下面这部分是有关数据集的路径，数据集的格式(imagenet，VOC或者其他)以及标注文件的名字</span><br><span class="line">      - name: Flower</span><br><span class="line">        data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">        annotation_conversion:</span><br><span class="line">          converter: imagenet</span><br><span class="line">          annotation_file: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt&quot;</span><br><span class="line">        #预处理告诉ac_checker工具在把数据集图片送进模型前要做那些预处理，比如缩放，剪切或者调整RGB/BGR顺序之类</span><br><span class="line">        reader: opencv_imread # default setting</span><br><span class="line">        preprocessing:</span><br><span class="line">          - type: resize</span><br><span class="line">            size: 256</span><br><span class="line">            aspect_ratio_scale: greater</span><br><span class="line">          - type: crop</span><br><span class="line">            size: 224</span><br><span class="line">          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">          - type: normalization</span><br><span class="line">            # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">            mean: (123.675, 116.28, 103.53)</span><br><span class="line">            std: (58.395, 57.12, 57.375)</span><br><span class="line">        #这里定义统计准确度用的算法，这里要看2种准确度，一个是top1的，还一个是top5的</span><br><span class="line">        metrics:</span><br><span class="line">          - name: accuracy @ top1</span><br><span class="line">            type: accuracy</span><br><span class="line">            top_k: 1</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>model：存放你的xml的路径，在精度测试中可以先不用放weight,这个model也可以是你的onnx文件</p>
+<p>adapter:选择你的网络类型我这里是分类网络，openvino还支持目标检测网络具体可以看看config下面的配置</p>
+<p>datasource:下面存放的是你的数据集的根路径（这里有个坑就是这个文件夹下面存放的图片路径要和你上面生成的annotion.txt对应起来包括你的类别还有路径，相当于就是你把你数据集所有的图片全部放在这个路径下面，验证的时候由annotion.txt里面的东西验证）</p>
+<p>convert:我直接写imagenet没有什么影响</p>
+<p>preprocessing：里面的是写的是你预处理操作（记得颜色通道的转换不然的话精确度一直和训练的时候验证都是错的）这里有的预处理很傻逼我官网也没有找到如果有人找到的话欢迎评论区和我说一声哈哈哈哈哈</p>
+<p>&nbsp;metrics:定义的是评价指标这里是分类网络所以我采用的是accuary这里的top1表示，评分排名前1中能正确分出的概率。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">accuracy_check -c 你的yaml文件 -s ./ -td CPU</span><br></pre></td></tr></table></figure>
+
+<p>可以得到正确率了，之后int8量化也需要用到这个进行评估。</p>
+<h3 id="3-2-yaml文件以及json文件的准备"><a href="#3-2-yaml文件以及json文件的准备" class="headerlink" title="3.2.yaml文件以及json文件的准备"></a><a href="#"></a>3.2.yaml文件以及json文件的准备</h3><p>这里int8有两种量化方式一种是全int8量化还有一种是混精度量化首先先准备一下model.yaml文件</p>
+<p>这里的yaml文件和刚刚那个yaml文件大差不差</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">models:</span><br><span class="line">  - name: mobileNetV3</span><br><span class="line">    launchers:</span><br><span class="line">      - framework: dlsdk</span><br><span class="line">        device: CPU</span><br><span class="line">        adapter: classification</span><br><span class="line">    #定义数据集</span><br><span class="line">    datasets:</span><br><span class="line">      - name: classification_dataset</span><br><span class="line">        #定义数据集路径</span><br><span class="line">        data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">        #定义annotation路径</span><br><span class="line">        annotation_conversion:</span><br><span class="line">          converter: imagenet</span><br><span class="line">          annotation_file: /home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt</span><br><span class="line"> </span><br><span class="line">        reader: opencv_imread # default setting</span><br><span class="line">        #这里需要提前定义预处理</span><br><span class="line">        preprocessing:</span><br><span class="line">          - type: resize</span><br><span class="line">            size: 256</span><br><span class="line">            aspect_ratio_scale: greater</span><br><span class="line">          - type: crop</span><br><span class="line">            size: 224</span><br><span class="line">          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">          - type: normalization</span><br><span class="line">            # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">            mean: (123.675, 116.28, 103.53)</span><br><span class="line">            std: (58.395, 57.12, 57.375)</span><br><span class="line">        metrics:</span><br><span class="line">          - name: accuracy @ top1</span><br><span class="line">            type: accuracy</span><br><span class="line">            top_k: 1</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后就是json文件的编写</p>
+<h4 id="3-2-1-DefaultQuantization"><a href="#3-2-1-DefaultQuantization" class="headerlink" title="3.2.1 DefaultQuantization"></a><a href="#"></a>3.2.1 DefaultQuantization</h4><p>这个应该是openvino中的全int8的量化</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;model&quot;: &#123;</span><br><span class="line">        &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">        &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">        &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;engine&quot;: &#123;</span><br><span class="line">        &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/defualtQuantization/model.yaml&quot;</span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;compression&quot;: &#123;</span><br><span class="line">        &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">                                </span><br><span class="line">        &quot;algorithms&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;name&quot;: &quot;DefaultQuantization&quot;, </span><br><span class="line">                &quot;params&quot;: &#123;</span><br><span class="line">                    &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">                    &quot;stat_subset_size&quot;: 300  </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>model：里面定义的是你最开始量化后的xml和bin的路径以及指定你的设备</p>
+<p>engine:就是你刚刚写好的yaml文件了</p>
+<p>target_device：就是你要量化的设备</p>
+<p>algorithms –</p>
+<p>&nbsp;                       name：这里指定的是你的量化方式</p>
+<p>&nbsp;                       preset：我也不知道什么意思</p>
+<p>&nbsp;                       stat_subset_size: 好像是采取多少张数据集的意思</p>
+<h4 id="3-2-2-AccuracyAwareQuantization"><a href="#3-2-2-AccuracyAwareQuantization" class="headerlink" title="3.2.2 AccuracyAwareQuantization"></a><a href="#"></a>3.2.2 AccuracyAwareQuantization</h4><p>先放一下json文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;model&quot;: &#123;</span><br><span class="line">        &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">        &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">        &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;engine&quot;: &#123;</span><br><span class="line">        &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/AccuracyAwareQuantization/model.yaml&quot;</span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;compression&quot;: &#123;</span><br><span class="line">        &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">                                </span><br><span class="line">        &quot;algorithms&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;name&quot;: &quot;AccuracyAwareQuantization&quot;, </span><br><span class="line">                &quot;params&quot;: &#123;</span><br><span class="line">                    &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">                    &quot;stat_subset_size&quot;: 300  ,</span><br><span class="line">                    &quot;maximal_drop&quot;: 0.1 </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>想比于DefaultQuantization就是name里面那个不一样以及多了一个maximal_drop,这个参数的意义是运行你的模型下降多少指标</p>
+<p>准确度的测试脚本可以用我3.1讲到的那个部分来测试只要把模型替换掉就OK了</p>
+<p>但是Openvino的量化好像只支撑分类网络和目标检测，后续找个时间写一下有关Pytorch自带的QAT的量化方法</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu19 Openvion cmake源码编译</title>
+    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
+    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>解压后的结构目录</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
+<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后安装外部依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
+
+<p>我中间报了一些黄的的警告我没有管他之后</p>
+<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
+<p>&nbsp;没有报错就好，然后开始编译库</p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
+<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
+<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
+<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</title>
+    <url>/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/</url>
+    <content><![CDATA[<h1 id="Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）"><a href="#Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）" class="headerlink" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）"></a>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1><p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<p>这里有个很狗的坑，我在安装的时候杜邦线忘记拔下来导致系统一直无法被主机识别，ip地址一直不对。</p>
+<p>之后把nx接数据线到主机上面（记得杜邦线不要短接！！！记得杜邦线不要短接！！！记得杜邦线不要短接！！！重要的事情说三遍）</p>
+<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>首先我们先换个源</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<p>注意JetPack5.0.1是ubuntu20了，后缀是focal，开发板还要带上ports：(记得开发板的要是ubuntu-port之前换源一直出错就是因为换错了)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>进入主机的sdk界面host不用勾选（这个选项是为了安装cuda这些东西到你的主机上面，看很多博客说这样安装大概率会用不了）</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/745ba610764a440895475ba8d1aa28d1_2be41ad5b386494d8.png"/>
+
+<p>在这里Jeston os不用勾选，如果你勾选的换就默认重装系统了 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/daf6336878d94e8e8a0f7121b9b452c1_d840294fbb1b49ce9.png"/></p>
+<p>&nbsp;ip地址一般默认不用改变如果实在不知道的话可以</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure>
+
+<p>来查看你的ip如果有连WIFE的话可能会出现两个这里你两个都试试一般就可以了，然后输入你的用户名和密码</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6319a52dd2ab4669a59e17520f708772_839888ab3d0f4cd6a.png"/>
+
+<p>&nbsp;等这三个选项全部打勾以后开始安装<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b59586872bf445afa5219503d1d9181a_89a9e6a610604b49b.png"/></p>
+<p>安装完成后先安装pip3</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br></pre></td></tr></table></figure>
+
+<p>安装jtop(一定要加后面的版本这个版本是支持5.0以上的)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo -H pip install jetson-stats==4.0.0rc2</span><br></pre></td></tr></table></figure>
+
+<h2 id="二-opencv的卸载"><a href="#二-opencv的卸载" class="headerlink" title="二.opencv的卸载"></a><a id="t1"></a>二.opencv的卸载</h2><p>（最近公司加班多找个时间把这个部分补上）</p>
+<p> </p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Jeston nx</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Jetson Xavier NX环境配置ubuntu20.04</title>
+    <url>/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/</url>
+    <content><![CDATA[<h1 id="Jetson-Xavier-NX环境配置ubuntu20-04"><a href="#Jetson-Xavier-NX环境配置ubuntu20-04" class="headerlink" title="Jetson Xavier NX环境配置ubuntu20.04"></a>Jetson Xavier NX环境配置ubuntu20.04</h1><p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
+<p><strong>安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系</strong></p>
+<p><strong>这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。</strong></p>
+<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
+<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a href="https://so.csdn.net/so/search?q=ssd&spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
+<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…..）然后直接把之前安装好的镜像直接导入即可。</p>
+<h2 id="二-虚拟机"><a href="#二-虚拟机" class="headerlink" title="二.虚拟机"></a><a id="t1"></a>二.虚拟机</h2><p>创建一个虚拟机</p>
+<img width="1200" height="716" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png"/>
+
+<p>&nbsp;选择你镜像的位置</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png"></p>
+<p>&nbsp;分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png"></p>
+<p>&nbsp;然后就是Ubuntu的安装</p>
+<img width="1200" height="566" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png"/>
+
+<h2 id="三-Nvidia-sdk的安装"><a href="#三-Nvidia-sdk的安装" class="headerlink" title="三.Nvidia sdk的安装"></a><a id="t2"></a>三.<a href="https://so.csdn.net/so/search?q=Nvidia&spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2><p>进入官网：<a href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
+<p>选择SDK，这里需要登录自己个人的Nvidia账号</p>
+<img width="1200" height="265" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png"/>
+
+<p>或者直接在虚拟机内进行下载，我这里选择直接从主机拖拽到虚拟机内因为我有安装vmware-tools</p>
+<p>输入指令进行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install ./sdkmanager_1.6.1-8175_amd64.deb ./sdkmanager_1.6.1-8175_amd64.deb </span><br></pre></td></tr></table></figure>
+
+<p>安装完成后输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sdkmanager </span><br></pre></td></tr></table></figure>
+
+<p>出现这个页面就代表着安装完成，然后登录一下自己的开发者账号<img width="1200" height="683" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png"/></p>
+<p>&nbsp;成功进入后的界面</p>
+<img width="1200" height="538" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png"/>
+
+<p>&nbsp;之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
+<img width="1200" height="900" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg"/>
+
+<p>&nbsp;接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
+<img width="1200" height="754" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png"/>
+
+<p>&nbsp;<a href="https://so.csdn.net/so/search?q=jetpack&spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
+<img width="1200" height="786" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png"/>
+
+<p>deepstream我也不知道干啥的先装上去吧</p>
+<img width="1200" height="739" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png"/>
+
+<p>&nbsp;然后只装os</p>
+<img width="1200" height="755" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png"/>
+
+<p>&nbsp;到这步应该就没有问题了（网络不好的可以多等等）</p>
+<img width="1200" height="567" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png"/>
+
+<p>&nbsp;完成后跳出了这个页面（按照这个选择）</p>
+<img width="1200" height="708" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png"/>
+
+<p>&nbsp;然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png"/>
+
+<p>查看一下我们装的系统版本是否是正确的.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /etc/lsb-release</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;大功告成</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png"/>
+
+<h2 id="四将SSD设置成默认启动盘"><a href="#四将SSD设置成默认启动盘" class="headerlink" title=" 四将SSD设置成默认启动盘"></a><a id="t3"></a> 四将SSD设置成默认启动盘</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
+
+<p>输入disk,我这里是16g运存所以我分16g，剩下全部给系统就可以了</p>
+<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png"/>
+
+<p>jinru</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">git clone https://github.com/jetsonhacks/rootOnNVMe.git</span><br><span class="line">    </span><br><span class="line">cd rootOnNVMe</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./copy-rootfs-ssd.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./setup-service.sh</span><br></pre></td></tr></table></figure>
+
+<p>进入新的系统后在root打开属性查看一下空间就知道有没有成功了。</p>
+<p>完成！</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Jeston nx</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Markdown图床</title>
+    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/</url>
+    <content><![CDATA[<h1 id="Markdown图床"><a href="#Markdown图床" class="headerlink" title="Markdown图床"></a>Markdown图床</h1><h2 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h2><ul>
+<li>PicGo</li>
+<li><h3 id="首先打开picgo官网，下载安装包"><a href="#首先打开picgo官网，下载安装包" class="headerlink" title="首先打开picgo官网，下载安装包"></a>首先打开<a href="https://link.zhihu.com/?target=https://github.com/Molunerfinn/PicGo">picgo官网</a>，下载安装包</h3></li>
+</ul>
+<p>界面如下：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//42b06d30b078093c44af1bcfa69adeac.png" alt="42b06d30b078093c44af1bcfa69adeac.png"><br>点开图床设置<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//5c6ff7c000e84da4137e7b418bfb42ba.png" alt="5c6ff7c000e84da4137e7b418bfb42ba.png"><br>接下来我会一一描述如何从github中获取这些东西<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9aa122338e571e381e3d5d12b422aded.png" alt="9aa122338e571e381e3d5d12b422aded.png"></p>
+<h2 id="2-github"><a href="#2-github" class="headerlink" title="2. github"></a>2. github</h2><p>首先创建一个好记的仓库名<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e6618bcabea3c60d34e724c0bfe3a66f.png" alt="e6618bcabea3c60d34e724c0bfe3a66f.png"><br>分支部分默认:master就行<br>然后是获取token进入setting:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7013512526adb5c659dd17fa635b2a91.png" alt="7013512526adb5c659dd17fa635b2a91.png"><br>最底下有个<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3f3574d1bbd20c1604e28fce611abc8b.png" alt="3f3574d1bbd20c1604e28fce611abc8b.png"><br>然后<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//07fe2a9fdec1257c0853fc71301175e2.png" alt="07fe2a9fdec1257c0853fc71301175e2.png"><br>之后这样勾选<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7a876b7bab2841dd4b8b8546cf785fd.png" alt="a7a876b7bab2841dd4b8b8546cf785fd.png"><br>这样你就可以得到一个token，记得保存这个token，这个token只能看一次。<br>将这个token塞到刚刚pigo里面之后就可以上传图片了。</p>
+<h2 id="可能会出现的问题"><a href="#可能会出现的问题" class="headerlink" title="可能会出现的问题"></a>可能会出现的问题</h2><p>链接失败：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7deb1860493cfa28ec0f0496cda9839.png" alt="a7deb1860493cfa28ec0f0496cda9839.png"><br>记得点开这里面这样勾选</p>
+<p>上传失败：<br>仓库的设置有问题或者网不好没传上去</p>
+]]></content>
+      <categories>
+        <category>hexo配置</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>hexo美化</title>
+    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E4%B8%AA%E4%BA%BA%E7%95%8C%E9%9D%A2%E7%BE%8E%E5%8C%96/</url>
+    <content><![CDATA[<h1 id="hexo美化"><a href="#hexo美化" class="headerlink" title="hexo美化"></a>hexo美化</h1><p>都自己搞了一个网站写博客，肯定希望塞点花里胡哨的东西到自己的个人博客里面。这里给出我个人用的主题next（简约用的人多教程多debug简单，玩的花）<br>给出下载链接</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/next-theme/hexo-theme-next themes/next</span><br></pre></td></tr></table></figure>
+
+<p>然后塞到这个里面<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//f3e59613955e5d2a16330e97fa1ac525.png" alt="f3e59613955e5d2a16330e97fa1ac525.png"><br>在你网站的_config.yaml里面修改一下主题<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//539305af21a51c7520ffeb5dc60831bb.png" alt="539305af21a51c7520ffeb5dc60831bb.png"><br><span style="color: red;">注意:这里的主题名字要和你塞到theme下面的文件夹名称一样</span><br>然后就是</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+<p>本地看看没有问题就可以传到你的github上面了</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//f930f5e9e6c120783570d0914c798fd3.png" alt="f930f5e9e6c120783570d0914c798fd3.png"></p>
+<h2 id="个人信息设置"><a href="#个人信息设置" class="headerlink" title="个人信息设置"></a>个人信息设置</h2><h3 id="个人信息设置-1"><a href="#个人信息设置-1" class="headerlink" title="个人信息设置"></a>个人信息设置</h3><p>点开主站得config文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7b0f7a47d3ae9e214f4fb80ed120c6e.png" alt="a7b0f7a47d3ae9e214f4fb80ed120c6e.png"><br>个人头像设置<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d5904a4588c007811fdfcde37f7c3c9a.png" alt="d5904a4588c007811fdfcde37f7c3c9a.png"><br><span style="color: red;">这里得图片我有点没太搞懂要怎么传，所以我采用图床得方式在github建立一个专门放照片得仓库之后将图片上传，而且也方便markdown文件里面文件得上传，可以看我另外一篇博客</span></p>
+<h2 id="新建标签及分类界面"><a href="#新建标签及分类界面" class="headerlink" title="新建标签及分类界面"></a>新建标签及分类界面</h2><p>打开主题配置文件，搜索 menu，找到如下代码：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//8b215df4b12df90ca2c8fa17b58709df.png" alt="8b215df4b12df90ca2c8fa17b58709df.png"><br>然后点开我们的站点的Source，新键一下这些文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9f024811ce131a87cca072c8c97f7dfb.png" alt="9f024811ce131a87cca072c8c97f7dfb.png"><br>新建一下index.md<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//77c54b8efb9d315e0224f7d509f5d68d.png" alt="77c54b8efb9d315e0224f7d509f5d68d.png"><br>就完成了创建</p>
+<h2 id="添加浏览进度"><a href="#添加浏览进度" class="headerlink" title="添加浏览进度"></a>添加浏览进度</h2><p>打开 themes&#x2F;next&#x2F;_config.yml，搜索关键字 scrollpercent，把 false改为 true。<br>效果图如下：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//ae0c2927b4f36e20ab70aeb52dc63049.png" alt="ae0c2927b4f36e20ab70aeb52dc63049.png"></p>
+<h2 id="本地搜索"><a href="#本地搜索" class="headerlink" title="本地搜索"></a>本地搜索</h2><p>安装插件hexo-generator-searchdb,执行以下命令:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-generator-searchdb --save</span><br></pre></td></tr></table></figure>
+
+<p>修改hexo&#x2F;_config.yml站点配置文件，新增以下内容到任意位置：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">search:</span><br><span class="line">path: search.xml</span><br><span class="line">field: post</span><br><span class="line">format: html</span><br><span class="line">limit: 10000</span><br></pre></td></tr></table></figure>
+
+<p>编辑 主题配置文件，启用本地搜索功能：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Local search</span><br><span class="line">local_search:</span><br><span class="line">enable: true</span><br></pre></td></tr></table></figure>
+<p>效果图：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//ae28675920fdaa08f45684673fb8961e.png" alt="ae28675920fdaa08f45684673fb8961e.png"></p>
+<h2 id="设置网站图标"><a href="#设置网站图标" class="headerlink" title="设置网站图标"></a>设置网站图标</h2><p>主题的_config.yaml中找到<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//661850660d0f9ec9da200861986d8610.png" alt="661850660d0f9ec9da200861986d8610.png"><br>把你的图像传上去，效果如下<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//506187330ffbe5d1034bbc68f39603c0.png" alt="506187330ffbe5d1034bbc68f39603c0.png"></p>
+<h2 id="添加近期文章功能"><a href="#添加近期文章功能" class="headerlink" title="添加近期文章功能"></a>添加近期文章功能</h2><p>（适用于8.x）<br>在主站的source中创建_data文件夹<span style="color: red;">一定是主站的source不是主题的source</span><br>在这个文件夹下创建sidebar.njk文件，格式如下：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//de3479bfd326436a514854c1eabbfa29.png" alt="de3479bfd326436a514854c1eabbfa29.png"><br>输入以下代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;!-- recent posts --&gt;</span><br><span class="line">&#123;%- if theme.recent_posts %&#125;</span><br><span class="line">    &lt;div class=&quot;links-of-blogroll motion-element &#123;&#123; &quot;links-of-blogroll-&quot; + theme.recent_posts_layout &#125;&#125;&quot;&gt;</span><br><span class="line">        &lt;div class=&quot;links-of-blogroll-title recent-posts-title&quot;&gt;</span><br><span class="line">	    &lt;i class=&quot;fa fa-history &#123;&#123; theme.recent_posts_icon | lower &#125;&#125;&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;</span><br><span class="line">            &#123;&#123; theme.recent_posts_title &#125;&#125;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">	&lt;ul class=&quot;links-of-blogroll-list recent-posts-list&quot;&gt;</span><br><span class="line">	    &#123;%- set posts = site.posts.sort(&#x27;-date&#x27;).toArray() %&#125;</span><br><span class="line">	    &#123;%- for post in posts.slice(&#x27;0&#x27;, &#x27;5&#x27;) %&#125;</span><br><span class="line">	        &lt;li class=&quot;my-links-of-blogroll-item&quot;&gt;</span><br><span class="line">		    &lt;a href=&quot;&#123;&#123; url_for(post.path) &#125;&#125;&quot; title=&quot;&#123;&#123; post.title &#125;&#125;&quot; target=&quot;&quot;&gt;</span><br><span class="line">		    &#123;&#123; post.title &#125;&#125;</span><br><span class="line">		    &lt;/a&gt;</span><br><span class="line">		&lt;/li&gt;</span><br><span class="line">	    &#123;%- endfor %&#125;</span><br><span class="line">	&lt;/ul&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">&#123;%- endif %&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>然后点开主题搜索custom_file_path<br>把sidebar这块解除注释<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//844981d65ec811795beb953c5e065563.png" alt="844981d65ec811795beb953c5e065563.png"><br>然后输入以下代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">recent_posts: true</span><br><span class="line">recent_posts_title: 近期文章</span><br><span class="line">recent_posts_layout: block</span><br></pre></td></tr></table></figure>
+<p>成果图：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//92e8a2213847839d9577d15d8d4bddb1.png" alt="92e8a2213847839d9577d15d8d4bddb1.png"></p>
+<h2 id="看板娘可说话可互动"><a href="#看板娘可说话可互动" class="headerlink" title="看板娘可说话可互动"></a>看板娘可说话可互动</h2><p>下载 <a href="https://link.zhihu.com/?target=https://github.com/stevenjoezhang/live2d-widget">大佬项目项目</a>，解压到本地博客目录的<code>themes/next/source</code>下，修改文件夹名为 `live2d-widget`，修改项目中的 `autoload.js` 文件，如下：  </p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const live2d_path = &quot;https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget/&quot;;</span><br><span class="line">改为</span><br><span class="line">const live2d_path = &quot;/live2d-widget/&quot;;</span><br></pre></td></tr></table></figure>
+<p>在<code>/themes/next/layout/_layout.swing</code>中,新增如下内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;script src=&quot;/live2d-widget/autoload.js&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>在 <code>主题配置文件</code> 中,新增如下内容：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">live2d:</span><br><span class="line">  enable: true</span><br></pre></td></tr></table></figure>
+<p>  想修改看板娘大小、位置、格式、文本内容等，可查看并修改 <code>waifu-tips.js</code> 、 <code>waifu-tips.json</code> 和 <code>waifu.css</code></p>
+<h2 id="自定义看板娘模型"><a href="#自定义看板娘模型" class="headerlink" title="自定义看板娘模型"></a>自定义看板娘模型</h2><p> <a href="https://github.com/xiaoski/live2d_models_collection">看板娘github</a><br> 文件如下:<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//31dfe6a62027e2cdd49c88b3101f4b4b.png" alt="31dfe6a62027e2cdd49c88b3101f4b4b.png"><br> 然后下载一下live2d_api的项目<a href="https://github.com/fghrsh/live2d_api">live2d_api</a>下载到本地<br> 建议拉到主题的source文件夹下方便项目上传<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//c076cdeb37e22e000a5317a2e8646d47.png" alt="c076cdeb37e22e000a5317a2e8646d47.png"><br> 点开model_list.yaml里面如下：<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a13218a39da1b91108c2faba3ac81927.png" alt="a13218a39da1b91108c2faba3ac81927.png"><br> models里面放的是模型的路径<br> message里面放的是打招呼<br> 然后打开model文件夹如下<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//297e695b838ad9aeb2dd32bdf6656b21.png" alt="297e695b838ad9aeb2dd32bdf6656b21.png"><br>里面存放的就是你的模型<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//00b3242d66e31e19025e3496f41be5a1.png" alt="00b3242d66e31e19025e3496f41be5a1.png"><br> -motion里面放的是人物的动作<br> jpg文件是人物的贴图<br> 找到其中的某个json文件一般是model.json命名的打开如下<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//2b493f8ff88df3802a2a2542ccc897a9.png" alt="2b493f8ff88df3802a2a2542ccc897a9.png"><br> 将这个json的名字改成index.json</p>
+<p> 在api文件夹下打开cmd</p>
+<p>如果有使用过npm镜像请先关闭</p>
+<p>输入命令登录</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm adduser</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<pre><code>按照提示输入邮箱和密码
+</code></pre>
+<p>查看一下是否登录成功</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm whoami</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>如果提示网络错误可以设置代理</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm config set proxy http://127.0.0.1:port</span><br><span class="line">npm config set https-proxy http://127.0.0.1:port</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>修改package.json的信息并发布</p>
+<ul>
+<li><p>先初始化</p>
+  <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm init</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>修改api文件夹中的package.json的信息，将几处都换成你自己的链接<br>发布资源(会比较久，看大小和网速)</p>
+<pre><code><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm publish --public</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</code></pre>
+<h3 id="通过CDN或unpkg访问"><a href="#通过CDN或unpkg访问" class="headerlink" title="通过CDN或unpkg访问"></a>通过CDN或unpkg访问</h3><ul>
+<li><p>一般上传到npm后基本能立刻通过CDN访问到(可以在浏览器打开查看)，但是不能超过100MB，格式如下(gcore的访问速度更好一点)</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://unpkg.com/资源名@版本/ </span><br><span class="line">https://fastly.jsdelivr.net/npm/资源名@版本/ </span><br><span class="line">https://gcore.jsdelivr.net/npm/资源名@版本/ </span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><code>unpkg</code>也可以使用，就是收录速度实在太慢了，还经常内部的文件夹打不开，不过它确实能加载更大的项目，格式如下(饿了么的源好一点)</p>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://npm.elemecdn.com/资源名@版本/</span><br><span class="line">https://unpkg.com/资源名@版本/</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>打开你的<code>livewd-wight</code>文件夹下的<code>autoload.js</code>文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//b977e04d5f26dc0ff3d97a066ed367c5.png" alt="b977e04d5f26dc0ff3d97a066ed367c5.png"><br>将你的cdnpath替换成上面的建议用gcore比较快。</p>
+<h2 id="修改加载特效"><a href="#修改加载特效" class="headerlink" title="修改加载特效"></a>修改加载特效</h2><p> 由于网页不可能一直都秒进，总会等待一段时间的，所以可以设置顶部加载条。Next 已经集成了很多加载特效，可以在下面选项中在线调试测试一下。<br>搜索<code>pace</code>，找到如下代码<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3df0777cb8bb7daba99c1df49f1e2a89.png" alt="3df0777cb8bb7daba99c1df49f1e2a89.png"></p>
+<h2 id="Valine评论区功能"><a href="#Valine评论区功能" class="headerlink" title="Valine评论区功能"></a>Valine评论区功能</h2><p>网不好之后单独出一期</p>
+<h2 id="RSS订阅功能"><a href="#RSS订阅功能" class="headerlink" title="RSS订阅功能"></a>RSS订阅功能</h2><p>首先先安装一下RSS feed插件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-generator-feed --save</span><br></pre></td></tr></table></figure>
+<p>编辑文件<code>themes/next/_config.yml</code>，在Sidebar Settings部分的最后添加以下设置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sidebar_rss:</span><br><span class="line">  text: RSS</span><br><span class="line">  icon: fa fa-rss</span><br><span class="line">  color: burlywood</span><br><span class="line">  link: atom.xml</span><br></pre></td></tr></table></figure>
+<p>然后打开themes&#x2F;next&#x2F;layout&#x2F;_partials&#x2F;sidebar&#x2F;site-overview.swig在最下面插入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;%- if theme.sidebar_rss %&#125;</span><br><span class="line">  &lt;div class=&quot;&quot;&gt;</span><br><span class="line">    &lt;a target=&quot;_blank&quot; class=&quot;social-link&quot; href=&quot;&#123;&#123; url_for(theme.sidebar_rss.link) &#125;&#125;&quot; style=&quot;color: &#123;&#123; theme.sidebar_rss.color &#125;&#125;;&quot;&gt;</span><br><span class="line">      &lt;span class=&quot;icon&quot;&gt;</span><br><span class="line">        &lt;i class=&quot;&#123;&#123; theme.sidebar_rss.icon &#125;&#125;&quot;&gt;&lt;/i&gt;</span><br><span class="line">      &lt;/span&gt;</span><br><span class="line">      &lt;span class=&quot;label&quot;&gt;&#123;&#123; theme.sidebar_rss.text &#125;&#125;&lt;/span&gt;</span><br><span class="line">    &lt;/a&gt;</span><br><span class="line">  &lt;/div&gt;</span><br><span class="line">&#123;%- endif %&#125;</span><br></pre></td></tr></table></figure>
+<p>效果图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//4bfd36180d7dffaf329a06f0d8f52229.png" alt="4bfd36180d7dffaf329a06f0d8f52229.png"></p>
+<h2 id="鼠标点击红心特效"><a href="#鼠标点击红心特效" class="headerlink" title="鼠标点击红心特效"></a>鼠标点击红心特效</h2><p>在 <code>/themes/hexo-theme-spfk/source/js</code> 下新建文件 love.js，在 love.js 文件中添加以下代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">!function(e,t,a)&#123;function n()&#123;c(&quot;.heart&#123;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);&#125;.heart:after,.heart:before&#123;content: &#x27;&#x27;;width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 500%;-moz-border-radius: 50%;position: fixed;&#125;.heart:after&#123;top: -5px;&#125;.heart:before&#123;left: -5px;&#125;&quot;),o(),r()&#125;function r()&#123;for(var e=0;e&lt;d.length;e++)d[e].alpha&lt;=0?(t.body.removeChild(d[e].el),d.splice(e,1)):(d[e].y--,d[e].scale+=.004,d[e].alpha-=.013,d[e].el.style.cssText=&quot;left:&quot;+d[e].x+&quot;px;top:&quot;+d[e].y+&quot;px;opacity:&quot;+d[e].alpha+&quot;;transform:scale(&quot;+d[e].scale+&quot;,&quot;+d[e].scale+&quot;) rotate(45deg);background:&quot;+d[e].color+&quot;;z-index:99999&quot;);requestAnimationFrame(r)&#125;function o()&#123;var t=&quot;function&quot;==typeof e.onclick&amp;&amp;e.onclick;e.onclick=function(e)&#123;t&amp;&amp;t(),i(e)&#125;&#125;function i(e)&#123;var a=t.createElement(&quot;div&quot;);a.className=&quot;heart&quot;,d.push(&#123;el:a,x:e.clientX-5,y:e.clientY-5,scale:1,alpha:1,color:s()&#125;),t.body.appendChild(a)&#125;function c(e)&#123;var a=t.createElement(&quot;style&quot;);a.type=&quot;text/css&quot;;try&#123;a.appendChild(t.createTextNode(e))&#125;catch(t)&#123;a.styleSheet.cssText=e&#125;t.getElementsByTagName(&quot;head&quot;)[0].appendChild(a)&#125;function s()&#123;return&quot;rgb(&quot;+~~(255*Math.random())+&quot;,&quot;+~~(255*Math.random())+&quot;,&quot;+~~(255*Math.random())+&quot;)&quot;&#125;var d=[];e.requestAnimationFrame=function()&#123;return e.requestAnimationFrame||e.webkitRequestAnimationFrame||e.mozRequestAnimationFrame||e.oRequestAnimationFrame||e.msRequestAnimationFrame||function(e)&#123;setTimeout(e,1e3/60)&#125;&#125;(),n()&#125;(window,document);</span><br></pre></td></tr></table></figure>
+<p>在 \themes\hexo-theme-spfk\layout\layout.swig 文件末尾添加以下代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;!-- 页面点击小红心 --&gt;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot; src=&quot;/js/love.js&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="鼠标点击字体特效"><a href="#鼠标点击字体特效" class="headerlink" title="鼠标点击字体特效"></a>鼠标点击字体特效</h2><p>在 <code>/themes/hexo-theme-spfk/source/js </code>下新建文件 click_show_text.js，在 click_show_text.js 文件中添加以下代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">var a_idx = 0;</span><br><span class="line">jQuery(document).ready(function($) &#123;</span><br><span class="line">    $(&quot;body&quot;).click(function(e) &#123;</span><br><span class="line">        var a = new Array</span><br><span class="line">        (&quot;富强&quot;, &quot;民主&quot;, &quot;文明&quot;, &quot;和谐&quot;, &quot;自由&quot;, &quot;平等&quot;, &quot;公正&quot;, &quot;法治&quot;, &quot;爱国&quot;, &quot;敬业&quot;, &quot;诚信&quot;, &quot;友善&quot;);</span><br><span class="line">        var $i = $(&quot;&lt;span/&gt;&quot;).text(a[a_idx]);</span><br><span class="line">        a_idx = (a_idx + 1) % a.length;</span><br><span class="line">        var x = e.pageX,</span><br><span class="line">        y = e.pageY;</span><br><span class="line">        $i.css(&#123;</span><br><span class="line">            &quot;z-index&quot;: 5,</span><br><span class="line">            &quot;top&quot;: y - 20,</span><br><span class="line">            &quot;left&quot;: x,</span><br><span class="line">            &quot;position&quot;: &quot;absolute&quot;,</span><br><span class="line">            &quot;font-weight&quot;: &quot;bold&quot;,</span><br><span class="line">            &quot;color&quot;: &quot;#FF0000&quot;</span><br><span class="line">        &#125;);</span><br><span class="line">        $(&quot;body&quot;).append($i);</span><br><span class="line">        $i.animate(&#123;</span><br><span class="line">            &quot;top&quot;: y - 180,</span><br><span class="line">            &quot;opacity&quot;: 0</span><br><span class="line">        &#125;,</span><br><span class="line">            3000,</span><br><span class="line">            function() &#123;</span><br><span class="line">                $i.remove();</span><br><span class="line">            &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">    setTimeout(&#x27;delay()&#x27;, 2000);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">function delay() &#123;</span><br><span class="line">    $(&quot;.buryit&quot;).removeAttr(&quot;onclick&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 在 <code>\themes\hexo-theme-spfk\layout\layout.swig</code> 文件末尾添加以下代码：<br> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> &lt;!--单击显示文字--&gt;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot; src=&quot;/js/click_show_text.js&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="背景添加"><a href="#背景添加" class="headerlink" title="背景添加"></a>背景添加</h2><p>可以在 <code>themes/next/source/css/_schemes/Gemini/index.sty</code>l 中添加的代码（在最后添加即可），muse是我的 next 的布局样式（next默认是muse，在muse的index.styl添加也有同样的效果）。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">body &#123;</span><br><span class="line"></span><br><span class="line">    background:url(/images/background.jpg);</span><br><span class="line"></span><br><span class="line">    background-repeat: no-repeat;</span><br><span class="line"></span><br><span class="line">    background-attachment:fixed; //不重复</span><br><span class="line"></span><br><span class="line">    background-size: cover;      //填充</span><br><span class="line"></span><br><span class="line">    background-position:50% 50%;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//36a13237f9c509ef5513dcb09c45e830.png" alt="36a13237f9c509ef5513dcb09c45e830.png"></p>
+<p>搜索框等透明化设置添加到刚刚的下面就可以</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">body&#123;				//修改主体字体颜色</span><br><span class="line">  color: #000;		//纯黑</span><br><span class="line">&#125;</span><br><span class="line">.posts-expand .post-title-link &#123;	//标题颜色</span><br><span class="line">    color: #000;				//首页文章标题颜色， （默认为灰辨识度不高）</span><br><span class="line">&#125;</span><br><span class="line">.posts-expand .post-meta-container &#123;	//标题下的日期颜色</span><br><span class="line">    color: #880000;				//此处修改为红色,可自行调用rgb调色</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//侧边框的透明度设置</span><br><span class="line">.sidebar &#123;</span><br><span class="line">  opacity: 0.9;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">.header-inner &#123;		//菜单栏的调色</span><br><span class="line">  background: rgba(255,255,255,0.5);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">.popup &#123;		//搜索框透明</span><br><span class="line">  opacity: 0.8;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">.main-inner &#123; 	//整个主体的透明度</span><br><span class="line">   opacity: 0.8;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>背景不够透明怎么办，百度搜索在线图像透明化从根本解决烦恼</p>
+<h2 id="代码块mac美化"><a href="#代码块mac美化" class="headerlink" title="代码块mac美化"></a>代码块mac美化</h2><p>在主题的config.yml找到，codeblock设置即可<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//c1627acf67426b44dc045b47379805fb.png" alt="c1627acf67426b44dc045b47379805fb.png"></p>
+<h2 id="代码云"><a href="#代码云" class="headerlink" title="代码云"></a>代码云</h2><p>命令行安装一下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-tag-cloud@^2.0.* --save </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在主题文件<code>theme/next/layout/_macro/sidebar.swig</code>添加下方代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;% if site.tags.length &gt; 1 %&#125;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;/js/tagcloud.js&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;/js/tagcanvas.js&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;div class=&quot;widget-wrap&quot;&gt;</span><br><span class="line">    &lt;h3 class=&quot;widget-title&quot;&gt;Tag Cloud&lt;/h3&gt;</span><br><span class="line">    &lt;div id=&quot;myCanvasContainer&quot; class=&quot;widget tagcloud&quot;&gt;</span><br><span class="line">        &lt;canvas width=&quot;250&quot; height=&quot;250&quot; id=&quot;resCanvas&quot; style=&quot;width=100%&quot;&gt;</span><br><span class="line">            &#123;&#123; list_tags() &#125;&#125;</span><br><span class="line">        &lt;/canvas&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&#123;% endif %&#125;</span><br></pre></td></tr></table></figure>
+<p>如下图所示<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//06553412efcccd33e220c76421ed28f4.png" alt="06553412efcccd33e220c76421ed28f4.png"><br>在主站的<code>config.yml</code>下添加配置</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tag_cloud:</span><br><span class="line">    textFont: Trebuchet MS, Helvetica</span><br><span class="line">    textColor: &#x27;#e06767&#x27;</span><br><span class="line">    textHeight: 20</span><br><span class="line">    outlineColor: &#x27;#E2E1D1&#x27;</span><br><span class="line">    maxSpeed: 0.1</span><br></pre></td></tr></table></figure>
+<p>最后的结果是在侧边栏（我之前以为是在标签页结果搞了好久……）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//0709919656dbe4290234fd58f248c48e.png" alt="0709919656dbe4290234fd58f248c48e.png"></p>
+<h2 id="彩色标签云"><a href="#彩色标签云" class="headerlink" title="彩色标签云"></a>彩色标签云</h2><p>在<code>/themes/next/layout/</code>目录下，新增tag-color.swig文件，加入下方代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;</span><br><span class="line">     var alltags = document.getElementsByClassName(&#x27;tag-cloud-tags&#x27;);</span><br><span class="line">     var tags = alltags[0].getElementsByTagName(&#x27;a&#x27;);</span><br><span class="line">     for (var i = tags.length - 1; i &gt;= 0; i--) &#123;</span><br><span class="line">       var r=Math.floor(Math.random()*75+130);</span><br><span class="line">       var g=Math.floor(Math.random()*75+100);</span><br><span class="line">       var b=Math.floor(Math.random()*75+80);</span><br><span class="line">       tags[i].style.background = &quot;rgb(&quot;+r+&quot;,&quot;+g+&quot;,&quot;+b+&quot;)&quot;;</span><br><span class="line">     &#125;</span><br><span class="line">&lt;/script&gt;</span><br><span class="line"></span><br><span class="line">&lt;style&gt;</span><br><span class="line">  .tag-cloud-tags&#123;</span><br><span class="line">    /*font-family: Helvetica, Tahoma, Arial;*/</span><br><span class="line">    /*font-weight: 100;*/</span><br><span class="line">    text-align: center;</span><br><span class="line">    counter-reset: tags;</span><br><span class="line">  &#125;</span><br><span class="line">  .tag-cloud-tags a&#123;</span><br><span class="line">    border-radius: 6px;</span><br><span class="line">    padding-right: 5px;</span><br><span class="line">    padding-left: 5px;</span><br><span class="line">    margin: 8px 5px 0px 0px;</span><br><span class="line">  &#125;</span><br><span class="line">  .tag-cloud-tags a:before&#123;</span><br><span class="line">    content: &quot;?&quot;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  .tag-cloud-tags a:hover&#123;</span><br><span class="line">     box-shadow: 0px 5px 15px 0px rgba(0,0,0,.4);</span><br><span class="line">     transform: scale(1.1);</span><br><span class="line">     /*box-shadow: 10px 10px 15px 2px rgba(0,0,0,.12), 0 0 6px 0 rgba(104, 104, 105, 0.1);*/</span><br><span class="line">     transition-duration: 0.15s;</span><br><span class="line">  &#125;</span><br><span class="line">&lt;/style&gt;</span><br></pre></td></tr></table></figure>
+<p>在<code>/themes/next/layout/page.swig/</code>中引入tag-color.swig：<br>在下方加上<code> &#123;% include 'tag-color.swig' %&#125;</code> 代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;div class=&quot;tag-cloud&quot;&gt;</span><br><span class="line">         &lt;!--    &lt;div class=&quot;tag-cloud-title&quot;&gt;</span><br><span class="line">               &#123;&#123; _p(&#x27;counter.tag_cloud&#x27;, site.tags.length) &#125;&#125;</span><br><span class="line">           &lt;/div&gt;  --&gt;</span><br><span class="line">            &lt;div class=&quot;tag-cloud-tags&quot; id=&quot;tags&quot;&gt;</span><br><span class="line">		  &#123;&#123; tagcloud(&#123;min_font: 16, max_font: 16, amount: 300, color: true, start_color: &#x27;#FFF&#x27;, end_color: &#x27;#FFF&#x27;&#125;) &#125;&#125;            </span><br><span class="line">	  &lt;/div&gt;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">    &#123;% include &#x27;tag-color.swig&#x27; %&#125;		</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>效果图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//93efb444c021774abc52076ae0e2ea89.png" alt="93efb444c021774abc52076ae0e2ea89.png"></p>
+<h2 id="标签放到首页"><a href="#标签放到首页" class="headerlink" title="标签放到首页"></a>标签放到首页</h2><p>在路径：<code>/themes/next/layout/index.swig </code>中<code>&#123;% block content %&#125;</code>下面添加下方代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;% block content %&#125;</span><br><span class="line"></span><br><span class="line">	&lt;div class=&quot;tag-cloud&quot;&gt;</span><br><span class="line">	  &lt;div class=&quot;tag-cloud-tags&quot; id=&quot;tags&quot;&gt;</span><br><span class="line">		&#123;&#123; tagcloud(&#123;min_font: 16, max_font: 16, amount: 300, color: true, start_color: &#x27;#fff&#x27;, end_color: &#x27;#fff&#x27;&#125;) &#125;&#125;</span><br><span class="line">	  &lt;/div&gt;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">	&lt;br&gt;</span><br><span class="line">	</span><br><span class="line">	&#123;% include &#x27;tag-color.swig&#x27; %&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>hexo配置</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>hexo基础版搭建</title>
+    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<h1 id="hexo基础版搭建"><a href="#hexo基础版搭建" class="headerlink" title="hexo基础版搭建"></a>hexo基础版搭建</h1><h2 id="1-前置准备"><a href="#1-前置准备" class="headerlink" title="1.前置准备"></a>1.前置准备</h2><p>1.git <a href="https://registry.npmmirror.com/binary.html?path=git-for-windows/">git</a><br>2.Node.js <a href="https://nodejs.org/en/">Node.js</a><br>3.hexo<br>hexo是一款大家都在用网上教程多的博客平台，所以我们采用这一款。<br>首先先创建一个空白文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//25073589eed32f584d36ae6a0ab62f5d.png" alt="25073589eed32f584d36ae6a0ab62f5d.png"><br>然后git bash here之后输入以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-cli -g#使用npm下载hexo</span><br><span class="line">hexo init blog#hexo的初始化</span><br><span class="line">cd blog#进入这个文件夹</span><br><span class="line">npm install #安装npm的那些包</span><br><span class="line">hexo server #启动hexo服务</span><br></pre></td></tr></table></figure>
+<p>最终会生成一个文件夹如下:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7e45e1465e138298cfd38441ef094034.png" alt="7e45e1465e138298cfd38441ef094034.png"><br>文件夹功能</p>
+<ul>
+<li>node_modules: 依赖包</li>
+<li>public：存放生成的页面</li>
+<li>scaffolds：生成文章的一些模板</li>
+<li>source：用来存放你的文章</li>
+<li>themes：主题</li>
+</ul>
+<p>然后输入这两条命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+
+<p>完成后会显示如下内容，则说明<strong>配置成功</strong>!<br>（这里我是已经添加过主题了之后会说）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9b8ea34415f558f8522f8ed9a909912b.png" alt="9b8ea34415f558f8522f8ed9a909912b.png"></p>
+<h2 id="GitHub创建仓库"><a href="#GitHub创建仓库" class="headerlink" title="GitHub创建仓库"></a>GitHub创建仓库</h2><p>首先注册一个GitHub的仓库，然后在个人主页中选择 new 新建仓库<br><span style="color: red;">注意： 仓库名称的前半部分与你的用户名一致,即 YueSangShuai，后半部分为 <a href="http://git.io/">http://git.io</a> 固定格式</span><br>（忽略红色警告，因为我已经创建过了！），可以选择一个readme为说明文件（随便），然后点击创建仓库<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//645b92b2b22cd9b4c583876d8657f00a.png" alt="645b92b2b22cd9b4c583876d8657f00a.png"></p>
+<p> 回到 git bash黑窗口中，<strong>输入以下两个命令</strong>：<br>yourname改为你的<strong>GitHub的用户名</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot;</span><br></pre></td></tr></table></figure>
+
+<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+
+<p>  <strong>创建 ssh，输入命令，然后一直回车</strong></p>
+<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+
+<p>之后会提示你已完成 ssh的创建，在文件中找到这个路径<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e25ae687593ee8ffc37aff1f0042aa51.png" alt="e25ae687593ee8ffc37aff1f0042aa51.png"><br>记住你的id_rsa.pub,<br>进入你的github setting<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d9fad9c8f3c86666cb30788bca8f4f61.png" alt="d9fad9c8f3c86666cb30788bca8f4f61.png"><br>创建你的ssh-key<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//819d5aeaf13bfec2870c7dfaf59cd1ba.png" alt="819d5aeaf13bfec2870c7dfaf59cd1ba.png"><br>将你的id_rsa.pub的内容输入到下面即可完成<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d7d89bd60289f494e668f0e2e2cbe12a.png" alt="d7d89bd60289f494e668f0e2e2cbe12a.png"></p>
+<h2 id="hexo部署到github"><a href="#hexo部署到github" class="headerlink" title="hexo部署到github"></a>hexo部署到github</h2><p>找到刚刚那个文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//239cf8c656328a94d51c78f784a1af1c.png" alt="239cf8c656328a94d51c78f784a1af1c.png"><br>找到下面的内容</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line"># deploy:</span><br><span class="line">#   type: &#x27;&#x27;</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/username/username.github.io.git</span><br></pre></td></tr></table></figure>
+<p>然后在这个位置设置一下你的博客链接：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6c388e576a7599c3d7e7efe858faa024.png" alt="6c388e576a7599c3d7e7efe858faa024.png"></p>
+<p><strong>安装 git部署命令工具</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+<p>然后：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>hexo clean</code>清除了你之前生成的东西，也可以不加。 <code>hexo generate</code> 顾名思义，生成静态文章，可以用 <code>hexo g</code>缩写 <code>hexo deploy</code> 部署文章，可以用<code>hexo d</code>缩写<br><strong>如果是在离线端即 localhost:4000端测试你的博客，则只需要 hexo g + hexo s 即可，无需 hexo d</strong><br>输入完成后会出现一堆内容，不用管他，只要最后内容如下所示，就表示成功了！<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6028bb5fe0b8b6917a408ffe53a27c81.png" alt="6028bb5fe0b8b6917a408ffe53a27c81.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username.github.io  # https://username.github.io</span><br></pre></td></tr></table></figure>
+<p><strong>访问到你的博客了，其中username是你GitHub用户名，这个网站不是离线的，其他人都可以访问到！！！</strong></p>
+]]></content>
+      <categories>
+        <category>hexo配置</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</title>
     <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/</url>
     <content><![CDATA[<h1 id="ubuntu22-pycharm-cuda-cudnn，tensorrt的安装"><a href="#ubuntu22-pycharm-cuda-cudnn，tensorrt的安装" class="headerlink" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装"></a>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</h1><p>（写这篇博客的意义在于之后方便之后重装不用再重新看一大堆博客了）</p>
@@ -486,132 +908,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</title>
-    <url>/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/</url>
-    <content><![CDATA[<h1 id="Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）"><a href="#Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）" class="headerlink" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）"></a>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1><p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<p>这里有个很狗的坑，我在安装的时候杜邦线忘记拔下来导致系统一直无法被主机识别，ip地址一直不对。</p>
-<p>之后把nx接数据线到主机上面（记得杜邦线不要短接！！！记得杜邦线不要短接！！！记得杜邦线不要短接！！！重要的事情说三遍）</p>
-<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>首先我们先换个源</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<p>注意JetPack5.0.1是ubuntu20了，后缀是focal，开发板还要带上ports：(记得开发板的要是ubuntu-port之前换源一直出错就是因为换错了)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>进入主机的sdk界面host不用勾选（这个选项是为了安装cuda这些东西到你的主机上面，看很多博客说这样安装大概率会用不了）</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/745ba610764a440895475ba8d1aa28d1_2be41ad5b386494d8.png"/>
-
-<p>在这里Jeston os不用勾选，如果你勾选的换就默认重装系统了 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/daf6336878d94e8e8a0f7121b9b452c1_d840294fbb1b49ce9.png"/></p>
-<p>&nbsp;ip地址一般默认不用改变如果实在不知道的话可以</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure>
-
-<p>来查看你的ip如果有连WIFE的话可能会出现两个这里你两个都试试一般就可以了，然后输入你的用户名和密码</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6319a52dd2ab4669a59e17520f708772_839888ab3d0f4cd6a.png"/>
-
-<p>&nbsp;等这三个选项全部打勾以后开始安装<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b59586872bf445afa5219503d1d9181a_89a9e6a610604b49b.png"/></p>
-<p>安装完成后先安装pip3</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br></pre></td></tr></table></figure>
-
-<p>安装jtop(一定要加后面的版本这个版本是支持5.0以上的)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo -H pip install jetson-stats==4.0.0rc2</span><br></pre></td></tr></table></figure>
-
-<h2 id="二-opencv的卸载"><a href="#二-opencv的卸载" class="headerlink" title="二.opencv的卸载"></a><a id="t1"></a>二.opencv的卸载</h2><p>（最近公司加班多找个时间把这个部分补上）</p>
-<p> </p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Jeston nx</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Jetson Xavier NX环境配置ubuntu20.04</title>
-    <url>/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/</url>
-    <content><![CDATA[<h1 id="Jetson-Xavier-NX环境配置ubuntu20-04"><a href="#Jetson-Xavier-NX环境配置ubuntu20-04" class="headerlink" title="Jetson Xavier NX环境配置ubuntu20.04"></a>Jetson Xavier NX环境配置ubuntu20.04</h1><p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
-<p><strong>安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系</strong></p>
-<p><strong>这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。</strong></p>
-<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
-<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a href="https://so.csdn.net/so/search?q=ssd&spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
-<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…..）然后直接把之前安装好的镜像直接导入即可。</p>
-<h2 id="二-虚拟机"><a href="#二-虚拟机" class="headerlink" title="二.虚拟机"></a><a id="t1"></a>二.虚拟机</h2><p>创建一个虚拟机</p>
-<img width="1200" height="716" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png"/>
-
-<p>&nbsp;选择你镜像的位置</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png"></p>
-<p>&nbsp;分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png"></p>
-<p>&nbsp;然后就是Ubuntu的安装</p>
-<img width="1200" height="566" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png"/>
-
-<h2 id="三-Nvidia-sdk的安装"><a href="#三-Nvidia-sdk的安装" class="headerlink" title="三.Nvidia sdk的安装"></a><a id="t2"></a>三.<a href="https://so.csdn.net/so/search?q=Nvidia&spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2><p>进入官网：<a href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
-<p>选择SDK，这里需要登录自己个人的Nvidia账号</p>
-<img width="1200" height="265" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png"/>
-
-<p>或者直接在虚拟机内进行下载，我这里选择直接从主机拖拽到虚拟机内因为我有安装vmware-tools</p>
-<p>输入指令进行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install ./sdkmanager_1.6.1-8175_amd64.deb ./sdkmanager_1.6.1-8175_amd64.deb </span><br></pre></td></tr></table></figure>
-
-<p>安装完成后输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sdkmanager </span><br></pre></td></tr></table></figure>
-
-<p>出现这个页面就代表着安装完成，然后登录一下自己的开发者账号<img width="1200" height="683" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png"/></p>
-<p>&nbsp;成功进入后的界面</p>
-<img width="1200" height="538" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png"/>
-
-<p>&nbsp;之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
-<img width="1200" height="900" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg"/>
-
-<p>&nbsp;接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
-<img width="1200" height="754" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png"/>
-
-<p>&nbsp;<a href="https://so.csdn.net/so/search?q=jetpack&spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
-<img width="1200" height="786" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png"/>
-
-<p>deepstream我也不知道干啥的先装上去吧</p>
-<img width="1200" height="739" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png"/>
-
-<p>&nbsp;然后只装os</p>
-<img width="1200" height="755" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png"/>
-
-<p>&nbsp;到这步应该就没有问题了（网络不好的可以多等等）</p>
-<img width="1200" height="567" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png"/>
-
-<p>&nbsp;完成后跳出了这个页面（按照这个选择）</p>
-<img width="1200" height="708" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png"/>
-
-<p>&nbsp;然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png"/>
-
-<p>查看一下我们装的系统版本是否是正确的.</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /etc/lsb-release</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;大功告成</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png"/>
-
-<h2 id="四将SSD设置成默认启动盘"><a href="#四将SSD设置成默认启动盘" class="headerlink" title=" 四将SSD设置成默认启动盘"></a><a id="t3"></a> 四将SSD设置成默认启动盘</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
-
-<p>输入disk,我这里是16g运存所以我分16g，剩下全部给系统就可以了</p>
-<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png"/>
-
-<p>jinru</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">git clone https://github.com/jetsonhacks/rootOnNVMe.git</span><br><span class="line">    </span><br><span class="line">cd rootOnNVMe</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./copy-rootfs-ssd.sh</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">./setup-service.sh</span><br></pre></td></tr></table></figure>
-
-<p>进入新的系统后在root打开属性查看一下空间就知道有没有成功了。</p>
-<p>完成！</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Jeston nx</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>IOU和他们儿子们</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/</url>
     <content><![CDATA[<h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
@@ -729,302 +1025,6 @@
       </categories>
       <tags>
         <tag>优化器</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ubuntu19 Openvion cmake源码编译</title>
-    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
-    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>解压后的结构目录</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
-<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后安装外部依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
-
-<p>我中间报了一些黄的的警告我没有管他之后</p>
-<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
-<p>&nbsp;没有报错就好，然后开始编译库</p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
-<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
-<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
-<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Openvino</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
-    <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
-    <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
-<p>我的OpenVino采用的是源码编译的这里采用的是python代码，之后可能会写一份C++代码放上去,先上才艺</p>
-<h2 id="一-将模型转换成onnx模型"><a href="#一-将模型转换成onnx模型" class="headerlink" title="一.将模型转换成onnx模型"></a><a href="#"></a>一.将模型转换成<a href="https://so.csdn.net/so/search?q=onnx%E6%A8%A1%E5%9E%8B&spm=1001.2101.3001.7020">onnx模型</a></h2><p>这里我采用的是pytorch模型文件转成onnx</p>
-<p>模型结构包括参数保存</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br><span class="line">import torch.nn</span><br><span class="line">import os</span><br><span class="line">import sys</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">def export(model_path):</span><br><span class="line">    net = torch.load(</span><br><span class="line">        model_path,</span><br><span class="line">        map_location=torch.device(&#x27;cpu&#x27;),</span><br><span class="line">    )</span><br><span class="line">    net.eval()</span><br><span class="line">    #这里需要指定你输入和输出的名字方便后面推理</span><br><span class="line">    input_names = [&#x27;input&#x27;]</span><br><span class="line">    output_names = [&#x27;output&#x27;]</span><br><span class="line">    #这里需要确定模型的输入</span><br><span class="line">    x = torch.randn(1, 3, 224, 224)</span><br><span class="line"> </span><br><span class="line">    torch.onnx.export(</span><br><span class="line">        net,</span><br><span class="line">        x,</span><br><span class="line">        os.path.join(</span><br><span class="line">            os.path.split(model_path)[0],</span><br><span class="line">            &#x27;best.onnx&#x27;,</span><br><span class="line">        ),</span><br><span class="line">        input_names=input_names,</span><br><span class="line">        output_names=output_names,</span><br><span class="line">        verbose=False,</span><br><span class="line">        opset_version=12,</span><br><span class="line">    )</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">if __name__ == &quot;__main__&quot;:</span><br><span class="line">    model_path = &#x27;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/best.pt&#x27;</span><br><span class="line">    export(model_path)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>模型采用字典保存</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line">import torch</span><br><span class="line">from swin_transformer import *</span><br><span class="line">from collections import OrderedDict</span><br><span class="line"> </span><br><span class="line">DROP_PATH_RATE = 0.5</span><br><span class="line">EMBED_DIM = 192</span><br><span class="line">DEPTHS = [2, 2, 18, 2]</span><br><span class="line">NUM_HEADS = [6, 12, 24, 48]</span><br><span class="line">WINDOW_SIZE = 7</span><br><span class="line"> </span><br><span class="line">model_path = &#x27;&#x27;</span><br><span class="line"> </span><br><span class="line">checkpoint = torch.load(</span><br><span class="line">    model_path,</span><br><span class="line">    map_location=&#x27;cpu&#x27;,</span><br><span class="line">)</span><br><span class="line">model = SwinTransformer(</span><br><span class="line">    img_size=224,</span><br><span class="line">    patch_size=4,</span><br><span class="line">    in_chans=3,</span><br><span class="line">    num_classes=0,</span><br><span class="line">    embed_dim=EMBED_DIM,</span><br><span class="line">    depths=DEPTHS,</span><br><span class="line">    num_heads=NUM_HEADS,</span><br><span class="line">    window_size=WINDOW_SIZE,</span><br><span class="line">    mlp_ratio=4,</span><br><span class="line">    qkv_bias=True,</span><br><span class="line">    qk_scale=None,</span><br><span class="line">    drop_rate=0.0,</span><br><span class="line">    drop_path_rate=DROP_PATH_RATE,</span><br><span class="line">    ape=False,</span><br><span class="line">    patch_norm=True,</span><br><span class="line">)</span><br><span class="line"> </span><br><span class="line">new_state_dict = OrderedDict()</span><br><span class="line">for k, v in checkpoint[&#x27;model&#x27;].items():</span><br><span class="line">    if k != &#x27;head.weight&#x27;:</span><br><span class="line">        new_state_dict[k] = v</span><br><span class="line">    else:</span><br><span class="line">        print(k, v.shape)</span><br><span class="line">model.load_state_dict(new_state_dict, strict=False)</span><br><span class="line"> </span><br><span class="line">model.eval()</span><br><span class="line"> </span><br><span class="line">input_names = [&#x27;input&#x27;]</span><br><span class="line">output_names = [&#x27;output&#x27;]</span><br><span class="line">x = torch.randn(1, 3, 224, 224)</span><br><span class="line"> </span><br><span class="line">torch.onnx.export(</span><br><span class="line">    model,</span><br><span class="line">    x,</span><br><span class="line">    os.path.join(</span><br><span class="line">        os.path.split(model_path)[0],</span><br><span class="line">        &#x27;best.onnx&#x27;,</span><br><span class="line">    ),</span><br><span class="line">    input_names=input_names,</span><br><span class="line">    output_names=output_names,</span><br><span class="line">    verbose=False,</span><br><span class="line">    opset_version=12,</span><br><span class="line">)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>总结来说就是把字典导入到模型的结构里面然后在进行onnx的转换这部分可以自己网上找找教程听多的</p>
-<h2 id="二-模型从onnx模型转ir模型"><a href="#二-模型从onnx模型转ir模型" class="headerlink" title="二.模型从onnx模型转ir模型"></a><a href="#"></a>二.模型从onnx模型转ir模型</h2><p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/397c40c6ae4a4094a2e8dc88cda85f48_cbd8964035d941349.png"></p>
-<p>&nbsp;这里如果你是用python直接pip的话可以直接进入conda的环境去使用她，如果你是源码编译OpenVino的话可能要进入那个目录下载一下，这里我个人觉得如果你只是用来测试的话Python其实就很够用了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python mo_onnx.py --input_model &lt;输入模型路经&gt; --output_dir &lt;输出模型路经&gt;</span><br></pre></td></tr></table></figure>
-
-<p><strong>（如果需要量化到FP16的话需要额外指定参数 –compress_to_fp16）</strong></p>
-<p>首先先将你的模型转换到Ir格式，这里放一下mo的参数你们可以有道翻译一下我个人英语不太好这里就不解释了</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mo -h #可以查看mo的参数</span><br><span class="line">#或者是进入到mo.py所在的文件夹然后</span><br><span class="line">python mo.py -h</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后测试一下转换完的模型推理速度</p>
-<p>进入Openvino这个文件夹</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/41d7baf4604c49d39d32700025ce258a_3e8eadeb2477454a9.png"></p>
-<p>&nbsp;然后查看一下你模型量化的结果（FP32）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python ./benchmark_app.py -m &lt;量化后的xml文件&gt; -d CPU -api async -i &lt;选择图片路径&gt; -b 1</span><br></pre></td></tr></table></figure>
-
-<p>其中 <strong>-d</strong>指定的是你的设备 -api指定的是你的推理模式（同步还是异步推理）</p>
-<p>看一下FP32模型的速度</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9dbc17d300f143568c3c598f768cc605_dbe4da939502499a9.png"></p>
-<p>&nbsp;FP16</p>
-<img width="598" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bec68d6b955a4401bedf8d1c54e700c6_f4b0436799124d78a.png" class="jop-noMdConv">
-
-<p>&nbsp;ONNX模型推理速度</p>
-<img width="870" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c25101469a364d8e9d8bea60f3dd3142_2ded076e1fd74ad0b.png" class="jop-noMdConv">
-
-<h2 id="三，Int8量化"><a href="#三，Int8量化" class="headerlink" title=" 三，Int8量化"></a><a href="#"></a> 三，<a href="https://so.csdn.net/so/search?q=Int8&spm=1001.2101.3001.7020">Int8</a>量化</h2><p>在转换之前，我们需要准备一下数据（在量化过程中会使用到）。对于自己的数据集首先转换成openvino支持的数据格式，这里使用imagenet数据集格式，对于分类任务需要annotation.txt文件以及labels.txt共两个文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">├── dataset:： 存放数据集的根目录</span><br><span class="line">│     ├── 1：         </span><br><span class="line">│     ├── 2：     </span><br><span class="line">│     ├── 3：         </span><br><span class="line">│     ├── 4：    </span><br><span class="line">│     └── .... ：              </span><br></pre></td></tr></table></figure>
-
-<p>这里给一个生成annotation.txt和labels.txt脚本（霹雳趴拉导师那边抄的）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line">import glob</span><br><span class="line"> </span><br><span class="line">image_dir = &quot;/your_dataset_dir&quot;</span><br><span class="line">assert os.path.exists(image_dir), &quot;image dir does not exist...&quot;</span><br><span class="line"> </span><br><span class="line">img_list = glob.glob(os.path.join(image_dir, &quot;*&quot;, &quot;*.jpg&quot;))</span><br><span class="line">assert len(img_list) &gt; 0, &quot;No images(.jpg) were found in image dir...&quot;</span><br><span class="line"> </span><br><span class="line">classes_info = os.listdir(image_dir)</span><br><span class="line">classes_info.sort()</span><br><span class="line">classes_dict = &#123;&#125;</span><br><span class="line"> </span><br><span class="line"># create label file</span><br><span class="line">with open(&quot;my_labels.txt&quot;, &quot;w&quot;) as lw:</span><br><span class="line">    # 注意，没有背景时，index要从0开始</span><br><span class="line">    for index, c in enumerate(classes_info, start=0):</span><br><span class="line">        txt = &quot;&#123;&#125;:&#123;&#125;&quot;.format(index, c)</span><br><span class="line">        if index != len(classes_info):</span><br><span class="line">            txt += &quot;\n&quot;</span><br><span class="line">        lw.write(txt)</span><br><span class="line">        classes_dict.update(&#123;c: str(index)&#125;)</span><br><span class="line">print(&quot;create my_labels.txt successful...&quot;)</span><br><span class="line"> </span><br><span class="line"># create annotation file</span><br><span class="line">with open(&quot;my_annotation.txt&quot;, &quot;w&quot;) as aw:</span><br><span class="line">    for img in img_list:</span><br><span class="line">        img_classes = classes_dict[img.split(&quot;/&quot;)[-2]]</span><br><span class="line">        txt = &quot;&#123;&#125; &#123;&#125;&quot;.format(img, img_classes)</span><br><span class="line">        if index != len(img_list):</span><br><span class="line">            txt += &quot;\n&quot;</span><br><span class="line">        aw.write(txt)</span><br><span class="line">print(&quot;create my_annotation.txt successful...&quot;)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="3-1-模型测试"><a href="#3-1-模型测试" class="headerlink" title="3.1 模型测试"></a><a href="#"></a>3.1 模型测试</h3><p>首先先测试FP32和FP16的模型精度，先准备一份yaml文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">models:</span><br><span class="line">  - name: mobileNetV3Fp32</span><br><span class="line">    launchers:</span><br><span class="line">      #下面指定运行的框架 dlsdk就是openvino， 也可以是tensorflow或者其他框架</span><br><span class="line">      #model/weights是要测试的模型文件名</span><br><span class="line">      #adapter是告诉accuracy checker模型的输出是目标分类还是目标识别或者其他的输出</span><br><span class="line">      - framework: openvino</span><br><span class="line">        model: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml</span><br><span class="line">        weights: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin</span><br><span class="line">        adapter: classification</span><br><span class="line"> </span><br><span class="line">    datasets:</span><br><span class="line">      #下面这部分是有关数据集的路径，数据集的格式(imagenet，VOC或者其他)以及标注文件的名字</span><br><span class="line">      - name: Flower</span><br><span class="line">        data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">        annotation_conversion:</span><br><span class="line">          converter: imagenet</span><br><span class="line">          annotation_file: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt&quot;</span><br><span class="line">        #预处理告诉ac_checker工具在把数据集图片送进模型前要做那些预处理，比如缩放，剪切或者调整RGB/BGR顺序之类</span><br><span class="line">        reader: opencv_imread # default setting</span><br><span class="line">        preprocessing:</span><br><span class="line">          - type: resize</span><br><span class="line">            size: 256</span><br><span class="line">            aspect_ratio_scale: greater</span><br><span class="line">          - type: crop</span><br><span class="line">            size: 224</span><br><span class="line">          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">          - type: normalization</span><br><span class="line">            # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">            mean: (123.675, 116.28, 103.53)</span><br><span class="line">            std: (58.395, 57.12, 57.375)</span><br><span class="line">        #这里定义统计准确度用的算法，这里要看2种准确度，一个是top1的，还一个是top5的</span><br><span class="line">        metrics:</span><br><span class="line">          - name: accuracy @ top1</span><br><span class="line">            type: accuracy</span><br><span class="line">            top_k: 1</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>model：存放你的xml的路径，在精度测试中可以先不用放weight,这个model也可以是你的onnx文件</p>
-<p>adapter:选择你的网络类型我这里是分类网络，openvino还支持目标检测网络具体可以看看config下面的配置</p>
-<p>datasource:下面存放的是你的数据集的根路径（这里有个坑就是这个文件夹下面存放的图片路径要和你上面生成的annotion.txt对应起来包括你的类别还有路径，相当于就是你把你数据集所有的图片全部放在这个路径下面，验证的时候由annotion.txt里面的东西验证）</p>
-<p>convert:我直接写imagenet没有什么影响</p>
-<p>preprocessing：里面的是写的是你预处理操作（记得颜色通道的转换不然的话精确度一直和训练的时候验证都是错的）这里有的预处理很傻逼我官网也没有找到如果有人找到的话欢迎评论区和我说一声哈哈哈哈哈</p>
-<p>&nbsp;metrics:定义的是评价指标这里是分类网络所以我采用的是accuary这里的top1表示，评分排名前1中能正确分出的概率。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">accuracy_check -c 你的yaml文件 -s ./ -td CPU</span><br></pre></td></tr></table></figure>
-
-<p>可以得到正确率了，之后int8量化也需要用到这个进行评估。</p>
-<h3 id="3-2-yaml文件以及json文件的准备"><a href="#3-2-yaml文件以及json文件的准备" class="headerlink" title="3.2.yaml文件以及json文件的准备"></a><a href="#"></a>3.2.yaml文件以及json文件的准备</h3><p>这里int8有两种量化方式一种是全int8量化还有一种是混精度量化首先先准备一下model.yaml文件</p>
-<p>这里的yaml文件和刚刚那个yaml文件大差不差</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">models:</span><br><span class="line">  - name: mobileNetV3</span><br><span class="line">    launchers:</span><br><span class="line">      - framework: dlsdk</span><br><span class="line">        device: CPU</span><br><span class="line">        adapter: classification</span><br><span class="line">    #定义数据集</span><br><span class="line">    datasets:</span><br><span class="line">      - name: classification_dataset</span><br><span class="line">        #定义数据集路径</span><br><span class="line">        data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">        #定义annotation路径</span><br><span class="line">        annotation_conversion:</span><br><span class="line">          converter: imagenet</span><br><span class="line">          annotation_file: /home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt</span><br><span class="line"> </span><br><span class="line">        reader: opencv_imread # default setting</span><br><span class="line">        #这里需要提前定义预处理</span><br><span class="line">        preprocessing:</span><br><span class="line">          - type: resize</span><br><span class="line">            size: 256</span><br><span class="line">            aspect_ratio_scale: greater</span><br><span class="line">          - type: crop</span><br><span class="line">            size: 224</span><br><span class="line">          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">          - type: normalization</span><br><span class="line">            # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">            mean: (123.675, 116.28, 103.53)</span><br><span class="line">            std: (58.395, 57.12, 57.375)</span><br><span class="line">        metrics:</span><br><span class="line">          - name: accuracy @ top1</span><br><span class="line">            type: accuracy</span><br><span class="line">            top_k: 1</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后就是json文件的编写</p>
-<h4 id="3-2-1-DefaultQuantization"><a href="#3-2-1-DefaultQuantization" class="headerlink" title="3.2.1 DefaultQuantization"></a><a href="#"></a>3.2.1 DefaultQuantization</h4><p>这个应该是openvino中的全int8的量化</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;model&quot;: &#123;</span><br><span class="line">        &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">        &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">        &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;engine&quot;: &#123;</span><br><span class="line">        &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/defualtQuantization/model.yaml&quot;</span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;compression&quot;: &#123;</span><br><span class="line">        &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">                                </span><br><span class="line">        &quot;algorithms&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;name&quot;: &quot;DefaultQuantization&quot;, </span><br><span class="line">                &quot;params&quot;: &#123;</span><br><span class="line">                    &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">                    &quot;stat_subset_size&quot;: 300  </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>model：里面定义的是你最开始量化后的xml和bin的路径以及指定你的设备</p>
-<p>engine:就是你刚刚写好的yaml文件了</p>
-<p>target_device：就是你要量化的设备</p>
-<p>algorithms –</p>
-<p>&nbsp;                       name：这里指定的是你的量化方式</p>
-<p>&nbsp;                       preset：我也不知道什么意思</p>
-<p>&nbsp;                       stat_subset_size: 好像是采取多少张数据集的意思</p>
-<h4 id="3-2-2-AccuracyAwareQuantization"><a href="#3-2-2-AccuracyAwareQuantization" class="headerlink" title="3.2.2 AccuracyAwareQuantization"></a><a href="#"></a>3.2.2 AccuracyAwareQuantization</h4><p>先放一下json文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;model&quot;: &#123;</span><br><span class="line">        &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">        &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">        &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;engine&quot;: &#123;</span><br><span class="line">        &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/AccuracyAwareQuantization/model.yaml&quot;</span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;compression&quot;: &#123;</span><br><span class="line">        &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">                                </span><br><span class="line">        &quot;algorithms&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;name&quot;: &quot;AccuracyAwareQuantization&quot;, </span><br><span class="line">                &quot;params&quot;: &#123;</span><br><span class="line">                    &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">                    &quot;stat_subset_size&quot;: 300  ,</span><br><span class="line">                    &quot;maximal_drop&quot;: 0.1 </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>想比于DefaultQuantization就是name里面那个不一样以及多了一个maximal_drop,这个参数的意义是运行你的模型下降多少指标</p>
-<p>准确度的测试脚本可以用我3.1讲到的那个部分来测试只要把模型替换掉就OK了</p>
-<p>但是Openvino的量化好像只支撑分类网络和目标检测，后续找个时间写一下有关Pytorch自带的QAT的量化方法</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Openvino</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hexo美化</title>
-    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E4%B8%AA%E4%BA%BA%E7%95%8C%E9%9D%A2%E7%BE%8E%E5%8C%96/</url>
-    <content><![CDATA[<h1 id="hexo美化"><a href="#hexo美化" class="headerlink" title="hexo美化"></a>hexo美化</h1><p>都自己搞了一个网站写博客，肯定希望塞点花里胡哨的东西到自己的个人博客里面。这里给出我个人用的主题next（简约用的人多教程多debug简单，玩的花）<br>给出下载链接</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/next-theme/hexo-theme-next themes/next</span><br></pre></td></tr></table></figure>
-
-<p>然后塞到这个里面<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//f3e59613955e5d2a16330e97fa1ac525.png" alt="f3e59613955e5d2a16330e97fa1ac525.png"><br>在你网站的_config.yaml里面修改一下主题<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//539305af21a51c7520ffeb5dc60831bb.png" alt="539305af21a51c7520ffeb5dc60831bb.png"><br><span style="color: red;">注意:这里的主题名字要和你塞到theme下面的文件夹名称一样</span><br>然后就是</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-<p>本地看看没有问题就可以传到你的github上面了</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//f930f5e9e6c120783570d0914c798fd3.png" alt="f930f5e9e6c120783570d0914c798fd3.png"></p>
-<h2 id="个人信息设置"><a href="#个人信息设置" class="headerlink" title="个人信息设置"></a>个人信息设置</h2><h3 id="个人信息设置-1"><a href="#个人信息设置-1" class="headerlink" title="个人信息设置"></a>个人信息设置</h3><p>点开主站得config文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7b0f7a47d3ae9e214f4fb80ed120c6e.png" alt="a7b0f7a47d3ae9e214f4fb80ed120c6e.png"><br>个人头像设置<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d5904a4588c007811fdfcde37f7c3c9a.png" alt="d5904a4588c007811fdfcde37f7c3c9a.png"><br><span style="color: red;">这里得图片我有点没太搞懂要怎么传，所以我采用图床得方式在github建立一个专门放照片得仓库之后将图片上传，而且也方便markdown文件里面文件得上传，可以看我另外一篇博客</span></p>
-<h2 id="新建标签及分类界面"><a href="#新建标签及分类界面" class="headerlink" title="新建标签及分类界面"></a>新建标签及分类界面</h2><p>打开主题配置文件，搜索 menu，找到如下代码：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//8b215df4b12df90ca2c8fa17b58709df.png" alt="8b215df4b12df90ca2c8fa17b58709df.png"><br>然后点开我们的站点的Source，新键一下这些文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9f024811ce131a87cca072c8c97f7dfb.png" alt="9f024811ce131a87cca072c8c97f7dfb.png"><br>新建一下index.md<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//77c54b8efb9d315e0224f7d509f5d68d.png" alt="77c54b8efb9d315e0224f7d509f5d68d.png"><br>就完成了创建</p>
-<h2 id="添加浏览进度"><a href="#添加浏览进度" class="headerlink" title="添加浏览进度"></a>添加浏览进度</h2><p>打开 themes&#x2F;next&#x2F;_config.yml，搜索关键字 scrollpercent，把 false改为 true。<br>效果图如下：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//ae0c2927b4f36e20ab70aeb52dc63049.png" alt="ae0c2927b4f36e20ab70aeb52dc63049.png"></p>
-<h2 id="本地搜索"><a href="#本地搜索" class="headerlink" title="本地搜索"></a>本地搜索</h2><p>安装插件hexo-generator-searchdb,执行以下命令:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-generator-searchdb --save</span><br></pre></td></tr></table></figure>
-
-<p>修改hexo&#x2F;_config.yml站点配置文件，新增以下内容到任意位置：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">search:</span><br><span class="line">path: search.xml</span><br><span class="line">field: post</span><br><span class="line">format: html</span><br><span class="line">limit: 10000</span><br></pre></td></tr></table></figure>
-
-<p>编辑 主题配置文件，启用本地搜索功能：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Local search</span><br><span class="line">local_search:</span><br><span class="line">enable: true</span><br></pre></td></tr></table></figure>
-<p>效果图：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//ae28675920fdaa08f45684673fb8961e.png" alt="ae28675920fdaa08f45684673fb8961e.png"></p>
-<h2 id="设置网站图标"><a href="#设置网站图标" class="headerlink" title="设置网站图标"></a>设置网站图标</h2><p>主题的_config.yaml中找到<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//661850660d0f9ec9da200861986d8610.png" alt="661850660d0f9ec9da200861986d8610.png"><br>把你的图像传上去，效果如下<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//506187330ffbe5d1034bbc68f39603c0.png" alt="506187330ffbe5d1034bbc68f39603c0.png"></p>
-<h2 id="添加近期文章功能"><a href="#添加近期文章功能" class="headerlink" title="添加近期文章功能"></a>添加近期文章功能</h2><p>（适用于8.x）<br>在主站的source中创建_data文件夹<span style="color: red;">一定是主站的source不是主题的source</span><br>在这个文件夹下创建sidebar.njk文件，格式如下：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//de3479bfd326436a514854c1eabbfa29.png" alt="de3479bfd326436a514854c1eabbfa29.png"><br>输入以下代码</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;!-- recent posts --&gt;</span><br><span class="line">&#123;%- if theme.recent_posts %&#125;</span><br><span class="line">    &lt;div class=&quot;links-of-blogroll motion-element &#123;&#123; &quot;links-of-blogroll-&quot; + theme.recent_posts_layout &#125;&#125;&quot;&gt;</span><br><span class="line">        &lt;div class=&quot;links-of-blogroll-title recent-posts-title&quot;&gt;</span><br><span class="line">	    &lt;i class=&quot;fa fa-history &#123;&#123; theme.recent_posts_icon | lower &#125;&#125;&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;</span><br><span class="line">            &#123;&#123; theme.recent_posts_title &#125;&#125;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">	&lt;ul class=&quot;links-of-blogroll-list recent-posts-list&quot;&gt;</span><br><span class="line">	    &#123;%- set posts = site.posts.sort(&#x27;-date&#x27;).toArray() %&#125;</span><br><span class="line">	    &#123;%- for post in posts.slice(&#x27;0&#x27;, &#x27;5&#x27;) %&#125;</span><br><span class="line">	        &lt;li class=&quot;my-links-of-blogroll-item&quot;&gt;</span><br><span class="line">		    &lt;a href=&quot;&#123;&#123; url_for(post.path) &#125;&#125;&quot; title=&quot;&#123;&#123; post.title &#125;&#125;&quot; target=&quot;&quot;&gt;</span><br><span class="line">		    &#123;&#123; post.title &#125;&#125;</span><br><span class="line">		    &lt;/a&gt;</span><br><span class="line">		&lt;/li&gt;</span><br><span class="line">	    &#123;%- endfor %&#125;</span><br><span class="line">	&lt;/ul&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">&#123;%- endif %&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>然后点开主题搜索custom_file_path<br>把sidebar这块解除注释<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//844981d65ec811795beb953c5e065563.png" alt="844981d65ec811795beb953c5e065563.png"><br>然后输入以下代码</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">recent_posts: true</span><br><span class="line">recent_posts_title: 近期文章</span><br><span class="line">recent_posts_layout: block</span><br></pre></td></tr></table></figure>
-<p>成果图：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//92e8a2213847839d9577d15d8d4bddb1.png" alt="92e8a2213847839d9577d15d8d4bddb1.png"></p>
-<h2 id="看板娘可说话可互动"><a href="#看板娘可说话可互动" class="headerlink" title="看板娘可说话可互动"></a>看板娘可说话可互动</h2><p>下载 <a href="https://link.zhihu.com/?target=https://github.com/stevenjoezhang/live2d-widget">大佬项目项目</a>，解压到本地博客目录的<code>themes/next/source</code>下，修改文件夹名为 `live2d-widget`，修改项目中的 `autoload.js` 文件，如下：  </p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">const live2d_path = &quot;https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget/&quot;;</span><br><span class="line">改为</span><br><span class="line">const live2d_path = &quot;/live2d-widget/&quot;;</span><br></pre></td></tr></table></figure>
-<p>在<code>/themes/next/layout/_layout.swing</code>中,新增如下内容：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;script src=&quot;/live2d-widget/autoload.js&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
-<p>在 <code>主题配置文件</code> 中,新增如下内容：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">live2d:</span><br><span class="line">  enable: true</span><br></pre></td></tr></table></figure>
-<p>  想修改看板娘大小、位置、格式、文本内容等，可查看并修改 <code>waifu-tips.js</code> 、 <code>waifu-tips.json</code> 和 <code>waifu.css</code></p>
-<h2 id="自定义看板娘模型"><a href="#自定义看板娘模型" class="headerlink" title="自定义看板娘模型"></a>自定义看板娘模型</h2><p> <a href="https://github.com/xiaoski/live2d_models_collection">看板娘github</a><br> 文件如下:<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//31dfe6a62027e2cdd49c88b3101f4b4b.png" alt="31dfe6a62027e2cdd49c88b3101f4b4b.png"><br> 然后下载一下live2d_api的项目<a href="https://github.com/fghrsh/live2d_api">live2d_api</a>下载到本地<br> 建议拉到主题的source文件夹下方便项目上传<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//c076cdeb37e22e000a5317a2e8646d47.png" alt="c076cdeb37e22e000a5317a2e8646d47.png"><br> 点开model_list.yaml里面如下：<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a13218a39da1b91108c2faba3ac81927.png" alt="a13218a39da1b91108c2faba3ac81927.png"><br> models里面放的是模型的路径<br> message里面放的是打招呼<br> 然后打开model文件夹如下<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//297e695b838ad9aeb2dd32bdf6656b21.png" alt="297e695b838ad9aeb2dd32bdf6656b21.png"><br>里面存放的就是你的模型<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//00b3242d66e31e19025e3496f41be5a1.png" alt="00b3242d66e31e19025e3496f41be5a1.png"><br> -motion里面放的是人物的动作<br> jpg文件是人物的贴图<br> 找到其中的某个json文件一般是model.json命名的打开如下<br> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//2b493f8ff88df3802a2a2542ccc897a9.png" alt="2b493f8ff88df3802a2a2542ccc897a9.png"><br> 将这个json的名字改成index.json</p>
-<p> 在api文件夹下打开cmd</p>
-<p>如果有使用过npm镜像请先关闭</p>
-<p>输入命令登录</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm adduser</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<pre><code>按照提示输入邮箱和密码
-</code></pre>
-<p>查看一下是否登录成功</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm whoami</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>如果提示网络错误可以设置代理</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm config set proxy http://127.0.0.1:port</span><br><span class="line">npm config set https-proxy http://127.0.0.1:port</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>修改package.json的信息并发布</p>
-<ul>
-<li><p>先初始化</p>
-  <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm init</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-</ul>
-<p>修改api文件夹中的package.json的信息，将几处都换成你自己的链接<br>发布资源(会比较久，看大小和网速)</p>
-<pre><code><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm publish --public</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-</code></pre>
-<h3 id="通过CDN或unpkg访问"><a href="#通过CDN或unpkg访问" class="headerlink" title="通过CDN或unpkg访问"></a>通过CDN或unpkg访问</h3><ul>
-<li><p>一般上传到npm后基本能立刻通过CDN访问到(可以在浏览器打开查看)，但是不能超过100MB，格式如下(gcore的访问速度更好一点)</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://unpkg.com/资源名@版本/ </span><br><span class="line">https://fastly.jsdelivr.net/npm/资源名@版本/ </span><br><span class="line">https://gcore.jsdelivr.net/npm/资源名@版本/ </span><br></pre></td></tr></table></figure></li>
-</ul>
-<p><code>unpkg</code>也可以使用，就是收录速度实在太慢了，还经常内部的文件夹打不开，不过它确实能加载更大的项目，格式如下(饿了么的源好一点)</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://npm.elemecdn.com/资源名@版本/</span><br><span class="line">https://unpkg.com/资源名@版本/</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>打开你的<code>livewd-wight</code>文件夹下的<code>autoload.js</code>文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//b977e04d5f26dc0ff3d97a066ed367c5.png" alt="b977e04d5f26dc0ff3d97a066ed367c5.png"><br>将你的cdnpath替换成上面的建议用gcore比较快。</p>
-<h2 id="修改加载特效"><a href="#修改加载特效" class="headerlink" title="修改加载特效"></a>修改加载特效</h2><p> 由于网页不可能一直都秒进，总会等待一段时间的，所以可以设置顶部加载条。Next 已经集成了很多加载特效，可以在下面选项中在线调试测试一下。<br>搜索<code>pace</code>，找到如下代码<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3df0777cb8bb7daba99c1df49f1e2a89.png" alt="3df0777cb8bb7daba99c1df49f1e2a89.png"></p>
-<h2 id="Valine评论区功能"><a href="#Valine评论区功能" class="headerlink" title="Valine评论区功能"></a>Valine评论区功能</h2><p>网不好之后单独出一期</p>
-<h2 id="RSS订阅功能"><a href="#RSS订阅功能" class="headerlink" title="RSS订阅功能"></a>RSS订阅功能</h2><p>首先先安装一下RSS feed插件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-generator-feed --save</span><br></pre></td></tr></table></figure>
-<p>编辑文件<code>themes/next/_config.yml</code>，在Sidebar Settings部分的最后添加以下设置</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sidebar_rss:</span><br><span class="line">  text: RSS</span><br><span class="line">  icon: fa fa-rss</span><br><span class="line">  color: burlywood</span><br><span class="line">  link: atom.xml</span><br></pre></td></tr></table></figure>
-<p>然后打开themes&#x2F;next&#x2F;layout&#x2F;_partials&#x2F;sidebar&#x2F;site-overview.swig在最下面插入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;%- if theme.sidebar_rss %&#125;</span><br><span class="line">  &lt;div class=&quot;&quot;&gt;</span><br><span class="line">    &lt;a target=&quot;_blank&quot; class=&quot;social-link&quot; href=&quot;&#123;&#123; url_for(theme.sidebar_rss.link) &#125;&#125;&quot; style=&quot;color: &#123;&#123; theme.sidebar_rss.color &#125;&#125;;&quot;&gt;</span><br><span class="line">      &lt;span class=&quot;icon&quot;&gt;</span><br><span class="line">        &lt;i class=&quot;&#123;&#123; theme.sidebar_rss.icon &#125;&#125;&quot;&gt;&lt;/i&gt;</span><br><span class="line">      &lt;/span&gt;</span><br><span class="line">      &lt;span class=&quot;label&quot;&gt;&#123;&#123; theme.sidebar_rss.text &#125;&#125;&lt;/span&gt;</span><br><span class="line">    &lt;/a&gt;</span><br><span class="line">  &lt;/div&gt;</span><br><span class="line">&#123;%- endif %&#125;</span><br></pre></td></tr></table></figure>
-<p>效果图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//4bfd36180d7dffaf329a06f0d8f52229.png" alt="4bfd36180d7dffaf329a06f0d8f52229.png"></p>
-<h2 id="鼠标点击红心特效"><a href="#鼠标点击红心特效" class="headerlink" title="鼠标点击红心特效"></a>鼠标点击红心特效</h2><p>在 <code>/themes/hexo-theme-spfk/source/js</code> 下新建文件 love.js，在 love.js 文件中添加以下代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">!function(e,t,a)&#123;function n()&#123;c(&quot;.heart&#123;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);&#125;.heart:after,.heart:before&#123;content: &#x27;&#x27;;width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 500%;-moz-border-radius: 50%;position: fixed;&#125;.heart:after&#123;top: -5px;&#125;.heart:before&#123;left: -5px;&#125;&quot;),o(),r()&#125;function r()&#123;for(var e=0;e&lt;d.length;e++)d[e].alpha&lt;=0?(t.body.removeChild(d[e].el),d.splice(e,1)):(d[e].y--,d[e].scale+=.004,d[e].alpha-=.013,d[e].el.style.cssText=&quot;left:&quot;+d[e].x+&quot;px;top:&quot;+d[e].y+&quot;px;opacity:&quot;+d[e].alpha+&quot;;transform:scale(&quot;+d[e].scale+&quot;,&quot;+d[e].scale+&quot;) rotate(45deg);background:&quot;+d[e].color+&quot;;z-index:99999&quot;);requestAnimationFrame(r)&#125;function o()&#123;var t=&quot;function&quot;==typeof e.onclick&amp;&amp;e.onclick;e.onclick=function(e)&#123;t&amp;&amp;t(),i(e)&#125;&#125;function i(e)&#123;var a=t.createElement(&quot;div&quot;);a.className=&quot;heart&quot;,d.push(&#123;el:a,x:e.clientX-5,y:e.clientY-5,scale:1,alpha:1,color:s()&#125;),t.body.appendChild(a)&#125;function c(e)&#123;var a=t.createElement(&quot;style&quot;);a.type=&quot;text/css&quot;;try&#123;a.appendChild(t.createTextNode(e))&#125;catch(t)&#123;a.styleSheet.cssText=e&#125;t.getElementsByTagName(&quot;head&quot;)[0].appendChild(a)&#125;function s()&#123;return&quot;rgb(&quot;+~~(255*Math.random())+&quot;,&quot;+~~(255*Math.random())+&quot;,&quot;+~~(255*Math.random())+&quot;)&quot;&#125;var d=[];e.requestAnimationFrame=function()&#123;return e.requestAnimationFrame||e.webkitRequestAnimationFrame||e.mozRequestAnimationFrame||e.oRequestAnimationFrame||e.msRequestAnimationFrame||function(e)&#123;setTimeout(e,1e3/60)&#125;&#125;(),n()&#125;(window,document);</span><br></pre></td></tr></table></figure>
-<p>在 \themes\hexo-theme-spfk\layout\layout.swig 文件末尾添加以下代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;!-- 页面点击小红心 --&gt;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot; src=&quot;/js/love.js&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
-
-<h2 id="鼠标点击字体特效"><a href="#鼠标点击字体特效" class="headerlink" title="鼠标点击字体特效"></a>鼠标点击字体特效</h2><p>在 <code>/themes/hexo-theme-spfk/source/js </code>下新建文件 click_show_text.js，在 click_show_text.js 文件中添加以下代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">var a_idx = 0;</span><br><span class="line">jQuery(document).ready(function($) &#123;</span><br><span class="line">    $(&quot;body&quot;).click(function(e) &#123;</span><br><span class="line">        var a = new Array</span><br><span class="line">        (&quot;富强&quot;, &quot;民主&quot;, &quot;文明&quot;, &quot;和谐&quot;, &quot;自由&quot;, &quot;平等&quot;, &quot;公正&quot;, &quot;法治&quot;, &quot;爱国&quot;, &quot;敬业&quot;, &quot;诚信&quot;, &quot;友善&quot;);</span><br><span class="line">        var $i = $(&quot;&lt;span/&gt;&quot;).text(a[a_idx]);</span><br><span class="line">        a_idx = (a_idx + 1) % a.length;</span><br><span class="line">        var x = e.pageX,</span><br><span class="line">        y = e.pageY;</span><br><span class="line">        $i.css(&#123;</span><br><span class="line">            &quot;z-index&quot;: 5,</span><br><span class="line">            &quot;top&quot;: y - 20,</span><br><span class="line">            &quot;left&quot;: x,</span><br><span class="line">            &quot;position&quot;: &quot;absolute&quot;,</span><br><span class="line">            &quot;font-weight&quot;: &quot;bold&quot;,</span><br><span class="line">            &quot;color&quot;: &quot;#FF0000&quot;</span><br><span class="line">        &#125;);</span><br><span class="line">        $(&quot;body&quot;).append($i);</span><br><span class="line">        $i.animate(&#123;</span><br><span class="line">            &quot;top&quot;: y - 180,</span><br><span class="line">            &quot;opacity&quot;: 0</span><br><span class="line">        &#125;,</span><br><span class="line">            3000,</span><br><span class="line">            function() &#123;</span><br><span class="line">                $i.remove();</span><br><span class="line">            &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">    setTimeout(&#x27;delay()&#x27;, 2000);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">function delay() &#123;</span><br><span class="line">    $(&quot;.buryit&quot;).removeAttr(&quot;onclick&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p> 在 <code>\themes\hexo-theme-spfk\layout\layout.swig</code> 文件末尾添加以下代码：<br> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"> &lt;!--单击显示文字--&gt;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot; src=&quot;/js/click_show_text.js&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure></p>
-<h2 id="背景添加"><a href="#背景添加" class="headerlink" title="背景添加"></a>背景添加</h2><p>可以在 <code>themes/next/source/css/_schemes/Gemini/index.sty</code>l 中添加的代码（在最后添加即可），muse是我的 next 的布局样式（next默认是muse，在muse的index.styl添加也有同样的效果）。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">body &#123;</span><br><span class="line"></span><br><span class="line">    background:url(/images/background.jpg);</span><br><span class="line"></span><br><span class="line">    background-repeat: no-repeat;</span><br><span class="line"></span><br><span class="line">    background-attachment:fixed; //不重复</span><br><span class="line"></span><br><span class="line">    background-size: cover;      //填充</span><br><span class="line"></span><br><span class="line">    background-position:50% 50%;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//36a13237f9c509ef5513dcb09c45e830.png" alt="36a13237f9c509ef5513dcb09c45e830.png"></p>
-<p>搜索框等透明化设置添加到刚刚的下面就可以</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">body&#123;				//修改主体字体颜色</span><br><span class="line">  color: #000;		//纯黑</span><br><span class="line">&#125;</span><br><span class="line">.posts-expand .post-title-link &#123;	//标题颜色</span><br><span class="line">    color: #000;				//首页文章标题颜色， （默认为灰辨识度不高）</span><br><span class="line">&#125;</span><br><span class="line">.posts-expand .post-meta-container &#123;	//标题下的日期颜色</span><br><span class="line">    color: #880000;				//此处修改为红色,可自行调用rgb调色</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//侧边框的透明度设置</span><br><span class="line">.sidebar &#123;</span><br><span class="line">  opacity: 0.9;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">.header-inner &#123;		//菜单栏的调色</span><br><span class="line">  background: rgba(255,255,255,0.5);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">.popup &#123;		//搜索框透明</span><br><span class="line">  opacity: 0.8;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">.main-inner &#123; 	//整个主体的透明度</span><br><span class="line">   opacity: 0.8;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>背景不够透明怎么办，百度搜索在线图像透明化从根本解决烦恼</p>
-<h2 id="代码块mac美化"><a href="#代码块mac美化" class="headerlink" title="代码块mac美化"></a>代码块mac美化</h2><p>在主题的config.yml找到，codeblock设置即可<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//c1627acf67426b44dc045b47379805fb.png" alt="c1627acf67426b44dc045b47379805fb.png"></p>
-<h2 id="代码云"><a href="#代码云" class="headerlink" title="代码云"></a>代码云</h2><p>命令行安装一下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-tag-cloud@^2.0.* --save </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>在主题文件<code>theme/next/layout/_macro/sidebar.swig</code>添加下方代码</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;% if site.tags.length &gt; 1 %&#125;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;/js/tagcloud.js&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot; src=&quot;/js/tagcanvas.js&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;div class=&quot;widget-wrap&quot;&gt;</span><br><span class="line">    &lt;h3 class=&quot;widget-title&quot;&gt;Tag Cloud&lt;/h3&gt;</span><br><span class="line">    &lt;div id=&quot;myCanvasContainer&quot; class=&quot;widget tagcloud&quot;&gt;</span><br><span class="line">        &lt;canvas width=&quot;250&quot; height=&quot;250&quot; id=&quot;resCanvas&quot; style=&quot;width=100%&quot;&gt;</span><br><span class="line">            &#123;&#123; list_tags() &#125;&#125;</span><br><span class="line">        &lt;/canvas&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&#123;% endif %&#125;</span><br></pre></td></tr></table></figure>
-<p>如下图所示<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//06553412efcccd33e220c76421ed28f4.png" alt="06553412efcccd33e220c76421ed28f4.png"><br>在主站的<code>config.yml</code>下添加配置</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tag_cloud:</span><br><span class="line">    textFont: Trebuchet MS, Helvetica</span><br><span class="line">    textColor: &#x27;#e06767&#x27;</span><br><span class="line">    textHeight: 20</span><br><span class="line">    outlineColor: &#x27;#E2E1D1&#x27;</span><br><span class="line">    maxSpeed: 0.1</span><br></pre></td></tr></table></figure>
-<p>最后的结果是在侧边栏（我之前以为是在标签页结果搞了好久……）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//0709919656dbe4290234fd58f248c48e.png" alt="0709919656dbe4290234fd58f248c48e.png"></p>
-<h2 id="彩色标签云"><a href="#彩色标签云" class="headerlink" title="彩色标签云"></a>彩色标签云</h2><p>在<code>/themes/next/layout/</code>目录下，新增tag-color.swig文件，加入下方代码：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;</span><br><span class="line">     var alltags = document.getElementsByClassName(&#x27;tag-cloud-tags&#x27;);</span><br><span class="line">     var tags = alltags[0].getElementsByTagName(&#x27;a&#x27;);</span><br><span class="line">     for (var i = tags.length - 1; i &gt;= 0; i--) &#123;</span><br><span class="line">       var r=Math.floor(Math.random()*75+130);</span><br><span class="line">       var g=Math.floor(Math.random()*75+100);</span><br><span class="line">       var b=Math.floor(Math.random()*75+80);</span><br><span class="line">       tags[i].style.background = &quot;rgb(&quot;+r+&quot;,&quot;+g+&quot;,&quot;+b+&quot;)&quot;;</span><br><span class="line">     &#125;</span><br><span class="line">&lt;/script&gt;</span><br><span class="line"></span><br><span class="line">&lt;style&gt;</span><br><span class="line">  .tag-cloud-tags&#123;</span><br><span class="line">    /*font-family: Helvetica, Tahoma, Arial;*/</span><br><span class="line">    /*font-weight: 100;*/</span><br><span class="line">    text-align: center;</span><br><span class="line">    counter-reset: tags;</span><br><span class="line">  &#125;</span><br><span class="line">  .tag-cloud-tags a&#123;</span><br><span class="line">    border-radius: 6px;</span><br><span class="line">    padding-right: 5px;</span><br><span class="line">    padding-left: 5px;</span><br><span class="line">    margin: 8px 5px 0px 0px;</span><br><span class="line">  &#125;</span><br><span class="line">  .tag-cloud-tags a:before&#123;</span><br><span class="line">    content: &quot;?&quot;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  .tag-cloud-tags a:hover&#123;</span><br><span class="line">     box-shadow: 0px 5px 15px 0px rgba(0,0,0,.4);</span><br><span class="line">     transform: scale(1.1);</span><br><span class="line">     /*box-shadow: 10px 10px 15px 2px rgba(0,0,0,.12), 0 0 6px 0 rgba(104, 104, 105, 0.1);*/</span><br><span class="line">     transition-duration: 0.15s;</span><br><span class="line">  &#125;</span><br><span class="line">&lt;/style&gt;</span><br></pre></td></tr></table></figure>
-<p>在<code>/themes/next/layout/page.swig/</code>中引入tag-color.swig：<br>在下方加上<code> &#123;% include 'tag-color.swig' %&#125;</code> 代码</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;div class=&quot;tag-cloud&quot;&gt;</span><br><span class="line">         &lt;!--    &lt;div class=&quot;tag-cloud-title&quot;&gt;</span><br><span class="line">               &#123;&#123; _p(&#x27;counter.tag_cloud&#x27;, site.tags.length) &#125;&#125;</span><br><span class="line">           &lt;/div&gt;  --&gt;</span><br><span class="line">            &lt;div class=&quot;tag-cloud-tags&quot; id=&quot;tags&quot;&gt;</span><br><span class="line">		  &#123;&#123; tagcloud(&#123;min_font: 16, max_font: 16, amount: 300, color: true, start_color: &#x27;#FFF&#x27;, end_color: &#x27;#FFF&#x27;&#125;) &#125;&#125;            </span><br><span class="line">	  &lt;/div&gt;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">    &#123;% include &#x27;tag-color.swig&#x27; %&#125;		</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>效果图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//93efb444c021774abc52076ae0e2ea89.png" alt="93efb444c021774abc52076ae0e2ea89.png"></p>
-<h2 id="标签放到首页"><a href="#标签放到首页" class="headerlink" title="标签放到首页"></a>标签放到首页</h2><p>在路径：<code>/themes/next/layout/index.swig </code>中<code>&#123;% block content %&#125;</code>下面添加下方代码</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;% block content %&#125;</span><br><span class="line"></span><br><span class="line">	&lt;div class=&quot;tag-cloud&quot;&gt;</span><br><span class="line">	  &lt;div class=&quot;tag-cloud-tags&quot; id=&quot;tags&quot;&gt;</span><br><span class="line">		&#123;&#123; tagcloud(&#123;min_font: 16, max_font: 16, amount: 300, color: true, start_color: &#x27;#fff&#x27;, end_color: &#x27;#fff&#x27;&#125;) &#125;&#125;</span><br><span class="line">	  &lt;/div&gt;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">	&lt;br&gt;</span><br><span class="line">	</span><br><span class="line">	&#123;% include &#x27;tag-color.swig&#x27; %&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>hexo配置</category>
-      </categories>
-      <tags>
-        <tag>hexo</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Markdown图床</title>
-    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/</url>
-    <content><![CDATA[<h1 id="Markdown图床"><a href="#Markdown图床" class="headerlink" title="Markdown图床"></a>Markdown图床</h1><h2 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h2><ul>
-<li>PicGo</li>
-<li><h3 id="首先打开picgo官网，下载安装包"><a href="#首先打开picgo官网，下载安装包" class="headerlink" title="首先打开picgo官网，下载安装包"></a>首先打开<a href="https://link.zhihu.com/?target=https://github.com/Molunerfinn/PicGo">picgo官网</a>，下载安装包</h3></li>
-</ul>
-<p>界面如下：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//42b06d30b078093c44af1bcfa69adeac.png" alt="42b06d30b078093c44af1bcfa69adeac.png"><br>点开图床设置<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//5c6ff7c000e84da4137e7b418bfb42ba.png" alt="5c6ff7c000e84da4137e7b418bfb42ba.png"><br>接下来我会一一描述如何从github中获取这些东西<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9aa122338e571e381e3d5d12b422aded.png" alt="9aa122338e571e381e3d5d12b422aded.png"></p>
-<h2 id="2-github"><a href="#2-github" class="headerlink" title="2. github"></a>2. github</h2><p>首先创建一个好记的仓库名<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e6618bcabea3c60d34e724c0bfe3a66f.png" alt="e6618bcabea3c60d34e724c0bfe3a66f.png"><br>分支部分默认:master就行<br>然后是获取token进入setting:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7013512526adb5c659dd17fa635b2a91.png" alt="7013512526adb5c659dd17fa635b2a91.png"><br>最底下有个<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3f3574d1bbd20c1604e28fce611abc8b.png" alt="3f3574d1bbd20c1604e28fce611abc8b.png"><br>然后<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//07fe2a9fdec1257c0853fc71301175e2.png" alt="07fe2a9fdec1257c0853fc71301175e2.png"><br>之后这样勾选<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7a876b7bab2841dd4b8b8546cf785fd.png" alt="a7a876b7bab2841dd4b8b8546cf785fd.png"><br>这样你就可以得到一个token，记得保存这个token，这个token只能看一次。<br>将这个token塞到刚刚pigo里面之后就可以上传图片了。</p>
-<h2 id="可能会出现的问题"><a href="#可能会出现的问题" class="headerlink" title="可能会出现的问题"></a>可能会出现的问题</h2><p>链接失败：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7deb1860493cfa28ec0f0496cda9839.png" alt="a7deb1860493cfa28ec0f0496cda9839.png"><br>记得点开这里面这样勾选</p>
-<p>上传失败：<br>仓库的设置有问题或者网不好没传上去</p>
-]]></content>
-      <categories>
-        <category>hexo配置</category>
-      </categories>
-      <tags>
-        <tag>hexo</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hexo基础版搭建</title>
-    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<h1 id="hexo基础版搭建"><a href="#hexo基础版搭建" class="headerlink" title="hexo基础版搭建"></a>hexo基础版搭建</h1><h2 id="1-前置准备"><a href="#1-前置准备" class="headerlink" title="1.前置准备"></a>1.前置准备</h2><p>1.git <a href="https://registry.npmmirror.com/binary.html?path=git-for-windows/">git</a><br>2.Node.js <a href="https://nodejs.org/en/">Node.js</a><br>3.hexo<br>hexo是一款大家都在用网上教程多的博客平台，所以我们采用这一款。<br>首先先创建一个空白文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//25073589eed32f584d36ae6a0ab62f5d.png" alt="25073589eed32f584d36ae6a0ab62f5d.png"><br>然后git bash here之后输入以下命令</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-cli -g#使用npm下载hexo</span><br><span class="line">hexo init blog#hexo的初始化</span><br><span class="line">cd blog#进入这个文件夹</span><br><span class="line">npm install #安装npm的那些包</span><br><span class="line">hexo server #启动hexo服务</span><br></pre></td></tr></table></figure>
-<p>最终会生成一个文件夹如下:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7e45e1465e138298cfd38441ef094034.png" alt="7e45e1465e138298cfd38441ef094034.png"><br>文件夹功能</p>
-<ul>
-<li>node_modules: 依赖包</li>
-<li>public：存放生成的页面</li>
-<li>scaffolds：生成文章的一些模板</li>
-<li>source：用来存放你的文章</li>
-<li>themes：主题</li>
-</ul>
-<p>然后输入这两条命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-
-<p>完成后会显示如下内容，则说明<strong>配置成功</strong>!<br>（这里我是已经添加过主题了之后会说）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9b8ea34415f558f8522f8ed9a909912b.png" alt="9b8ea34415f558f8522f8ed9a909912b.png"></p>
-<h2 id="GitHub创建仓库"><a href="#GitHub创建仓库" class="headerlink" title="GitHub创建仓库"></a>GitHub创建仓库</h2><p>首先注册一个GitHub的仓库，然后在个人主页中选择 new 新建仓库<br><span style="color: red;">注意： 仓库名称的前半部分与你的用户名一致,即 YueSangShuai，后半部分为 <a href="http://git.io/">http://git.io</a> 固定格式</span><br>（忽略红色警告，因为我已经创建过了！），可以选择一个readme为说明文件（随便），然后点击创建仓库<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//645b92b2b22cd9b4c583876d8657f00a.png" alt="645b92b2b22cd9b4c583876d8657f00a.png"></p>
-<p> 回到 git bash黑窗口中，<strong>输入以下两个命令</strong>：<br>yourname改为你的<strong>GitHub的用户名</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot;</span><br></pre></td></tr></table></figure>
-
-<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
-
-<p>  <strong>创建 ssh，输入命令，然后一直回车</strong></p>
-<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
-
-<p>之后会提示你已完成 ssh的创建，在文件中找到这个路径<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e25ae687593ee8ffc37aff1f0042aa51.png" alt="e25ae687593ee8ffc37aff1f0042aa51.png"><br>记住你的id_rsa.pub,<br>进入你的github setting<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d9fad9c8f3c86666cb30788bca8f4f61.png" alt="d9fad9c8f3c86666cb30788bca8f4f61.png"><br>创建你的ssh-key<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//819d5aeaf13bfec2870c7dfaf59cd1ba.png" alt="819d5aeaf13bfec2870c7dfaf59cd1ba.png"><br>将你的id_rsa.pub的内容输入到下面即可完成<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d7d89bd60289f494e668f0e2e2cbe12a.png" alt="d7d89bd60289f494e668f0e2e2cbe12a.png"></p>
-<h2 id="hexo部署到github"><a href="#hexo部署到github" class="headerlink" title="hexo部署到github"></a>hexo部署到github</h2><p>找到刚刚那个文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//239cf8c656328a94d51c78f784a1af1c.png" alt="239cf8c656328a94d51c78f784a1af1c.png"><br>找到下面的内容</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line"># deploy:</span><br><span class="line">#   type: &#x27;&#x27;</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/username/username.github.io.git</span><br></pre></td></tr></table></figure>
-<p>然后在这个位置设置一下你的博客链接：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6c388e576a7599c3d7e7efe858faa024.png" alt="6c388e576a7599c3d7e7efe858faa024.png"></p>
-<p><strong>安装 git部署命令工具</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
-<p>然后：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-
-<p>其中 <code>hexo clean</code>清除了你之前生成的东西，也可以不加。 <code>hexo generate</code> 顾名思义，生成静态文章，可以用 <code>hexo g</code>缩写 <code>hexo deploy</code> 部署文章，可以用<code>hexo d</code>缩写<br><strong>如果是在离线端即 localhost:4000端测试你的博客，则只需要 hexo g + hexo s 即可，无需 hexo d</strong><br>输入完成后会出现一堆内容，不用管他，只要最后内容如下所示，就表示成功了！<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6028bb5fe0b8b6917a408ffe53a27c81.png" alt="6028bb5fe0b8b6917a408ffe53a27c81.png"></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username.github.io  # https://username.github.io</span><br></pre></td></tr></table></figure>
-<p><strong>访问到你的博客了，其中username是你GitHub用户名，这个网站不是离线的，其他人都可以访问到！！！</strong></p>
-]]></content>
-      <categories>
-        <category>hexo配置</category>
-      </categories>
-      <tags>
-        <tag>hexo</tag>
       </tags>
   </entry>
 </search>
