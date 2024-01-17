@@ -38,10 +38,6 @@ function switchNightMode(mode) {
 if (document.querySelector('body').classList.contains('darkmode--activated')) {
   document.querySelector('body').classList.add('DarkMode');
 }
-const sunElement = document.createElement('div');
-sunElement.id = 'sun'; // 设置元素的id为sun
-const moonElement = document.createElement('div');
-moonElement.id = 'moon'; // 设置元素的id为sun
 
 var nightButton = document.querySelector('.darkmode-toggle.darkmode-toggle--white');
 var dayButton = document.querySelector('.darkmode-toggle');
