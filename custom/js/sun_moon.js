@@ -1,4 +1,4 @@
-function switchNightMode(mode) {
+function switchNightMode() {
   document.querySelector('body').insertAdjacentHTML('beforeend', '<div class="Cuteen_DarkSky"><div class="Cuteen_DarkPlanet"><div id="sun"></div><div id="moon"></div></div></div>'),    setTimeout(function() {
       if (document.querySelector('body').classList.contains('darkmode--activated')) {
         document.querySelector('body').classList.add('DarkMode');
@@ -16,14 +16,17 @@ function switchNightMode(mode) {
         }, 2e3)
     })
     
-    if(mode==="light"){
-        // 先设置太阳月亮透明度
+
+    var iswhite = document.querySelector('.darkmode-toggle.darkmode-toggle--white');
+    
+    if(iswhite){
         document.getElementById("sun").style.opacity = "1";
         document.getElementById("moon").style.opacity = "0";
         setTimeout(function () {
             document.getElementById("sun").style.opacity = "0";
             document.getElementById("moon").style.opacity = "1";
         }, 1000);
+        console.log("light");
     }else{
         // 先设置太阳月亮透明度
         document.getElementById("sun").style.opacity = "0";
@@ -32,29 +35,19 @@ function switchNightMode(mode) {
             document.getElementById("sun").style.opacity = "1";
             document.getElementById("moon").style.opacity = "0";
         }, 1000);
+        console.log("dark");
     }
 }
 
 if (document.querySelector('body').classList.contains('darkmode--activated')) {
   document.querySelector('body').classList.add('DarkMode');
 }
-const sunElement = document.createElement('div');
-sunElement.id = 'sun'; // 设置元素的id为sun
-const moonElement = document.createElement('div');
-moonElement.id = 'moon'; // 设置元素的id为sun
 
-var nightButton = document.querySelector('.darkmode-toggle.darkmode-toggle--white');
-var dayButton = document.querySelector('.darkmode-toggle');
+var Button = document.querySelector('.darkmode-toggle');
 
 // 检查是否成功获取按钮元素
-if (dayButton) {
-  dayButton.addEventListener('click', function() {
-      switchNightMode("light"); // 点击 dayButton 切换到 light 模式
-  });
-}
-
-if (nightButton) {
-  nightButton.addEventListener('click', function() {
-      switchNightMode("dark"); // 点击 nightButton 切换到 dark 模式
-  });
+if(Button){
+  Button.addEventListener('click', function() {
+    switchNightMode(); // 点击 nightButton 切换到 dark 模式
+});
 }

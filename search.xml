@@ -950,37 +950,18 @@
       </tags>
   </entry>
   <entry>
-    <title>YoloV3 Anchor生成正负样本</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/</url>
-    <content><![CDATA[<p>关于手撸YoloV3代码的可以看一下b站一个up主：深度学习麋了鹿<br>这里主要讲的是YoloV3中正负样本的生成以及我个人的理解。</p>
-<h1 id="1-正负样本生成的原理"><a href="#1-正负样本生成的原理" class="headerlink" title="1.正负样本生成的原理"></a>1.正负样本生成的原理</h1><h2 id="1-1正样本的选择"><a href="#1-1正样本的选择" class="headerlink" title="1.1正样本的选择"></a>1.1正样本的选择</h2><p>首先先计算$gt$的中心落在哪个$grid$上，总共有3个特征层以及3个$anchor$总共生成9个先验框，选出与$gt$的$IOU$最大的那个先验框做为正样本。</p>
-<h2 id="1-2负样本的选择"><a href="#1-2负样本的选择" class="headerlink" title="1.2负样本的选择"></a>1.2负样本的选择</h2><p>计算各个先验框和所有的目标$gt$之间的$IOU$，如果某先验框和图像中所有物体最大的IOU都小于阈值（一般0.5），那么就认为该先验框不含目标，记作负样本，其置信度应当为0</p>
-<h2 id="1-3其他样本"><a href="#1-3其他样本" class="headerlink" title="1.3其他样本"></a>1.3其他样本</h2><p>对于剩下$IOU$大于阈值但不是与$gt$的$IOU$最大的那部分，这句话可能有点绕，可以这样简单理解，这个班上只要第一名作为学习的榜样，分数低于60分的大家作为反面教材，剩下大于60分但又不是第一名的那些人大家就不用管他了。</p>
-<h1 id="2-代码部分的讲解"><a href="#2-代码部分的讲解" class="headerlink" title="2.代码部分的讲解"></a>2.代码部分的讲解</h1><p>这里贴一下麋鹿的手撸代码这部分就是$label$的生成，我个人也是按照他的视频讲解来写的</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">  labels=&#123;&#125;</span><br><span class="line">w,h=img.size</span><br><span class="line">  <span class="keyword">case</span>=<span class="number">416</span>/w</span><br><span class="line">  <span class="keyword">for</span> feature_size,_antors <span class="keyword">in</span> antors.items():</span><br><span class="line">      labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> box <span class="keyword">in</span> boxes:</span><br><span class="line">          cls,cx,cy,w,h=box</span><br><span class="line">          cx, cy,w,h=cx*<span class="keyword">case</span>,cy*<span class="keyword">case</span>,w*<span class="keyword">case</span>,h*<span class="keyword">case</span></span><br><span class="line">          _x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">          _y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br><span class="line">          <span class="keyword">for</span> i,antor <span class="keyword">in</span> <span class="built_in">enumerate</span>(_antors):</span><br><span class="line">              area=w*h</span><br><span class="line">              iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br><span class="line">              p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br><span class="line">              labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">w,h=img.size</span><br><span class="line"><span class="keyword">case</span>=<span class="number">416</span>/w</span><br></pre></td></tr></table></figure>
-
-<p>这部分主要将中心点和宽高转移到对应尺寸上，比如当你图像的$size$是$(3.,3)$的时候你的中心点是$(2,2)$,当你reisze成$(9,9)$的时候，你的中心点应该转换成$(5,5)$</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br></pre></td></tr></table></figure>
-<p>个人理解首先每个$grid$里面都应该对应一个宽高中心的置信度类别，所以最后的一个维度是:5+CLASS_NUM,然后3对应的是RGB三个通道，feature_size就是对应我们将图像分成几个部分。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">_x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">_y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br></pre></td></tr></table></figure>
-<p>这个部分是将中心点转换到对应的grid中并且获得他的偏移量拿下面这个例子来说，假设图像的size是39*39的$gt$的中心为$(20,20)$那么此时中心点坐标其实转换到了$(1,1)$再加上$(7,7)$的偏移。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9573740d47f359fa58f705e02e5ec1f8.png"></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br></pre></td></tr></table></figure>
-
-<p>他这里的$IOU$的计算有点问题，我之后会一期关于各种IOU的讲解。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
-<p>这里的主要计算的是$gt$的宽高和$anchor$宽高的比值，注意这里损失函数的时候宽高做了$\log$处理是为了防止过宽或者过高影响网络。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
-
-<p>这部分主要是吧刚刚算出来正样本加入进去用之前得到的$x,y$的中心格位置，或者你这边直接归一化也可以。</p>
-<p>这里讲一句对于正负样本不均匀的理解，举个例子就像小时候父母告诉我们做这个不好，做那个不好，实际上需要怎么做的好有时候他们并不会告诉我，导致我们只知道这样做是不好的，但是不知道怎么往好的方面发展。</p>
+    <title>交叉熵损失</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
+    <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
+<h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
+<h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
+<p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
 ]]></content>
       <categories>
         <category>神经网络</category>
       </categories>
       <tags>
-        <tag>Yolo</tag>
+        <tag>交叉熵损失</tag>
       </tags>
   </entry>
   <entry>
@@ -1013,18 +994,37 @@
       </tags>
   </entry>
   <entry>
-    <title>交叉熵损失</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/</url>
-    <content><![CDATA[<h1 id="1信息量"><a href="#1信息量" class="headerlink" title="1信息量"></a>1信息量</h1><p>一件事情发生的概率越大信息量就会越少，举个例子国足每年都踢不进世界杯，这件事发生概率极大，大家都习以为常，但是假如有一年国足踢进的话，那这信息量就很大了，因为事情发生的概率极小。<br>若事件$x$发生的概率为$P(x)$,则信息量的计算公式为:<br>$$<br>I(x)&#x3D;-\log(P(x))<br>$$<br>$\log$的底你可以随意取，但是在神经网络一般取e,这里拿一张别人的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/059755e389e74059a0eef42704677f81.png"><br>由图我们可以看出当log的底大于1，log的图形就像下图红色线，因为$P(x)$为概率的取值范围是$[0-1]$从图像可以看出满足我们上述对信息量的要求。</p>
-<h1 id="2信息熵"><a href="#2信息熵" class="headerlink" title="2信息熵"></a>2信息熵</h1><p>信息熵也被称为熵，用来表示所有信息量的期望，期望是试验中每次可能结果的概率乘以其结果的总和。<br>$$<br>H(x)&#x3D;-\sum_{i&#x3D;1}^{n}  P(x_{i})·\log(P(x_i))<br>$$</p>
-<h1 id="3KL散度（相对熵）"><a href="#3KL散度（相对熵）" class="headerlink" title="3KL散度（相对熵）"></a>3KL散度（相对熵）</h1><p>机器学习中，常常用$P(x)$表示样本的真实分布，用$Q(x)$表示模型预测的分布，比如在一个五分类任务中（猫狗马鸟人分类器），$[x1,x2,x3,x4,x5]$分别表示猫狗马鸟人的概率,此时输入一张狗的照片其真实分布为$P(x)&#x3D;[0,0,0,0,1]$那么$P(x)$和$Q(x)$就是两个不同的概率分布，可以用KL散度来计算他们的差异：<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>$$<br>怎么将KL散度转换到交叉熵呢,首先我们变形一下<br>$$<br>D_{K L}(p | q)&#x3D;\sum_{i&#x3D;1}^{N}\left[p\left(x_{i}\right) \log p\left(x_{i}\right)-p\left(x_{i}\right) \log q\left(x_{i}\right)\right]<br>\&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))-H(p(x))<br>$$<br>由上式我们可以得到KL散度&#x3D;交叉熵-信息熵</p>
-<p>交叉熵是用来衡量两个概率分布的距离(也可以叫差别)。概率分布：即$[0.1,0.5,0.2,0.1,0.1]$，每个类别的概率都在$0~1$，且加起来为$1$。交叉熵的公式为：<br>$$<br>H(p,q)&#x3D;-\sum_{i&#x3D;1}^{N}p(x_i)\log(q(x_i))<br>$$</p>
+    <title>YoloV3 Anchor生成正负样本</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/</url>
+    <content><![CDATA[<p>关于手撸YoloV3代码的可以看一下b站一个up主：深度学习麋了鹿<br>这里主要讲的是YoloV3中正负样本的生成以及我个人的理解。</p>
+<h1 id="1-正负样本生成的原理"><a href="#1-正负样本生成的原理" class="headerlink" title="1.正负样本生成的原理"></a>1.正负样本生成的原理</h1><h2 id="1-1正样本的选择"><a href="#1-1正样本的选择" class="headerlink" title="1.1正样本的选择"></a>1.1正样本的选择</h2><p>首先先计算$gt$的中心落在哪个$grid$上，总共有3个特征层以及3个$anchor$总共生成9个先验框，选出与$gt$的$IOU$最大的那个先验框做为正样本。</p>
+<h2 id="1-2负样本的选择"><a href="#1-2负样本的选择" class="headerlink" title="1.2负样本的选择"></a>1.2负样本的选择</h2><p>计算各个先验框和所有的目标$gt$之间的$IOU$，如果某先验框和图像中所有物体最大的IOU都小于阈值（一般0.5），那么就认为该先验框不含目标，记作负样本，其置信度应当为0</p>
+<h2 id="1-3其他样本"><a href="#1-3其他样本" class="headerlink" title="1.3其他样本"></a>1.3其他样本</h2><p>对于剩下$IOU$大于阈值但不是与$gt$的$IOU$最大的那部分，这句话可能有点绕，可以这样简单理解，这个班上只要第一名作为学习的榜样，分数低于60分的大家作为反面教材，剩下大于60分但又不是第一名的那些人大家就不用管他了。</p>
+<h1 id="2-代码部分的讲解"><a href="#2-代码部分的讲解" class="headerlink" title="2.代码部分的讲解"></a>2.代码部分的讲解</h1><p>这里贴一下麋鹿的手撸代码这部分就是$label$的生成，我个人也是按照他的视频讲解来写的</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">  labels=&#123;&#125;</span><br><span class="line">w,h=img.size</span><br><span class="line">  <span class="keyword">case</span>=<span class="number">416</span>/w</span><br><span class="line">  <span class="keyword">for</span> feature_size,_antors <span class="keyword">in</span> antors.items():</span><br><span class="line">      labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> box <span class="keyword">in</span> boxes:</span><br><span class="line">          cls,cx,cy,w,h=box</span><br><span class="line">          cx, cy,w,h=cx*<span class="keyword">case</span>,cy*<span class="keyword">case</span>,w*<span class="keyword">case</span>,h*<span class="keyword">case</span></span><br><span class="line">          _x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">          _y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br><span class="line">          <span class="keyword">for</span> i,antor <span class="keyword">in</span> <span class="built_in">enumerate</span>(_antors):</span><br><span class="line">              area=w*h</span><br><span class="line">              iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br><span class="line">              p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br><span class="line">              labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">w,h=img.size</span><br><span class="line"><span class="keyword">case</span>=<span class="number">416</span>/w</span><br></pre></td></tr></table></figure>
+
+<p>这部分主要将中心点和宽高转移到对应尺寸上，比如当你图像的$size$是$(3.,3)$的时候你的中心点是$(2,2)$,当你reisze成$(9,9)$的时候，你的中心点应该转换成$(5,5)$</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">labels[feature_size]=np.zeros(shape=(feature_size,feature_size,<span class="number">3</span>,<span class="number">5</span>+CLASS_NUM))</span><br></pre></td></tr></table></figure>
+<p>个人理解首先每个$grid$里面都应该对应一个宽高中心的置信度类别，所以最后的一个维度是:5+CLASS_NUM,然后3对应的是RGB三个通道，feature_size就是对应我们将图像分成几个部分。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">_x,x_index=math.modf(cx*feature_size/DATA_WIDTH)</span><br><span class="line">_y,y_index=math.modf(cx*feature_size/DATA_HEIGHT)</span><br></pre></td></tr></table></figure>
+<p>这个部分是将中心点转换到对应的grid中并且获得他的偏移量拿下面这个例子来说，假设图像的size是39*39的$gt$的中心为$(20,20)$那么此时中心点坐标其实转换到了$(1,1)$再加上$(7,7)$的偏移。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9573740d47f359fa58f705e02e5ec1f8.png"></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">iou=<span class="built_in">min</span>(area,ANTORS_AREA[feature_size][i])/<span class="built_in">max</span>(area,ANTORS_AREA[feature_size][i])</span><br></pre></td></tr></table></figure>
+
+<p>他这里的$IOU$的计算有点问题，我之后会一期关于各种IOU的讲解。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">p_w, p_h = w / antor[<span class="number">0</span>], h / antor[<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
+<p>这里的主要计算的是$gt$的宽高和$anchor$宽高的比值，注意这里损失函数的时候宽高做了$\log$处理是为了防止过宽或者过高影响网络。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">labels[feature_size][<span class="built_in">int</span>(y_index),<span class="built_in">int</span>(x_index),i]=np.array([iou,_x,_y,np.log(p_w),np.log(p_h),*one_hot(CLASS_NUM,<span class="built_in">int</span>(cls))])</span><br></pre></td></tr></table></figure>
+
+<p>这部分主要是吧刚刚算出来正样本加入进去用之前得到的$x,y$的中心格位置，或者你这边直接归一化也可以。</p>
+<p>这里讲一句对于正负样本不均匀的理解，举个例子就像小时候父母告诉我们做这个不好，做那个不好，实际上需要怎么做的好有时候他们并不会告诉我，导致我们只知道这样做是不好的，但是不知道怎么往好的方面发展。</p>
 ]]></content>
       <categories>
         <category>神经网络</category>
       </categories>
       <tags>
-        <tag>交叉熵损失</tag>
+        <tag>Yolo</tag>
       </tags>
   </entry>
 </search>
