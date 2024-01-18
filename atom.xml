@@ -132,11 +132,11 @@
     <category term="环境配置" scheme="http://yuesangshuai.github.io/categories/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/"/>
     
     
-    <category term="cuda" scheme="http://yuesangshuai.github.io/tags/cuda/"/>
-    
     <category term="opencv" scheme="http://yuesangshuai.github.io/tags/opencv/"/>
     
     <category term="opencv_contrib" scheme="http://yuesangshuai.github.io/tags/opencv-contrib/"/>
+    
+    <category term="cuda" scheme="http://yuesangshuai.github.io/tags/cuda/"/>
     
   </entry>
   

@@ -127,6 +127,45 @@
       </tags>
   </entry>
   <entry>
+    <title>Ubuntu19 Openvion cmake源码编译</title>
+    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
+    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>解压后的结构目录</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
+<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后安装外部依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
+
+<p>我中间报了一些黄的的警告我没有管他之后</p>
+<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
+<p>&nbsp;没有报错就好，然后开始编译库</p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
+<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
+<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
+<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
     <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
     <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
@@ -210,45 +249,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Ubuntu19 Openvion cmake源码编译</title>
-    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
-    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>解压后的结构目录</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
-<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后安装外部依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
-
-<p>我中间报了一些黄的的警告我没有管他之后</p>
-<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
-<p>&nbsp;没有报错就好，然后开始编译库</p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
-<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
-<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
-<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Openvino</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Markdown图床</title>
     <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/</url>
     <content><![CDATA[<h1 id="Markdown图床"><a href="#Markdown图床" class="headerlink" title="Markdown图床"></a>Markdown图床</h1><h2 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h2><ul>
@@ -259,6 +259,54 @@
 <h2 id="2-github"><a href="#2-github" class="headerlink" title="2. github"></a>2. github</h2><p>首先创建一个好记的仓库名<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e6618bcabea3c60d34e724c0bfe3a66f.png" alt="e6618bcabea3c60d34e724c0bfe3a66f.png"><br>分支部分默认:master就行<br>然后是获取token进入setting:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7013512526adb5c659dd17fa635b2a91.png" alt="7013512526adb5c659dd17fa635b2a91.png"><br>最底下有个<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3f3574d1bbd20c1604e28fce611abc8b.png" alt="3f3574d1bbd20c1604e28fce611abc8b.png"><br>然后<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//07fe2a9fdec1257c0853fc71301175e2.png" alt="07fe2a9fdec1257c0853fc71301175e2.png"><br>之后这样勾选<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7a876b7bab2841dd4b8b8546cf785fd.png" alt="a7a876b7bab2841dd4b8b8546cf785fd.png"><br>这样你就可以得到一个token，记得保存这个token，这个token只能看一次。<br>将这个token塞到刚刚pigo里面之后就可以上传图片了。</p>
 <h2 id="可能会出现的问题"><a href="#可能会出现的问题" class="headerlink" title="可能会出现的问题"></a>可能会出现的问题</h2><p>链接失败：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7deb1860493cfa28ec0f0496cda9839.png" alt="a7deb1860493cfa28ec0f0496cda9839.png"><br>记得点开这里面这样勾选</p>
 <p>上传失败：<br>仓库的设置有问题或者网不好没传上去</p>
+]]></content>
+      <categories>
+        <category>hexo配置</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>hexo基础版搭建</title>
+    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<h1 id="hexo基础版搭建"><a href="#hexo基础版搭建" class="headerlink" title="hexo基础版搭建"></a>hexo基础版搭建</h1><h2 id="1-前置准备"><a href="#1-前置准备" class="headerlink" title="1.前置准备"></a>1.前置准备</h2><p>1.git <a href="https://registry.npmmirror.com/binary.html?path=git-for-windows/">git</a><br>2.Node.js <a href="https://nodejs.org/en/">Node.js</a><br>3.hexo<br>hexo是一款大家都在用网上教程多的博客平台，所以我们采用这一款。<br>首先先创建一个空白文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//25073589eed32f584d36ae6a0ab62f5d.png" alt="25073589eed32f584d36ae6a0ab62f5d.png"><br>然后git bash here之后输入以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-cli -g#使用npm下载hexo</span><br><span class="line">hexo init blog#hexo的初始化</span><br><span class="line">cd blog#进入这个文件夹</span><br><span class="line">npm install #安装npm的那些包</span><br><span class="line">hexo server #启动hexo服务</span><br></pre></td></tr></table></figure>
+<p>最终会生成一个文件夹如下:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7e45e1465e138298cfd38441ef094034.png" alt="7e45e1465e138298cfd38441ef094034.png"><br>文件夹功能</p>
+<ul>
+<li>node_modules: 依赖包</li>
+<li>public：存放生成的页面</li>
+<li>scaffolds：生成文章的一些模板</li>
+<li>source：用来存放你的文章</li>
+<li>themes：主题</li>
+</ul>
+<p>然后输入这两条命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+
+<p>完成后会显示如下内容，则说明<strong>配置成功</strong>!<br>（这里我是已经添加过主题了之后会说）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9b8ea34415f558f8522f8ed9a909912b.png" alt="9b8ea34415f558f8522f8ed9a909912b.png"></p>
+<h2 id="GitHub创建仓库"><a href="#GitHub创建仓库" class="headerlink" title="GitHub创建仓库"></a>GitHub创建仓库</h2><p>首先注册一个GitHub的仓库，然后在个人主页中选择 new 新建仓库<br><span style="color: red;">注意： 仓库名称的前半部分与你的用户名一致,即 YueSangShuai，后半部分为 <a href="http://git.io/">http://git.io</a> 固定格式</span><br>（忽略红色警告，因为我已经创建过了！），可以选择一个readme为说明文件（随便），然后点击创建仓库<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//645b92b2b22cd9b4c583876d8657f00a.png" alt="645b92b2b22cd9b4c583876d8657f00a.png"></p>
+<p> 回到 git bash黑窗口中，<strong>输入以下两个命令</strong>：<br>yourname改为你的<strong>GitHub的用户名</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot;</span><br></pre></td></tr></table></figure>
+
+<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+
+<p>  <strong>创建 ssh，输入命令，然后一直回车</strong></p>
+<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
+
+<p>之后会提示你已完成 ssh的创建，在文件中找到这个路径<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e25ae687593ee8ffc37aff1f0042aa51.png" alt="e25ae687593ee8ffc37aff1f0042aa51.png"><br>记住你的id_rsa.pub,<br>进入你的github setting<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d9fad9c8f3c86666cb30788bca8f4f61.png" alt="d9fad9c8f3c86666cb30788bca8f4f61.png"><br>创建你的ssh-key<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//819d5aeaf13bfec2870c7dfaf59cd1ba.png" alt="819d5aeaf13bfec2870c7dfaf59cd1ba.png"><br>将你的id_rsa.pub的内容输入到下面即可完成<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d7d89bd60289f494e668f0e2e2cbe12a.png" alt="d7d89bd60289f494e668f0e2e2cbe12a.png"></p>
+<h2 id="hexo部署到github"><a href="#hexo部署到github" class="headerlink" title="hexo部署到github"></a>hexo部署到github</h2><p>找到刚刚那个文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//239cf8c656328a94d51c78f784a1af1c.png" alt="239cf8c656328a94d51c78f784a1af1c.png"><br>找到下面的内容</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line"># deploy:</span><br><span class="line">#   type: &#x27;&#x27;</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/username/username.github.io.git</span><br></pre></td></tr></table></figure>
+<p>然后在这个位置设置一下你的博客链接：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6c388e576a7599c3d7e7efe858faa024.png" alt="6c388e576a7599c3d7e7efe858faa024.png"></p>
+<p><strong>安装 git部署命令工具</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+<p>然后：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>hexo clean</code>清除了你之前生成的东西，也可以不加。 <code>hexo generate</code> 顾名思义，生成静态文章，可以用 <code>hexo g</code>缩写 <code>hexo deploy</code> 部署文章，可以用<code>hexo d</code>缩写<br><strong>如果是在离线端即 localhost:4000端测试你的博客，则只需要 hexo g + hexo s 即可，无需 hexo d</strong><br>输入完成后会出现一堆内容，不用管他，只要最后内容如下所示，就表示成功了！<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6028bb5fe0b8b6917a408ffe53a27c81.png" alt="6028bb5fe0b8b6917a408ffe53a27c81.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username.github.io  # https://username.github.io</span><br></pre></td></tr></table></figure>
+<p><strong>访问到你的博客了，其中username是你GitHub用户名，这个网站不是离线的，其他人都可以访问到！！！</strong></p>
 ]]></content>
       <categories>
         <category>hexo配置</category>
@@ -372,203 +420,6 @@
       </categories>
       <tags>
         <tag>hexo</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hexo基础版搭建</title>
-    <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<h1 id="hexo基础版搭建"><a href="#hexo基础版搭建" class="headerlink" title="hexo基础版搭建"></a>hexo基础版搭建</h1><h2 id="1-前置准备"><a href="#1-前置准备" class="headerlink" title="1.前置准备"></a>1.前置准备</h2><p>1.git <a href="https://registry.npmmirror.com/binary.html?path=git-for-windows/">git</a><br>2.Node.js <a href="https://nodejs.org/en/">Node.js</a><br>3.hexo<br>hexo是一款大家都在用网上教程多的博客平台，所以我们采用这一款。<br>首先先创建一个空白文件夹<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//25073589eed32f584d36ae6a0ab62f5d.png" alt="25073589eed32f584d36ae6a0ab62f5d.png"><br>然后git bash here之后输入以下命令</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-cli -g#使用npm下载hexo</span><br><span class="line">hexo init blog#hexo的初始化</span><br><span class="line">cd blog#进入这个文件夹</span><br><span class="line">npm install #安装npm的那些包</span><br><span class="line">hexo server #启动hexo服务</span><br></pre></td></tr></table></figure>
-<p>最终会生成一个文件夹如下:<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7e45e1465e138298cfd38441ef094034.png" alt="7e45e1465e138298cfd38441ef094034.png"><br>文件夹功能</p>
-<ul>
-<li>node_modules: 依赖包</li>
-<li>public：存放生成的页面</li>
-<li>scaffolds：生成文章的一些模板</li>
-<li>source：用来存放你的文章</li>
-<li>themes：主题</li>
-</ul>
-<p>然后输入这两条命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-
-<p>完成后会显示如下内容，则说明<strong>配置成功</strong>!<br>（这里我是已经添加过主题了之后会说）<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9b8ea34415f558f8522f8ed9a909912b.png" alt="9b8ea34415f558f8522f8ed9a909912b.png"></p>
-<h2 id="GitHub创建仓库"><a href="#GitHub创建仓库" class="headerlink" title="GitHub创建仓库"></a>GitHub创建仓库</h2><p>首先注册一个GitHub的仓库，然后在个人主页中选择 new 新建仓库<br><span style="color: red;">注意： 仓库名称的前半部分与你的用户名一致,即 YueSangShuai，后半部分为 <a href="http://git.io/">http://git.io</a> 固定格式</span><br>（忽略红色警告，因为我已经创建过了！），可以选择一个readme为说明文件（随便），然后点击创建仓库<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//645b92b2b22cd9b4c583876d8657f00a.png" alt="645b92b2b22cd9b4c583876d8657f00a.png"></p>
-<p> 回到 git bash黑窗口中，<strong>输入以下两个命令</strong>：<br>yourname改为你的<strong>GitHub的用户名</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.name &quot;yourname&quot;</span><br></pre></td></tr></table></figure>
-
-<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global user.email &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
-
-<p>  <strong>创建 ssh，输入命令，然后一直回车</strong></p>
-<p>youremail改为你的<strong>注册GitHub时的邮箱</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;youremail&quot;</span><br></pre></td></tr></table></figure>
-
-<p>之后会提示你已完成 ssh的创建，在文件中找到这个路径<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e25ae687593ee8ffc37aff1f0042aa51.png" alt="e25ae687593ee8ffc37aff1f0042aa51.png"><br>记住你的id_rsa.pub,<br>进入你的github setting<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d9fad9c8f3c86666cb30788bca8f4f61.png" alt="d9fad9c8f3c86666cb30788bca8f4f61.png"><br>创建你的ssh-key<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//819d5aeaf13bfec2870c7dfaf59cd1ba.png" alt="819d5aeaf13bfec2870c7dfaf59cd1ba.png"><br>将你的id_rsa.pub的内容输入到下面即可完成<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//d7d89bd60289f494e668f0e2e2cbe12a.png" alt="d7d89bd60289f494e668f0e2e2cbe12a.png"></p>
-<h2 id="hexo部署到github"><a href="#hexo部署到github" class="headerlink" title="hexo部署到github"></a>hexo部署到github</h2><p>找到刚刚那个文件<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//239cf8c656328a94d51c78f784a1af1c.png" alt="239cf8c656328a94d51c78f784a1af1c.png"><br>找到下面的内容</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: https://hexo.io/docs/one-command-deployment</span><br><span class="line"># deploy:</span><br><span class="line">#   type: &#x27;&#x27;</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/username/username.github.io.git</span><br></pre></td></tr></table></figure>
-<p>然后在这个位置设置一下你的博客链接：<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6c388e576a7599c3d7e7efe858faa024.png" alt="6c388e576a7599c3d7e7efe858faa024.png"></p>
-<p><strong>安装 git部署命令工具</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
-<p>然后：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-
-<p>其中 <code>hexo clean</code>清除了你之前生成的东西，也可以不加。 <code>hexo generate</code> 顾名思义，生成静态文章，可以用 <code>hexo g</code>缩写 <code>hexo deploy</code> 部署文章，可以用<code>hexo d</code>缩写<br><strong>如果是在离线端即 localhost:4000端测试你的博客，则只需要 hexo g + hexo s 即可，无需 hexo d</strong><br>输入完成后会出现一堆内容，不用管他，只要最后内容如下所示，就表示成功了！<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//6028bb5fe0b8b6917a408ffe53a27c81.png" alt="6028bb5fe0b8b6917a408ffe53a27c81.png"></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">username.github.io  # https://username.github.io</span><br></pre></td></tr></table></figure>
-<p><strong>访问到你的博客了，其中username是你GitHub用户名，这个网站不是离线的，其他人都可以访问到！！！</strong></p>
-]]></content>
-      <categories>
-        <category>hexo配置</category>
-      </categories>
-      <tags>
-        <tag>hexo</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</title>
-    <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/</url>
-    <content><![CDATA[<h1 id="ubuntu22-pycharm-cuda-cudnn，tensorrt的安装"><a href="#ubuntu22-pycharm-cuda-cudnn，tensorrt的安装" class="headerlink" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装"></a>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</h1><p>（写这篇博客的意义在于之后方便之后重装不用再重新看一大堆博客了）</p>
-<p><strong>我的电脑配置为y9000p(2022),12i7,3060的显卡 pycharm版本为2022.2,cuda版本为11.6.2</strong></p>
-<p><strong>cudnn版本为8.4.1,tensorrt版本为8.4.1</strong></p>
-<h2 id="一-pycharm的安装"><a href="#一-pycharm的安装" class="headerlink" title="一.pycharm的安装"></a><a href="#"></a>一.pycharm的安装</h2><p>官方的安装连接:<a href="https://www.jetbrains.com/pycharm/download/#section=linux" title="Download PyCharm: Python IDE for Professional Developers by JetBrains">Download PyCharm: Python IDE for Professional Developers by JetBrains</a></p>
-<p>下载下来后先不着急可以先把pycharm固定到收藏夹上</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ~/.local/share/applications/</span><br><span class="line">sudo gedit Pycharm.desktop</span><br></pre></td></tr></table></figure>
-
-<p><strong>之后将下方文字复制进去（注意注释!）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Desktop Entry]</span><br><span class="line">Version=1.0</span><br><span class="line">Terminal=false</span><br><span class="line">Type=Application</span><br><span class="line">Name=Pycharm</span><br><span class="line">Exec=/opt/pycharm/bin/pycharm.sh</span><br><span class="line"># 注意：Exec表示安装软件的**启动快捷方式**文件路径</span><br><span class="line"># 注意：Icon表示安装软件的图标路径</span><br><span class="line">Icon=/opt/pycharm/bin/pycharm.png</span><br><span class="line">NoDisplay=false</span><br><span class="line">StartupWMClass=</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>之后就可以把pycharm固定到收藏夹上</p>
-<h2 id="二-minconda的安装"><a href="#二-minconda的安装" class="headerlink" title="二.minconda的安装"></a><a href="#"></a>二.minconda的安装</h2><p>miniconda安装的时候如果采用sudo则以后使用conda命令需要加sudo</p>
-<p>这里选择的是miniconda因为我服务器上面之前配置的也是miniconda为了向服务器看齐，这里的话如果安装的是anconda的话window环境下anconda的env拷贝进来好像是可以直接用的，这个我还没有尝试过。</p>
-<p><strong>miniconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/" title="Index of /anaconda/miniconda/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;miniconda&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
-<p><strong>anconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/" title="Index of /anaconda/archive/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;archive&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
-<p>minconda和anconda的差别就是anconda的base环境包括了conda管理器、Pyhon编译器、常用的包和Spyder IDE等，而miniconda的base环境选择只包括conda管理器和Python编译器</p>
-<p>然后选择你下载下来的sh进行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo bash Miniconda3-py39_4.9.2-Linux-x86_64.sh</span><br></pre></td></tr></table></figure>
-
-<h2 id="三-Nvdia显卡的安装"><a href="#三-Nvdia显卡的安装" class="headerlink" title="三.Nvdia显卡的安装"></a><a href="#"></a>三.Nvdia显卡的安装</h2><p>首先是关于显卡的卸载，我们可以进入附加驱动中选择x.org选项就相当于把本来的显卡驱动删除了，如果你有两个显示屏的话安装完显卡驱动后副屏才可以用因为副屏是挂载在你的独显上</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6c0b69b61bf14dd6a0b2c3a5d2caefd0_79a070ed217a4622b.png"></p>
-<p>&nbsp;显卡安装不建议用附加驱动，因为很慢，所以可以换源后直接用命令行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ubuntu-drivers devices</span><br></pre></td></tr></table></figure>
-
-<p>这是可用的显卡</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/deedfe2db2f7493d850087f8eb3af135_3bac9215b4b745b7b.png"></p>
-<p>&nbsp;<strong>在安装NVIDIA驱动以前需要禁止系统自带显卡驱动nouveau：可以先通过指令<code>lsmod | grep nouveau</code>查看nouveau驱动的启用情况，如果有输出表示nouveau驱动正在工作，如果没有内容输出则表示已经禁用了nouveau</strong>**(这里我没有图所以找了一张网上的)**</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/17c7cfc464b54a90b6fb8e4257c7ca2a_259f95930526495c8.png"></p>
-<p>&nbsp;电脑有有输出，表示nouveau启动了，下面进行nouveau的禁用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/modprobe.d/blacklist.conf</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4107bb0291614f308aa2cfa11b25eb48_bc486b7a284541d48.png"></p>
-<p>在blacklist.conf文件末尾加上这两行，并保存：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">blacklist nouveau</span><br><span class="line">options nouveau modeset=0</span><br></pre></td></tr></table></figure>
-
-<p>然后在终端中输入：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo update-initramfs -u  #应用更改</span><br></pre></td></tr></table></figure>
-
-<p><strong>选择合适的显卡进行下载（可以进入官网查看cuda和显卡的对应版本:<a href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html" title="Release Notes :: CUDA Toolkit Documentation">Release Notes :: CUDA Toolkit Documentation</a>）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install nvidia-driver-510 # 根据自己的n卡可选驱动下载显卡驱动</span><br></pre></td></tr></table></figure>
-
-<p>重启电脑后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvidia-smi </span><br></pre></td></tr></table></figure>
-
-<p>查看是否安装完成</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/14d411a70a8a496db4597f6b75c2bf16_906040e8175e420aa.png"></p>
-<p><strong>（这里有一点需要特别注意：右上角的CUDA Version的意思是你的装的显卡驱动最大支持11.6的cuda）</strong></p>
-<h2 id="四：CUDA的安装"><a href="#四：CUDA的安装" class="headerlink" title="四：CUDA的安装"></a><a href="#"></a><strong>四：CUDA的安装</strong></h2><h3 id="CUDA下载"><a href="#CUDA下载" class="headerlink" title="CUDA下载"></a><a href="#"></a><strong>CUDA下载</strong></h3><p>我们进入<a href="https://developer.nvidia.cn/cuda-toolkit-archive" title="CUDA Toolkit Archive | NVIDIA Developer">CUDA Toolkit Archive | NVIDIA Developer</a>选择我们适合的cuda这里我选择11.6.2版本的</p>
-<img width="1200" height="654" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/472f848107ea4535bd4249ef515ebcb4_5c8286c7ed0b46989.png" class="jop-noMdConv">
-
-<p>&nbsp;安装的命令如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>细节的地方来了，你的tmp空间可能不够你可以在你的home文件夹下建立一个tmp然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run --tmpdir=这里填写你的新建立的tmp位置</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>使用完以后删掉这个tmp即可因为tmp文件夹重启后里面的文件默认不保存</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7b9eaf1e05594a15ab45ae4ccfd5b97b_12b269e7bf4445879.png"></p>
-<p>等待一会这个时间可能会有点长</p>
-<p>选择continue</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c33c5596287f4f7e99b292b501636093_b631af5dcf9e426b9.png"> 输入accept</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/be2fd1ea55654298a1e054707fa019c2_1390615b7701418d8.png"></p>
-<p>&nbsp;因为刚开始我们已经安装完驱动所以这里可以不用选择（之前安装的时候出现了一个小问题就是我当初重装显卡驱动的时候把显卡驱动删了想着能不能用run里面自带的但是我是没有成功，之后用下面这个方法也同样成功运行）</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/cdc3b1056f874696b16b61351371eb6e_842dcbddc6794f779.png"></p>
-<h3 id="配置cuda环境"><a href="#配置cuda环境" class="headerlink" title="配置cuda环境"></a><a href="#"></a><strong>配置cuda环境</strong></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<p>添加以下到末尾</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
-
-<p>然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<p>在终端输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvcc -V</span><br></pre></td></tr></table></figure>
-
-<p>显示以下则为成功（记得V要大写）</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7dc6f3364ff94039ace3ef3ffc66113b_92618f1fc8ac48ed9.png"></p>
-<p><strong>如果不成功，重新source ~&#x2F;.bashrc然后输入nvcc -V成功的话，细节的地方来了！！！！！</strong></p>
-<p><strong>首先，我们需要搞明白Linux启动时读取配置文件的顺序。在刚登录Linux时，首先启动<code>/etc/profile</code> 文件，然后再启动用户目录下的 <code>~/.bash_profile</code>、<code>~/.bash_login</code>或 <code>~/.profile</code>文件中的其中一个，<br>执行的顺序为：<code>~/.bash_profile</code>、<code>~/.bash_login</code>、 <code>~/.profile</code></strong></p>
-<p><code>所以如果行不同我们可以：</code></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/profile</span><br></pre></td></tr></table></figure>
-
-<p>然后输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
-
-<p>最后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
-
-<p>之后应该就能显示了</p>
-<h3 id="CUDA的测试"><a href="#CUDA的测试" class="headerlink" title="CUDA的测试"></a><a href="#"></a>CUDA的测试</h3><p>下载测试文件：<a href="https://github.com/nvidia/cuda-samples" title="GitHub - NVIDIA/cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit">GitHub - NVIDIA&#x2F;cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit</a></p>
-<p>下载解压后make一下</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c812c23a6ee4fd69748eb91a128dc05_39a5e78576a14f1ca.png"></p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5ea6dfd19d964fa9ac7b7f95183dbf1d_1475ea4225a84c158.png"></p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a6886047066744b08e2fa1cfc9af2df0_63d7e9f5fdd8445bb.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b54f4a317fc64aa795e66bf71163d97e_d0876e270e6e47f28.png"></p>
-<p>出现这个结果就是成功了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4373d4bbf57445989e5004d3bd6ad751_cd458d6cee7a44d79.png"></p>
-<h2 id="四-CUDANN的安装"><a href="#四-CUDANN的安装" class="headerlink" title="四.CUDANN的安装"></a><a href="#"></a>四.CUDANN的安装</h2><h3 id="CUDANN下载"><a href="#CUDANN下载" class="headerlink" title="CUDANN下载"></a><a href="#"></a>CUDANN下载</h3><p>下载连接：<a href="https://developer.nvidia.com/rdp/cudnn-download">https://developer.nvidia.com/rdp/cudnn-download</a></p>
-<p>这里我下在的是cudann8.4.1</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9f24be3dde60443f9a18839b76218bdb_6e701b31e177461eb.png"></p>
-<p>&nbsp;下载Linux x86-64(tar)</p>
-<p>进入解压后的界面，然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda-11.6/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda-11.6/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda-11.6/lib64/libcudnn*</span><br><span class="line">#下面这个是方便后面opencv配置cuda</span><br><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>之后查看<a href="https://so.csdn.net/so/search?q=CUDNN&spm=1001.2101.3001.7020">CUDNN</a>版本</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /usr/local/cuda-11.6/include/cudnn_version.h | grep CUDNN_MAJOR -A 2</span><br></pre></td></tr></table></figure>
-
-<h3 id="CUDNN依赖"><a href="#CUDNN依赖" class="headerlink" title="CUDNN依赖"></a><a href="#"></a>CUDNN依赖</h3><p>依赖网站：<a href="https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/" title="Index of /compute/cuda/repos/ubuntu2004/x86_64">Index of &#x2F;compute&#x2F;cuda&#x2F;repos&#x2F;ubuntu2004&#x2F;x86_64</a></p>
-<p>找到对应的依赖（一个带dev一个不带）</p>
-<p>或者使用命令行进行下载</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>安装依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<h2 id="五-Tensortrt的安装"><a href="#五-Tensortrt的安装" class="headerlink" title="五.Tensortrt的安装"></a><a href="#"></a>五.Tensortrt的安装</h2><h3 id="1-下载"><a href="#1-下载" class="headerlink" title="1.下载"></a><a href="#"></a>1.下载</h3><p>这里是tensorrt的下载连接:<a href="https://developer.nvidia.com/nvidia-tensorrt-8x-download">https://developer.nvidia.com/nvidia-tensorrt-8x-download</a></p>
-<p>下载tar包解压后的到的连接</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e435b363bc446c886e43e5b21292e23_54c963cc1b2a438ab.png"></p>
-<p>修改环境变量:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo gedit ~/.bashrc </span><br></pre></td></tr></table></figure>
-
-<p>在文件末尾加入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH：/home/stand/Software/TensorRT-8.4.1.5/lib</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-测试样例"><a href="#2-测试样例" class="headerlink" title="2. 测试样例"></a><a href="#"></a>2. 测试样例</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd TensorRT-8.4.1.5/samples/sampleMNIST</span><br><span class="line">make -j16</span><br><span class="line">cd ../../bin/</span><br><span class="line">./sample_mnist</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这样就成功了</p>
-<img width="1200" height="1242" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3eb8c7cdcede4fdead0f60fb785bad68_4fb7033780c548148.png" class="jop-noMdConv">
-
-<h3 id="3-python部分的安装"><a href="#3-python部分的安装" class="headerlink" title="3.python部分的安装"></a><a href="#"></a>3.python部分的安装</h3><p>用miniconda创建完环境之后</p>
-<p>直接pip目录中的uff，python(注意选择和你conda创建python的版本相对应) ，graphsurgeon下的whl就可以了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5fdfb1069d5c433781f5f8abf04410eb_48a6f8c2ba974c2db.png"></p>
-<p>我这里是一次就成功了可能出现问题的话可以参考这位大佬:<a href="https://blog.csdn.net/lilin020401/article/details/126475351#t4" title="Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客">Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>cuda</tag>
-        <tag>cudnn</tag>
-        <tag>tensorrt</tag>
       </tags>
   </entry>
   <entry>
@@ -736,9 +587,9 @@
         <category>环境配置</category>
       </categories>
       <tags>
-        <tag>cuda</tag>
         <tag>opencv</tag>
         <tag>opencv_contrib</tag>
+        <tag>cuda</tag>
       </tags>
   </entry>
   <entry>
@@ -908,6 +759,155 @@
       </tags>
   </entry>
   <entry>
+    <title>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</title>
+    <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/</url>
+    <content><![CDATA[<h1 id="ubuntu22-pycharm-cuda-cudnn，tensorrt的安装"><a href="#ubuntu22-pycharm-cuda-cudnn，tensorrt的安装" class="headerlink" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装"></a>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</h1><p>（写这篇博客的意义在于之后方便之后重装不用再重新看一大堆博客了）</p>
+<p><strong>我的电脑配置为y9000p(2022),12i7,3060的显卡 pycharm版本为2022.2,cuda版本为11.6.2</strong></p>
+<p><strong>cudnn版本为8.4.1,tensorrt版本为8.4.1</strong></p>
+<h2 id="一-pycharm的安装"><a href="#一-pycharm的安装" class="headerlink" title="一.pycharm的安装"></a><a href="#"></a>一.pycharm的安装</h2><p>官方的安装连接:<a href="https://www.jetbrains.com/pycharm/download/#section=linux" title="Download PyCharm: Python IDE for Professional Developers by JetBrains">Download PyCharm: Python IDE for Professional Developers by JetBrains</a></p>
+<p>下载下来后先不着急可以先把pycharm固定到收藏夹上</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ~/.local/share/applications/</span><br><span class="line">sudo gedit Pycharm.desktop</span><br></pre></td></tr></table></figure>
+
+<p><strong>之后将下方文字复制进去（注意注释!）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Desktop Entry]</span><br><span class="line">Version=1.0</span><br><span class="line">Terminal=false</span><br><span class="line">Type=Application</span><br><span class="line">Name=Pycharm</span><br><span class="line">Exec=/opt/pycharm/bin/pycharm.sh</span><br><span class="line"># 注意：Exec表示安装软件的**启动快捷方式**文件路径</span><br><span class="line"># 注意：Icon表示安装软件的图标路径</span><br><span class="line">Icon=/opt/pycharm/bin/pycharm.png</span><br><span class="line">NoDisplay=false</span><br><span class="line">StartupWMClass=</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>之后就可以把pycharm固定到收藏夹上</p>
+<h2 id="二-minconda的安装"><a href="#二-minconda的安装" class="headerlink" title="二.minconda的安装"></a><a href="#"></a>二.minconda的安装</h2><p>miniconda安装的时候如果采用sudo则以后使用conda命令需要加sudo</p>
+<p>这里选择的是miniconda因为我服务器上面之前配置的也是miniconda为了向服务器看齐，这里的话如果安装的是anconda的话window环境下anconda的env拷贝进来好像是可以直接用的，这个我还没有尝试过。</p>
+<p><strong>miniconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/" title="Index of /anaconda/miniconda/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;miniconda&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
+<p><strong>anconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/" title="Index of /anaconda/archive/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;archive&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
+<p>minconda和anconda的差别就是anconda的base环境包括了conda管理器、Pyhon编译器、常用的包和Spyder IDE等，而miniconda的base环境选择只包括conda管理器和Python编译器</p>
+<p>然后选择你下载下来的sh进行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo bash Miniconda3-py39_4.9.2-Linux-x86_64.sh</span><br></pre></td></tr></table></figure>
+
+<h2 id="三-Nvdia显卡的安装"><a href="#三-Nvdia显卡的安装" class="headerlink" title="三.Nvdia显卡的安装"></a><a href="#"></a>三.Nvdia显卡的安装</h2><p>首先是关于显卡的卸载，我们可以进入附加驱动中选择x.org选项就相当于把本来的显卡驱动删除了，如果你有两个显示屏的话安装完显卡驱动后副屏才可以用因为副屏是挂载在你的独显上</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6c0b69b61bf14dd6a0b2c3a5d2caefd0_79a070ed217a4622b.png"></p>
+<p>&nbsp;显卡安装不建议用附加驱动，因为很慢，所以可以换源后直接用命令行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ubuntu-drivers devices</span><br></pre></td></tr></table></figure>
+
+<p>这是可用的显卡</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/deedfe2db2f7493d850087f8eb3af135_3bac9215b4b745b7b.png"></p>
+<p>&nbsp;<strong>在安装NVIDIA驱动以前需要禁止系统自带显卡驱动nouveau：可以先通过指令<code>lsmod | grep nouveau</code>查看nouveau驱动的启用情况，如果有输出表示nouveau驱动正在工作，如果没有内容输出则表示已经禁用了nouveau</strong>**(这里我没有图所以找了一张网上的)**</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/17c7cfc464b54a90b6fb8e4257c7ca2a_259f95930526495c8.png"></p>
+<p>&nbsp;电脑有有输出，表示nouveau启动了，下面进行nouveau的禁用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/modprobe.d/blacklist.conf</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4107bb0291614f308aa2cfa11b25eb48_bc486b7a284541d48.png"></p>
+<p>在blacklist.conf文件末尾加上这两行，并保存：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">blacklist nouveau</span><br><span class="line">options nouveau modeset=0</span><br></pre></td></tr></table></figure>
+
+<p>然后在终端中输入：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo update-initramfs -u  #应用更改</span><br></pre></td></tr></table></figure>
+
+<p><strong>选择合适的显卡进行下载（可以进入官网查看cuda和显卡的对应版本:<a href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html" title="Release Notes :: CUDA Toolkit Documentation">Release Notes :: CUDA Toolkit Documentation</a>）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install nvidia-driver-510 # 根据自己的n卡可选驱动下载显卡驱动</span><br></pre></td></tr></table></figure>
+
+<p>重启电脑后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvidia-smi </span><br></pre></td></tr></table></figure>
+
+<p>查看是否安装完成</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/14d411a70a8a496db4597f6b75c2bf16_906040e8175e420aa.png"></p>
+<p><strong>（这里有一点需要特别注意：右上角的CUDA Version的意思是你的装的显卡驱动最大支持11.6的cuda）</strong></p>
+<h2 id="四：CUDA的安装"><a href="#四：CUDA的安装" class="headerlink" title="四：CUDA的安装"></a><a href="#"></a><strong>四：CUDA的安装</strong></h2><h3 id="CUDA下载"><a href="#CUDA下载" class="headerlink" title="CUDA下载"></a><a href="#"></a><strong>CUDA下载</strong></h3><p>我们进入<a href="https://developer.nvidia.cn/cuda-toolkit-archive" title="CUDA Toolkit Archive | NVIDIA Developer">CUDA Toolkit Archive | NVIDIA Developer</a>选择我们适合的cuda这里我选择11.6.2版本的</p>
+<img width="1200" height="654" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/472f848107ea4535bd4249ef515ebcb4_5c8286c7ed0b46989.png" class="jop-noMdConv">
+
+<p>&nbsp;安装的命令如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>细节的地方来了，你的tmp空间可能不够你可以在你的home文件夹下建立一个tmp然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run --tmpdir=这里填写你的新建立的tmp位置</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>使用完以后删掉这个tmp即可因为tmp文件夹重启后里面的文件默认不保存</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7b9eaf1e05594a15ab45ae4ccfd5b97b_12b269e7bf4445879.png"></p>
+<p>等待一会这个时间可能会有点长</p>
+<p>选择continue</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c33c5596287f4f7e99b292b501636093_b631af5dcf9e426b9.png"> 输入accept</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/be2fd1ea55654298a1e054707fa019c2_1390615b7701418d8.png"></p>
+<p>&nbsp;因为刚开始我们已经安装完驱动所以这里可以不用选择（之前安装的时候出现了一个小问题就是我当初重装显卡驱动的时候把显卡驱动删了想着能不能用run里面自带的但是我是没有成功，之后用下面这个方法也同样成功运行）</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/cdc3b1056f874696b16b61351371eb6e_842dcbddc6794f779.png"></p>
+<h3 id="配置cuda环境"><a href="#配置cuda环境" class="headerlink" title="配置cuda环境"></a><a href="#"></a><strong>配置cuda环境</strong></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>添加以下到末尾</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
+
+<p>然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>在终端输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvcc -V</span><br></pre></td></tr></table></figure>
+
+<p>显示以下则为成功（记得V要大写）</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7dc6f3364ff94039ace3ef3ffc66113b_92618f1fc8ac48ed9.png"></p>
+<p><strong>如果不成功，重新source ~&#x2F;.bashrc然后输入nvcc -V成功的话，细节的地方来了！！！！！</strong></p>
+<p><strong>首先，我们需要搞明白Linux启动时读取配置文件的顺序。在刚登录Linux时，首先启动<code>/etc/profile</code> 文件，然后再启动用户目录下的 <code>~/.bash_profile</code>、<code>~/.bash_login</code>或 <code>~/.profile</code>文件中的其中一个，<br>执行的顺序为：<code>~/.bash_profile</code>、<code>~/.bash_login</code>、 <code>~/.profile</code></strong></p>
+<p><code>所以如果行不同我们可以：</code></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>然后输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
+
+<p>最后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>之后应该就能显示了</p>
+<h3 id="CUDA的测试"><a href="#CUDA的测试" class="headerlink" title="CUDA的测试"></a><a href="#"></a>CUDA的测试</h3><p>下载测试文件：<a href="https://github.com/nvidia/cuda-samples" title="GitHub - NVIDIA/cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit">GitHub - NVIDIA&#x2F;cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit</a></p>
+<p>下载解压后make一下</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c812c23a6ee4fd69748eb91a128dc05_39a5e78576a14f1ca.png"></p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5ea6dfd19d964fa9ac7b7f95183dbf1d_1475ea4225a84c158.png"></p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a6886047066744b08e2fa1cfc9af2df0_63d7e9f5fdd8445bb.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b54f4a317fc64aa795e66bf71163d97e_d0876e270e6e47f28.png"></p>
+<p>出现这个结果就是成功了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4373d4bbf57445989e5004d3bd6ad751_cd458d6cee7a44d79.png"></p>
+<h2 id="四-CUDANN的安装"><a href="#四-CUDANN的安装" class="headerlink" title="四.CUDANN的安装"></a><a href="#"></a>四.CUDANN的安装</h2><h3 id="CUDANN下载"><a href="#CUDANN下载" class="headerlink" title="CUDANN下载"></a><a href="#"></a>CUDANN下载</h3><p>下载连接：<a href="https://developer.nvidia.com/rdp/cudnn-download">https://developer.nvidia.com/rdp/cudnn-download</a></p>
+<p>这里我下在的是cudann8.4.1</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9f24be3dde60443f9a18839b76218bdb_6e701b31e177461eb.png"></p>
+<p>&nbsp;下载Linux x86-64(tar)</p>
+<p>进入解压后的界面，然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda-11.6/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda-11.6/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda-11.6/lib64/libcudnn*</span><br><span class="line">#下面这个是方便后面opencv配置cuda</span><br><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>之后查看<a href="https://so.csdn.net/so/search?q=CUDNN&spm=1001.2101.3001.7020">CUDNN</a>版本</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /usr/local/cuda-11.6/include/cudnn_version.h | grep CUDNN_MAJOR -A 2</span><br></pre></td></tr></table></figure>
+
+<h3 id="CUDNN依赖"><a href="#CUDNN依赖" class="headerlink" title="CUDNN依赖"></a><a href="#"></a>CUDNN依赖</h3><p>依赖网站：<a href="https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/" title="Index of /compute/cuda/repos/ubuntu2004/x86_64">Index of &#x2F;compute&#x2F;cuda&#x2F;repos&#x2F;ubuntu2004&#x2F;x86_64</a></p>
+<p>找到对应的依赖（一个带dev一个不带）</p>
+<p>或者使用命令行进行下载</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>安装依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<h2 id="五-Tensortrt的安装"><a href="#五-Tensortrt的安装" class="headerlink" title="五.Tensortrt的安装"></a><a href="#"></a>五.Tensortrt的安装</h2><h3 id="1-下载"><a href="#1-下载" class="headerlink" title="1.下载"></a><a href="#"></a>1.下载</h3><p>这里是tensorrt的下载连接:<a href="https://developer.nvidia.com/nvidia-tensorrt-8x-download">https://developer.nvidia.com/nvidia-tensorrt-8x-download</a></p>
+<p>下载tar包解压后的到的连接</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e435b363bc446c886e43e5b21292e23_54c963cc1b2a438ab.png"></p>
+<p>修改环境变量:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo gedit ~/.bashrc </span><br></pre></td></tr></table></figure>
+
+<p>在文件末尾加入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH：/home/stand/Software/TensorRT-8.4.1.5/lib</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-测试样例"><a href="#2-测试样例" class="headerlink" title="2. 测试样例"></a><a href="#"></a>2. 测试样例</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd TensorRT-8.4.1.5/samples/sampleMNIST</span><br><span class="line">make -j16</span><br><span class="line">cd ../../bin/</span><br><span class="line">./sample_mnist</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样就成功了</p>
+<img width="1200" height="1242" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3eb8c7cdcede4fdead0f60fb785bad68_4fb7033780c548148.png" class="jop-noMdConv">
+
+<h3 id="3-python部分的安装"><a href="#3-python部分的安装" class="headerlink" title="3.python部分的安装"></a><a href="#"></a>3.python部分的安装</h3><p>用miniconda创建完环境之后</p>
+<p>直接pip目录中的uff，python(注意选择和你conda创建python的版本相对应) ，graphsurgeon下的whl就可以了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5fdfb1069d5c433781f5f8abf04410eb_48a6f8c2ba974c2db.png"></p>
+<p>我这里是一次就成功了可能出现问题的话可以参考这位大佬:<a href="https://blog.csdn.net/lilin020401/article/details/126475351#t4" title="Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客">Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>cuda</tag>
+        <tag>cudnn</tag>
+        <tag>tensorrt</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>IOU和他们儿子们</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/IOU%E5%92%8C%E4%BB%96%E4%BB%AC%E5%84%BF%E5%AD%90%E4%BB%AC/</url>
     <content><![CDATA[<h2 id="IOU"><a href="#IOU" class="headerlink" title="IOU"></a>IOU</h2><p>$IOU$又名交并比，简单来说就是你网络给出的预测框与真实框的一个交集。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c5ab252c5e9ca95dcdc6641c7f96bdb8.png"><br>如上图所示，红色部分是我们的真实框也就是标注数据集的时候你自己画出来的，而绿的框则是网络预测出来的。他们之间的交集除以他们的并集就是$IOU$。<br>这里给出$IOU$的定义:<br>$$<br>IOU&#x3D;\frac {|A\cap B |}{|A\cup B |}<br>$$<br>这里给出一个别人已经画好的图<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1ade08f85509ee61112e2a760fea92ae.png"><br>对于这张图来说$IOU$要如何计算呢<br>$$<br>IOU&#x3D;\frac {绿色}{黄色+蓝色-绿色}\<br>&#x3D;\frac{(C_x-B_x)·(C_y-B_y)}{(C_x-A_x)·(C_y-A_y)+(D_x-B_x)·(D_y-D_y)-(C_x-B_x)·(C_y-B_y)}<br>$$<br>接下来给出代码实现</p>
@@ -965,35 +965,6 @@
       </tags>
   </entry>
   <entry>
-    <title>神经网络优化器</title>
-    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96%E5%99%A8/</url>
-    <content><![CDATA[<h1 id="优化器"><a href="#优化器" class="headerlink" title="优化器"></a>优化器</h1><h2 id="1-神经网络的梯度"><a href="#1-神经网络的梯度" class="headerlink" title="1.神经网络的梯度"></a>1.神经网络的梯度</h2><h3 id="1-1梯度"><a href="#1-1梯度" class="headerlink" title="1.1梯度"></a>1.1梯度</h3><p>下面是如何求解导数</p>
-<p>$$<br>\frac{df(x)}{dx}&#x3D;\lim\limits_{x\rightarrow\infty}\frac{f(x+h)-f(x)}{h}<br>$$</p>
-<p>举个例子速度的导数是加速反应了速度变换的快慢，所以在神经网络中导数往往决定方向下降的快慢。<br>下面是一个偏导数</p>
-<p>$$<br>f(x_0,x_1)&#x3D;x_0^2+x_1^2<br>$$</p>
-<p>可以将神经网络中的神经元理解为这些自变量，而梯度则是对这些自变量求导，我们将他称之为偏导数（求哪个自变量就是对他比较偏心），这些偏导数称之为模型的梯度。</p>
-<h3 id="1-2梯度法"><a href="#1-2梯度法" class="headerlink" title="1.2梯度法"></a>1.2梯度法</h3><p>根据高中学习的知识可以知道，函数的极值出现在导数为0的部分，也就是梯度为0的部分。函数可能有多个极值点由此可见梯度下降可能会出现的一个就是局部最优解。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_16921678799643.png"><br>梯度法的过程就是土话来说，我先确认一个方向向前跑几步，然后再求梯度之后再跑几步，其中这个具体跑几步就要由我们的学习率来决定了。<br>给出梯度下降的公式：<br>$$<br>x_0&#x3D;x_0-\eta\dfrac{\partial f}{\partial x_0}<br>$$<br>$$<br>x_1&#x3D;x_1-\eta\dfrac{\partial f}{\partial x_1}<br>$$<br>其中$\eta$就是神经网络中的学习率</p>
-<h2 id="2神经网络动量"><a href="#2神经网络动量" class="headerlink" title="2神经网络动量"></a>2神经网络动量</h2><h3 id="2-1一阶动量和二阶动量"><a href="#2-1一阶动量和二阶动量" class="headerlink" title="2.1一阶动量和二阶动量"></a>2.1一阶动量和二阶动量</h3><p>通过高中物理知识可以知道动量的概念是物体在它运动方向上保持运动的趋势，是该物体质量和速度的乘积。土话来举个例子，孙策开大下船的时候船会往我们指定方向运动这就是动量。<br>一阶动量为过去各个时刻梯度的线性组合，而二阶动量自然是过去各个时刻梯度的平方的线性组合，虽然一阶动量确认梯度下降的路程，二阶动量确认梯度下降的速度。。<br>动量法的一般形式,先确定梯度：<br>$$<br>g_t&#x3D;\nabla loss&#x3D;\dfrac{\partial loss}{\partial \omega_t}<br>$$<br>这就和我上述讲的损失函数差不多对损失函数的每个权重求偏导的出来的就是权重。<br>这俩是一阶动量和二阶动量的表达式<br>$$<br>m_{t}&#x3D;\phi\left(g_{1}, g_{2}, \cdots, g_{t}\right) ; V_{t}&#x3D;\psi\left(g_{1}, g_{2}, \cdots, g_{t}\right)<br>$$<br>当前时刻下降的梯度<br>$$<br>\eta_t&#x3D;\alpha·\dfrac{m_t}{\sqrt{V_t}}<br>$$<br>根据下降的梯度进行更新<br>$$<br> \omega_{t+1}&#x3D; \omega_t-\eta_t<br>$$</p>
-<h3 id="2-2-一阶矩和二阶矩"><a href="#2-2-一阶矩和二阶矩" class="headerlink" title="2.2 一阶矩和二阶矩"></a>2.2 一阶矩和二阶矩</h3><p>假设梯度$g$是个随机变量，他的一阶矩就是他的期望，二阶矩就是方差（根据概率统计的定义得到的，高阶矩的目的就是为了验证概率$p(x)$是否随着x的增大而变小）</p>
-<h3 id="2-3-动量法"><a href="#2-3-动量法" class="headerlink" title="2.3 动量法"></a>2.3 动量法</h3><p>首先动量法的表达式如下：<br>$$<br> \eta_{t}&#x3D;\gamma \eta_{t-1}+\alpha g_{t}<br>$$<br>$$<br> w_{t+1}&#x3D;w_{t}-\eta_{t}<br>$$<br>如何将他转到之前定义下降的梯度$\eta_t&#x3D;\alpha·\dfrac{m_t}{\sqrt{V_t}}$，我们做一下转换：<br>为了防止大家看不懂在写一个$t&#x3D;1$时刻$\eta_0$的状态<br>$$<br>\eta_1&#x3D;\alpha g_1<br>$$<br>$$<br>\begin{array}{l}<br>\eta_{t}&#x3D;\gamma \eta_{t-1}+\alpha g_{t} \<br>&#x3D;\gamma^2 \eta_{t-2}+\gamma \alpha g_{t-1}+\alpha g_{t} \<br>&#x3D;\gamma^3 \eta_{t-3}+\gamma^{2} \alpha g_{t-2}+\gamma \alpha g_{t-1}+\alpha g_{t} \<br>&#x3D;\cdots \<br>&#x3D;\gamma^{t-1} \alpha g_{1}+\gamma^{t-2} \alpha g_{2}+\cdots+\gamma^{0}\alpha g_{t}<br>\end{array}<br>$$<br>大家通常也跑过优化器的代码应该知道$\gamma$通常取小于1的值所以$\gamma$离当前时刻越远占的权重就越小，这个叫做指数加权移动平均。虽然，动量法的一阶动量不是取过去所有时间步梯度的平均，但同样能用来控制模型更新的方向，动量法以来指数加权平均使得自变量的更新方向更加一致。而动量法的二阶梯度取为1，所以常说动量法只利用了一阶梯度的信息。</p>
-<h3 id="2-4-SGD"><a href="#2-4-SGD" class="headerlink" title="2.4 SGD"></a>2.4 SGD</h3><p>SGD中他的一阶动量和二阶动量定义如下<br>$$<br>m_{t}&#x3D;g_{t};V_{t}&#x3D;I^2<br>$$<br>因此他的当前时刻下降的梯度为<br>$$<br>\eta_t&#x3D;\alpha·g_{t}<br>$$<br>SGD最大的缺点是下降速度慢，而且可能会在凹凸的两边持续震荡，停留在一个局部最优点。</p>
-<h3 id="2-5-SGD-with-Momentum"><a href="#2-5-SGD-with-Momentum" class="headerlink" title="2.5 SGD with Momentum"></a>2.5 SGD with Momentum</h3><p>为了抑制SGD的震荡，SGDM认为梯度下降过程可以加入惯性。下坡的时候，如果发现是陡坡，那就利用惯性跑的快一些。SGDM全称是SGD with momentum，在SGD基础上引入了一阶动量：<br>$$<br>m_t&#x3D;\beta_1<em>m_{t-1}+(1-\beta)·g_t<br>$$<br>我们将这个式子换一个形式先将他展开：<br><font color="red"><br>$$<br>m_t&#x3D;\beta_1</em>m_{t-1}+g_t-\beta_1·g_t<br>$$<br></font><br>之后我们合并一下同类项：</p>
-<p>$$<br>m_t&#x3D;g_t+\beta_1*(m_{t-1}-g_t)<br>$$<br>这个式子有没有类似与卡尔曼滤波中的后验估计的求解。<br>卡尔曼是用测量值-先验值，这里是用先验值-测量值。<br>相当于他这个求的是$\dfrac{1}{1-\beta_1}$个时刻的平均值，但是此时这个$\beta_1$是个超参数是个定值一般取$0.9$</p>
-<p>这个解决了SGD中收敛缓慢的问题但是还有一个局部最优的问题没有解决。</p>
-<h3 id="2-6-SGD-with-Nesterov-Acceleration"><a href="#2-6-SGD-with-Nesterov-Acceleration" class="headerlink" title="2.6 SGD with Nesterov Acceleration"></a>2.6 SGD with Nesterov Acceleration</h3><p>先给出他的改进点主要在第一步：<br>$$<br>g_{t}&#x3D;\nabla f\left(w_{t}-\alpha \cdot m_{t-1} &#x2F; \sqrt{V_{t-1}}\right)<br>$$<br>根据上面的表达式我们可以知道$\alpha \cdot m_{t-1} &#x2F; \sqrt{V_{t-1}}$代表的是当前时刻的梯度因此先下降一步，相当于走出去看看，不行就回去。</p>
-<h3 id="2-7-AdaGrad"><a href="#2-7-AdaGrad" class="headerlink" title="2.7 AdaGrad"></a>2.7 AdaGrad</h3><p>这里给出二阶动量的表达式:<br>$$<br>V_t&#x3D; {\textstyle \sum_{t}^{T&#x3D;1}} g_T^2<br>$$<br>表示所有梯度值的平方，因此我们此时的学习率变成了$\alpha&#x2F;\sqrt{V_t}$,当梯度整体下降的慢也就是速度较小的时候，相当于学习率会大一点加快下降的速度。<br>在这之前我提到过高阶矩的目的，这里大家可以去详细了解一下高阶矩，他有个好记的特性就是对极大值特别的敏感，随着梯度越大下降的速度应该更快。<br>这里因为$\sqrt{V_t}$是个单调递增的函数，所以学习率可能下降的很快导致有一些特征没有学到这就是他的缺点。</p>
-<h3 id="2-8AdaDelta-RMSProp"><a href="#2-8AdaDelta-RMSProp" class="headerlink" title="2.8AdaDelta &#x2F; RMSProp"></a>2.8AdaDelta &#x2F; RMSProp</h3><p>这个方法和SGD with Momentum有点相似不过他这里是为了防止学习率太低的情况，<br>$$<br>V_t&#x3D;\beta_2*V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
-<h3 id="2-9Adam"><a href="#2-9Adam" class="headerlink" title="2.9Adam"></a>2.9Adam</h3><p>阿蛋优化器集合了一阶动量以及二阶动量的特点：<br>$$<br>m_t&#x3D;\beta_1*m_{t-1}+(1-\beta)·g_t<br>$$</p>
-<p>$$<br>V_t&#x3D;\beta_2*V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
-]]></content>
-      <categories>
-        <category>神经网络</category>
-      </categories>
-      <tags>
-        <tag>优化器</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>YoloV3 Anchor生成正负样本</title>
     <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YoloV3%20Anchor%E7%94%9F%E6%88%90%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC/</url>
     <content><![CDATA[<p>关于手撸YoloV3代码的可以看一下b站一个up主：深度学习麋了鹿<br>这里主要讲的是YoloV3中正负样本的生成以及我个人的理解。</p>
@@ -1025,6 +996,35 @@
       </categories>
       <tags>
         <tag>Yolo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>神经网络优化器</title>
+    <url>/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%BC%98%E5%8C%96%E5%99%A8/</url>
+    <content><![CDATA[<h1 id="优化器"><a href="#优化器" class="headerlink" title="优化器"></a>优化器</h1><h2 id="1-神经网络的梯度"><a href="#1-神经网络的梯度" class="headerlink" title="1.神经网络的梯度"></a>1.神经网络的梯度</h2><h3 id="1-1梯度"><a href="#1-1梯度" class="headerlink" title="1.1梯度"></a>1.1梯度</h3><p>下面是如何求解导数</p>
+<p>$$<br>\frac{df(x)}{dx}&#x3D;\lim\limits_{x\rightarrow\infty}\frac{f(x+h)-f(x)}{h}<br>$$</p>
+<p>举个例子速度的导数是加速反应了速度变换的快慢，所以在神经网络中导数往往决定方向下降的快慢。<br>下面是一个偏导数</p>
+<p>$$<br>f(x_0,x_1)&#x3D;x_0^2+x_1^2<br>$$</p>
+<p>可以将神经网络中的神经元理解为这些自变量，而梯度则是对这些自变量求导，我们将他称之为偏导数（求哪个自变量就是对他比较偏心），这些偏导数称之为模型的梯度。</p>
+<h3 id="1-2梯度法"><a href="#1-2梯度法" class="headerlink" title="1.2梯度法"></a>1.2梯度法</h3><p>根据高中学习的知识可以知道，函数的极值出现在导数为0的部分，也就是梯度为0的部分。函数可能有多个极值点由此可见梯度下降可能会出现的一个就是局部最优解。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_16921678799643.png"><br>梯度法的过程就是土话来说，我先确认一个方向向前跑几步，然后再求梯度之后再跑几步，其中这个具体跑几步就要由我们的学习率来决定了。<br>给出梯度下降的公式：<br>$$<br>x_0&#x3D;x_0-\eta\dfrac{\partial f}{\partial x_0}<br>$$<br>$$<br>x_1&#x3D;x_1-\eta\dfrac{\partial f}{\partial x_1}<br>$$<br>其中$\eta$就是神经网络中的学习率</p>
+<h2 id="2神经网络动量"><a href="#2神经网络动量" class="headerlink" title="2神经网络动量"></a>2神经网络动量</h2><h3 id="2-1一阶动量和二阶动量"><a href="#2-1一阶动量和二阶动量" class="headerlink" title="2.1一阶动量和二阶动量"></a>2.1一阶动量和二阶动量</h3><p>通过高中物理知识可以知道动量的概念是物体在它运动方向上保持运动的趋势，是该物体质量和速度的乘积。土话来举个例子，孙策开大下船的时候船会往我们指定方向运动这就是动量。<br>一阶动量为过去各个时刻梯度的线性组合，而二阶动量自然是过去各个时刻梯度的平方的线性组合，虽然一阶动量确认梯度下降的路程，二阶动量确认梯度下降的速度。。<br>动量法的一般形式,先确定梯度：<br>$$<br>g_t&#x3D;\nabla loss&#x3D;\dfrac{\partial loss}{\partial \omega_t}<br>$$<br>这就和我上述讲的损失函数差不多对损失函数的每个权重求偏导的出来的就是权重。<br>这俩是一阶动量和二阶动量的表达式<br>$$<br>m_{t}&#x3D;\phi\left(g_{1}, g_{2}, \cdots, g_{t}\right) ; V_{t}&#x3D;\psi\left(g_{1}, g_{2}, \cdots, g_{t}\right)<br>$$<br>当前时刻下降的梯度<br>$$<br>\eta_t&#x3D;\alpha·\dfrac{m_t}{\sqrt{V_t}}<br>$$<br>根据下降的梯度进行更新<br>$$<br> \omega_{t+1}&#x3D; \omega_t-\eta_t<br>$$</p>
+<h3 id="2-2-一阶矩和二阶矩"><a href="#2-2-一阶矩和二阶矩" class="headerlink" title="2.2 一阶矩和二阶矩"></a>2.2 一阶矩和二阶矩</h3><p>假设梯度$g$是个随机变量，他的一阶矩就是他的期望，二阶矩就是方差（根据概率统计的定义得到的，高阶矩的目的就是为了验证概率$p(x)$是否随着x的增大而变小）</p>
+<h3 id="2-3-动量法"><a href="#2-3-动量法" class="headerlink" title="2.3 动量法"></a>2.3 动量法</h3><p>首先动量法的表达式如下：<br>$$<br> \eta_{t}&#x3D;\gamma \eta_{t-1}+\alpha g_{t}<br>$$<br>$$<br> w_{t+1}&#x3D;w_{t}-\eta_{t}<br>$$<br>如何将他转到之前定义下降的梯度$\eta_t&#x3D;\alpha·\dfrac{m_t}{\sqrt{V_t}}$，我们做一下转换：<br>为了防止大家看不懂在写一个$t&#x3D;1$时刻$\eta_0$的状态<br>$$<br>\eta_1&#x3D;\alpha g_1<br>$$<br>$$<br>\begin{array}{l}<br>\eta_{t}&#x3D;\gamma \eta_{t-1}+\alpha g_{t} \<br>&#x3D;\gamma^2 \eta_{t-2}+\gamma \alpha g_{t-1}+\alpha g_{t} \<br>&#x3D;\gamma^3 \eta_{t-3}+\gamma^{2} \alpha g_{t-2}+\gamma \alpha g_{t-1}+\alpha g_{t} \<br>&#x3D;\cdots \<br>&#x3D;\gamma^{t-1} \alpha g_{1}+\gamma^{t-2} \alpha g_{2}+\cdots+\gamma^{0}\alpha g_{t}<br>\end{array}<br>$$<br>大家通常也跑过优化器的代码应该知道$\gamma$通常取小于1的值所以$\gamma$离当前时刻越远占的权重就越小，这个叫做指数加权移动平均。虽然，动量法的一阶动量不是取过去所有时间步梯度的平均，但同样能用来控制模型更新的方向，动量法以来指数加权平均使得自变量的更新方向更加一致。而动量法的二阶梯度取为1，所以常说动量法只利用了一阶梯度的信息。</p>
+<h3 id="2-4-SGD"><a href="#2-4-SGD" class="headerlink" title="2.4 SGD"></a>2.4 SGD</h3><p>SGD中他的一阶动量和二阶动量定义如下<br>$$<br>m_{t}&#x3D;g_{t};V_{t}&#x3D;I^2<br>$$<br>因此他的当前时刻下降的梯度为<br>$$<br>\eta_t&#x3D;\alpha·g_{t}<br>$$<br>SGD最大的缺点是下降速度慢，而且可能会在凹凸的两边持续震荡，停留在一个局部最优点。</p>
+<h3 id="2-5-SGD-with-Momentum"><a href="#2-5-SGD-with-Momentum" class="headerlink" title="2.5 SGD with Momentum"></a>2.5 SGD with Momentum</h3><p>为了抑制SGD的震荡，SGDM认为梯度下降过程可以加入惯性。下坡的时候，如果发现是陡坡，那就利用惯性跑的快一些。SGDM全称是SGD with momentum，在SGD基础上引入了一阶动量：<br>$$<br>m_t&#x3D;\beta_1<em>m_{t-1}+(1-\beta)·g_t<br>$$<br>我们将这个式子换一个形式先将他展开：<br><font color="red"><br>$$<br>m_t&#x3D;\beta_1</em>m_{t-1}+g_t-\beta_1·g_t<br>$$<br></font><br>之后我们合并一下同类项：</p>
+<p>$$<br>m_t&#x3D;g_t+\beta_1*(m_{t-1}-g_t)<br>$$<br>这个式子有没有类似与卡尔曼滤波中的后验估计的求解。<br>卡尔曼是用测量值-先验值，这里是用先验值-测量值。<br>相当于他这个求的是$\dfrac{1}{1-\beta_1}$个时刻的平均值，但是此时这个$\beta_1$是个超参数是个定值一般取$0.9$</p>
+<p>这个解决了SGD中收敛缓慢的问题但是还有一个局部最优的问题没有解决。</p>
+<h3 id="2-6-SGD-with-Nesterov-Acceleration"><a href="#2-6-SGD-with-Nesterov-Acceleration" class="headerlink" title="2.6 SGD with Nesterov Acceleration"></a>2.6 SGD with Nesterov Acceleration</h3><p>先给出他的改进点主要在第一步：<br>$$<br>g_{t}&#x3D;\nabla f\left(w_{t}-\alpha \cdot m_{t-1} &#x2F; \sqrt{V_{t-1}}\right)<br>$$<br>根据上面的表达式我们可以知道$\alpha \cdot m_{t-1} &#x2F; \sqrt{V_{t-1}}$代表的是当前时刻的梯度因此先下降一步，相当于走出去看看，不行就回去。</p>
+<h3 id="2-7-AdaGrad"><a href="#2-7-AdaGrad" class="headerlink" title="2.7 AdaGrad"></a>2.7 AdaGrad</h3><p>这里给出二阶动量的表达式:<br>$$<br>V_t&#x3D; {\textstyle \sum_{t}^{T&#x3D;1}} g_T^2<br>$$<br>表示所有梯度值的平方，因此我们此时的学习率变成了$\alpha&#x2F;\sqrt{V_t}$,当梯度整体下降的慢也就是速度较小的时候，相当于学习率会大一点加快下降的速度。<br>在这之前我提到过高阶矩的目的，这里大家可以去详细了解一下高阶矩，他有个好记的特性就是对极大值特别的敏感，随着梯度越大下降的速度应该更快。<br>这里因为$\sqrt{V_t}$是个单调递增的函数，所以学习率可能下降的很快导致有一些特征没有学到这就是他的缺点。</p>
+<h3 id="2-8AdaDelta-RMSProp"><a href="#2-8AdaDelta-RMSProp" class="headerlink" title="2.8AdaDelta &#x2F; RMSProp"></a>2.8AdaDelta &#x2F; RMSProp</h3><p>这个方法和SGD with Momentum有点相似不过他这里是为了防止学习率太低的情况，<br>$$<br>V_t&#x3D;\beta_2*V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
+<h3 id="2-9Adam"><a href="#2-9Adam" class="headerlink" title="2.9Adam"></a>2.9Adam</h3><p>阿蛋优化器集合了一阶动量以及二阶动量的特点：<br>$$<br>m_t&#x3D;\beta_1*m_{t-1}+(1-\beta)·g_t<br>$$</p>
+<p>$$<br>V_t&#x3D;\beta_2*V_{t-1}+(1-\beta_2)·g_t^2<br>$$</p>
+]]></content>
+      <categories>
+        <category>神经网络</category>
+      </categories>
+      <tags>
+        <tag>优化器</tag>
       </tags>
   </entry>
 </search>
