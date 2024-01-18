@@ -1,5 +1,5 @@
 :root {
-    --recent-post-bgcolor: rgba(255,255,255,0.9);
+    --recent-post-bgcolor: rgba(255,255,255,0.5);
     --article-content-bgcolor: #49b1f5;
     --recent-post-arrow: #fff;
     --recent-post-cover-shadow: #fff;
@@ -54,7 +54,7 @@
     overflow: hidden;
   }
   .recent-posts .recent-post-item .recent-post-content .recent-post-info .article-title .article-title-link:hover {
-    color: $text-hover;
+    color: #5bacace8;
   }
   .recent-posts .recent-post-item .recent-post-content .recent-post-info .recent-post-meta {
     height: 50%;
@@ -76,7 +76,7 @@
     color: #969797;
   }
   .recent-posts .recent-post-item .recent-post-content .recent-post-info .recent-post-meta .article-meta-wrap a:hover {
-    color: $text-hover;
+    color: #5bacace8;
   }
   .recent-posts .recent-post-item .recent-post-content .article-content {
     display: flex;
@@ -291,7 +291,6 @@
       height: 300px;
       width: 100%;
       object-fit: cover;
-      object-position: center top -10%; /* 调整这里的值以改变显示位置 */
     }
     .recent-posts .recent-post-item .recent-post-content .recent-post-info {
       height: 150px;
