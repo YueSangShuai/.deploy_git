@@ -31,8 +31,6 @@ var randomNumbers = getRandomNonRepeatingNumbers(minNumber, maxNumber, numberOfN
 
 // 遍历所有匹配的元素
 recentPostCovers.forEach(function(recentPostCover, index) {
-    // index 参数表示当前元素的索引
-    console.log("当前索引：" + index);
 
     // 随机选择一个图片URL
     // 在每个匹配的元素中查找 <img> 元素
