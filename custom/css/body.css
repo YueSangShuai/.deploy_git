@@ -9,6 +9,7 @@ body {
 
 
 
+/* 分类页图标 */
 .category-all-chart {
   width: 50%; /* 设置宽度为200像素 */
   height: 50%; /* 设置高度为100像素 */
@@ -16,6 +17,7 @@ body {
   /* 或者使用 margin-bottom 添加下外边距，以创建距离下方元素的间距 */
 }
 
+/* 标签页图表 */
 .tag-charts {
   width: 100%; /* 设置宽度为200像素 */
   height: 100%; /* 设置高度为100像素 */
@@ -90,6 +92,7 @@ body {
 }
 /* 侧标栏 */
 .sidebar {
+  font-size: 20px; /* 或其他你希望的大小 */
   opacity: 0.9;
 }
 .popup {
