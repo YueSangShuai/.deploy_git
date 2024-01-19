@@ -48,22 +48,22 @@ body {
 
 /* 文本设置 */
 .content {
-  font-size: 20px; /* 或你想要的任何大小 */
+  /* font-size: 20px;  */
   background: rgba(255,255,255,0.2);
   border-radius: 15px; /* 圆角的半径 */
 }
 /* 文本设置黑夜模式 */
 .darkmode--activated .content {
-  font-size: 20px; /* 或你想要的任何大小 */
+  /* font-size: 20px;  */
   background: rgba(0,0,0,0.2);
   border-radius: 15px; /* 圆角的半径 */
 }
 
 /* 导航栏文字大小 */
-.site-nav {
-  font-size: 20px; /* 或其他你希望的大小 */
+/* .site-nav {
+  font-size: 20px; 
   
-}
+} */
 
 
 /* 文章部分 */
@@ -95,7 +95,7 @@ body {
 }
 /* 侧标栏 */
 .sidebar {
-  font-size: 20px; /* 或其他你希望的大小 */
+  /* font-size: 20px;  */
   opacity: 0.9;
 }
 .popup {

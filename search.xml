@@ -127,128 +127,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
-    <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
-    <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
-<p>我的OpenVino采用的是源码编译的这里采用的是python代码，之后可能会写一份C++代码放上去,先上才艺</p>
-<h2 id="一-将模型转换成onnx模型"><a href="#一-将模型转换成onnx模型" class="headerlink" title="一.将模型转换成onnx模型"></a><a href="#"></a>一.将模型转换成<a href="https://so.csdn.net/so/search?q=onnx%E6%A8%A1%E5%9E%8B&spm=1001.2101.3001.7020">onnx模型</a></h2><p>这里我采用的是pytorch模型文件转成onnx</p>
-<p>模型结构包括参数保存</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br><span class="line">import torch.nn</span><br><span class="line">import os</span><br><span class="line">import sys</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">def export(model_path):</span><br><span class="line">    net = torch.load(</span><br><span class="line">        model_path,</span><br><span class="line">        map_location=torch.device(&#x27;cpu&#x27;),</span><br><span class="line">    )</span><br><span class="line">    net.eval()</span><br><span class="line">    #这里需要指定你输入和输出的名字方便后面推理</span><br><span class="line">    input_names = [&#x27;input&#x27;]</span><br><span class="line">    output_names = [&#x27;output&#x27;]</span><br><span class="line">    #这里需要确定模型的输入</span><br><span class="line">    x = torch.randn(1, 3, 224, 224)</span><br><span class="line"> </span><br><span class="line">    torch.onnx.export(</span><br><span class="line">        net,</span><br><span class="line">        x,</span><br><span class="line">        os.path.join(</span><br><span class="line">            os.path.split(model_path)[0],</span><br><span class="line">            &#x27;best.onnx&#x27;,</span><br><span class="line">        ),</span><br><span class="line">        input_names=input_names,</span><br><span class="line">        output_names=output_names,</span><br><span class="line">        verbose=False,</span><br><span class="line">        opset_version=12,</span><br><span class="line">    )</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">if __name__ == &quot;__main__&quot;:</span><br><span class="line">    model_path = &#x27;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/best.pt&#x27;</span><br><span class="line">    export(model_path)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>模型采用字典保存</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line">import torch</span><br><span class="line">from swin_transformer import *</span><br><span class="line">from collections import OrderedDict</span><br><span class="line"> </span><br><span class="line">DROP_PATH_RATE = 0.5</span><br><span class="line">EMBED_DIM = 192</span><br><span class="line">DEPTHS = [2, 2, 18, 2]</span><br><span class="line">NUM_HEADS = [6, 12, 24, 48]</span><br><span class="line">WINDOW_SIZE = 7</span><br><span class="line"> </span><br><span class="line">model_path = &#x27;&#x27;</span><br><span class="line"> </span><br><span class="line">checkpoint = torch.load(</span><br><span class="line">    model_path,</span><br><span class="line">    map_location=&#x27;cpu&#x27;,</span><br><span class="line">)</span><br><span class="line">model = SwinTransformer(</span><br><span class="line">    img_size=224,</span><br><span class="line">    patch_size=4,</span><br><span class="line">    in_chans=3,</span><br><span class="line">    num_classes=0,</span><br><span class="line">    embed_dim=EMBED_DIM,</span><br><span class="line">    depths=DEPTHS,</span><br><span class="line">    num_heads=NUM_HEADS,</span><br><span class="line">    window_size=WINDOW_SIZE,</span><br><span class="line">    mlp_ratio=4,</span><br><span class="line">    qkv_bias=True,</span><br><span class="line">    qk_scale=None,</span><br><span class="line">    drop_rate=0.0,</span><br><span class="line">    drop_path_rate=DROP_PATH_RATE,</span><br><span class="line">    ape=False,</span><br><span class="line">    patch_norm=True,</span><br><span class="line">)</span><br><span class="line"> </span><br><span class="line">new_state_dict = OrderedDict()</span><br><span class="line">for k, v in checkpoint[&#x27;model&#x27;].items():</span><br><span class="line">    if k != &#x27;head.weight&#x27;:</span><br><span class="line">        new_state_dict[k] = v</span><br><span class="line">    else:</span><br><span class="line">        print(k, v.shape)</span><br><span class="line">model.load_state_dict(new_state_dict, strict=False)</span><br><span class="line"> </span><br><span class="line">model.eval()</span><br><span class="line"> </span><br><span class="line">input_names = [&#x27;input&#x27;]</span><br><span class="line">output_names = [&#x27;output&#x27;]</span><br><span class="line">x = torch.randn(1, 3, 224, 224)</span><br><span class="line"> </span><br><span class="line">torch.onnx.export(</span><br><span class="line">    model,</span><br><span class="line">    x,</span><br><span class="line">    os.path.join(</span><br><span class="line">        os.path.split(model_path)[0],</span><br><span class="line">        &#x27;best.onnx&#x27;,</span><br><span class="line">    ),</span><br><span class="line">    input_names=input_names,</span><br><span class="line">    output_names=output_names,</span><br><span class="line">    verbose=False,</span><br><span class="line">    opset_version=12,</span><br><span class="line">)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>总结来说就是把字典导入到模型的结构里面然后在进行onnx的转换这部分可以自己网上找找教程听多的</p>
-<h2 id="二-模型从onnx模型转ir模型"><a href="#二-模型从onnx模型转ir模型" class="headerlink" title="二.模型从onnx模型转ir模型"></a><a href="#"></a>二.模型从onnx模型转ir模型</h2><p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/397c40c6ae4a4094a2e8dc88cda85f48_cbd8964035d941349.png"></p>
-<p>&nbsp;这里如果你是用python直接pip的话可以直接进入conda的环境去使用她，如果你是源码编译OpenVino的话可能要进入那个目录下载一下，这里我个人觉得如果你只是用来测试的话Python其实就很够用了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python mo_onnx.py --input_model &lt;输入模型路经&gt; --output_dir &lt;输出模型路经&gt;</span><br></pre></td></tr></table></figure>
-
-<p><strong>（如果需要量化到FP16的话需要额外指定参数 –compress_to_fp16）</strong></p>
-<p>首先先将你的模型转换到Ir格式，这里放一下mo的参数你们可以有道翻译一下我个人英语不太好这里就不解释了</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mo -h #可以查看mo的参数</span><br><span class="line">#或者是进入到mo.py所在的文件夹然后</span><br><span class="line">python mo.py -h</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后测试一下转换完的模型推理速度</p>
-<p>进入Openvino这个文件夹</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/41d7baf4604c49d39d32700025ce258a_3e8eadeb2477454a9.png"></p>
-<p>&nbsp;然后查看一下你模型量化的结果（FP32）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python ./benchmark_app.py -m &lt;量化后的xml文件&gt; -d CPU -api async -i &lt;选择图片路径&gt; -b 1</span><br></pre></td></tr></table></figure>
-
-<p>其中 <strong>-d</strong>指定的是你的设备 -api指定的是你的推理模式（同步还是异步推理）</p>
-<p>看一下FP32模型的速度</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9dbc17d300f143568c3c598f768cc605_dbe4da939502499a9.png"></p>
-<p>&nbsp;FP16</p>
-<img width="598" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bec68d6b955a4401bedf8d1c54e700c6_f4b0436799124d78a.png" class="jop-noMdConv">
-
-<p>&nbsp;ONNX模型推理速度</p>
-<img width="870" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c25101469a364d8e9d8bea60f3dd3142_2ded076e1fd74ad0b.png" class="jop-noMdConv">
-
-<h2 id="三，Int8量化"><a href="#三，Int8量化" class="headerlink" title=" 三，Int8量化"></a><a href="#"></a> 三，<a href="https://so.csdn.net/so/search?q=Int8&spm=1001.2101.3001.7020">Int8</a>量化</h2><p>在转换之前，我们需要准备一下数据（在量化过程中会使用到）。对于自己的数据集首先转换成openvino支持的数据格式，这里使用imagenet数据集格式，对于分类任务需要annotation.txt文件以及labels.txt共两个文件。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">├── dataset:： 存放数据集的根目录</span><br><span class="line">│     ├── 1：         </span><br><span class="line">│     ├── 2：     </span><br><span class="line">│     ├── 3：         </span><br><span class="line">│     ├── 4：    </span><br><span class="line">│     └── .... ：              </span><br></pre></td></tr></table></figure>
-
-<p>这里给一个生成annotation.txt和labels.txt脚本（霹雳趴拉导师那边抄的）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line">import glob</span><br><span class="line"> </span><br><span class="line">image_dir = &quot;/your_dataset_dir&quot;</span><br><span class="line">assert os.path.exists(image_dir), &quot;image dir does not exist...&quot;</span><br><span class="line"> </span><br><span class="line">img_list = glob.glob(os.path.join(image_dir, &quot;*&quot;, &quot;*.jpg&quot;))</span><br><span class="line">assert len(img_list) &gt; 0, &quot;No images(.jpg) were found in image dir...&quot;</span><br><span class="line"> </span><br><span class="line">classes_info = os.listdir(image_dir)</span><br><span class="line">classes_info.sort()</span><br><span class="line">classes_dict = &#123;&#125;</span><br><span class="line"> </span><br><span class="line"># create label file</span><br><span class="line">with open(&quot;my_labels.txt&quot;, &quot;w&quot;) as lw:</span><br><span class="line">    # 注意，没有背景时，index要从0开始</span><br><span class="line">    for index, c in enumerate(classes_info, start=0):</span><br><span class="line">        txt = &quot;&#123;&#125;:&#123;&#125;&quot;.format(index, c)</span><br><span class="line">        if index != len(classes_info):</span><br><span class="line">            txt += &quot;\n&quot;</span><br><span class="line">        lw.write(txt)</span><br><span class="line">        classes_dict.update(&#123;c: str(index)&#125;)</span><br><span class="line">print(&quot;create my_labels.txt successful...&quot;)</span><br><span class="line"> </span><br><span class="line"># create annotation file</span><br><span class="line">with open(&quot;my_annotation.txt&quot;, &quot;w&quot;) as aw:</span><br><span class="line">    for img in img_list:</span><br><span class="line">        img_classes = classes_dict[img.split(&quot;/&quot;)[-2]]</span><br><span class="line">        txt = &quot;&#123;&#125; &#123;&#125;&quot;.format(img, img_classes)</span><br><span class="line">        if index != len(img_list):</span><br><span class="line">            txt += &quot;\n&quot;</span><br><span class="line">        aw.write(txt)</span><br><span class="line">print(&quot;create my_annotation.txt successful...&quot;)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="3-1-模型测试"><a href="#3-1-模型测试" class="headerlink" title="3.1 模型测试"></a><a href="#"></a>3.1 模型测试</h3><p>首先先测试FP32和FP16的模型精度，先准备一份yaml文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">models:</span><br><span class="line">  - name: mobileNetV3Fp32</span><br><span class="line">    launchers:</span><br><span class="line">      #下面指定运行的框架 dlsdk就是openvino， 也可以是tensorflow或者其他框架</span><br><span class="line">      #model/weights是要测试的模型文件名</span><br><span class="line">      #adapter是告诉accuracy checker模型的输出是目标分类还是目标识别或者其他的输出</span><br><span class="line">      - framework: openvino</span><br><span class="line">        model: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml</span><br><span class="line">        weights: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin</span><br><span class="line">        adapter: classification</span><br><span class="line"> </span><br><span class="line">    datasets:</span><br><span class="line">      #下面这部分是有关数据集的路径，数据集的格式(imagenet，VOC或者其他)以及标注文件的名字</span><br><span class="line">      - name: Flower</span><br><span class="line">        data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">        annotation_conversion:</span><br><span class="line">          converter: imagenet</span><br><span class="line">          annotation_file: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt&quot;</span><br><span class="line">        #预处理告诉ac_checker工具在把数据集图片送进模型前要做那些预处理，比如缩放，剪切或者调整RGB/BGR顺序之类</span><br><span class="line">        reader: opencv_imread # default setting</span><br><span class="line">        preprocessing:</span><br><span class="line">          - type: resize</span><br><span class="line">            size: 256</span><br><span class="line">            aspect_ratio_scale: greater</span><br><span class="line">          - type: crop</span><br><span class="line">            size: 224</span><br><span class="line">          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">          - type: normalization</span><br><span class="line">            # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">            mean: (123.675, 116.28, 103.53)</span><br><span class="line">            std: (58.395, 57.12, 57.375)</span><br><span class="line">        #这里定义统计准确度用的算法，这里要看2种准确度，一个是top1的，还一个是top5的</span><br><span class="line">        metrics:</span><br><span class="line">          - name: accuracy @ top1</span><br><span class="line">            type: accuracy</span><br><span class="line">            top_k: 1</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>model：存放你的xml的路径，在精度测试中可以先不用放weight,这个model也可以是你的onnx文件</p>
-<p>adapter:选择你的网络类型我这里是分类网络，openvino还支持目标检测网络具体可以看看config下面的配置</p>
-<p>datasource:下面存放的是你的数据集的根路径（这里有个坑就是这个文件夹下面存放的图片路径要和你上面生成的annotion.txt对应起来包括你的类别还有路径，相当于就是你把你数据集所有的图片全部放在这个路径下面，验证的时候由annotion.txt里面的东西验证）</p>
-<p>convert:我直接写imagenet没有什么影响</p>
-<p>preprocessing：里面的是写的是你预处理操作（记得颜色通道的转换不然的话精确度一直和训练的时候验证都是错的）这里有的预处理很傻逼我官网也没有找到如果有人找到的话欢迎评论区和我说一声哈哈哈哈哈</p>
-<p>&nbsp;metrics:定义的是评价指标这里是分类网络所以我采用的是accuary这里的top1表示，评分排名前1中能正确分出的概率。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">accuracy_check -c 你的yaml文件 -s ./ -td CPU</span><br></pre></td></tr></table></figure>
-
-<p>可以得到正确率了，之后int8量化也需要用到这个进行评估。</p>
-<h3 id="3-2-yaml文件以及json文件的准备"><a href="#3-2-yaml文件以及json文件的准备" class="headerlink" title="3.2.yaml文件以及json文件的准备"></a><a href="#"></a>3.2.yaml文件以及json文件的准备</h3><p>这里int8有两种量化方式一种是全int8量化还有一种是混精度量化首先先准备一下model.yaml文件</p>
-<p>这里的yaml文件和刚刚那个yaml文件大差不差</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">models:</span><br><span class="line">  - name: mobileNetV3</span><br><span class="line">    launchers:</span><br><span class="line">      - framework: dlsdk</span><br><span class="line">        device: CPU</span><br><span class="line">        adapter: classification</span><br><span class="line">    #定义数据集</span><br><span class="line">    datasets:</span><br><span class="line">      - name: classification_dataset</span><br><span class="line">        #定义数据集路径</span><br><span class="line">        data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">        #定义annotation路径</span><br><span class="line">        annotation_conversion:</span><br><span class="line">          converter: imagenet</span><br><span class="line">          annotation_file: /home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt</span><br><span class="line"> </span><br><span class="line">        reader: opencv_imread # default setting</span><br><span class="line">        #这里需要提前定义预处理</span><br><span class="line">        preprocessing:</span><br><span class="line">          - type: resize</span><br><span class="line">            size: 256</span><br><span class="line">            aspect_ratio_scale: greater</span><br><span class="line">          - type: crop</span><br><span class="line">            size: 224</span><br><span class="line">          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">          - type: normalization</span><br><span class="line">            # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">            mean: (123.675, 116.28, 103.53)</span><br><span class="line">            std: (58.395, 57.12, 57.375)</span><br><span class="line">        metrics:</span><br><span class="line">          - name: accuracy @ top1</span><br><span class="line">            type: accuracy</span><br><span class="line">            top_k: 1</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后就是json文件的编写</p>
-<h4 id="3-2-1-DefaultQuantization"><a href="#3-2-1-DefaultQuantization" class="headerlink" title="3.2.1 DefaultQuantization"></a><a href="#"></a>3.2.1 DefaultQuantization</h4><p>这个应该是openvino中的全int8的量化</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;model&quot;: &#123;</span><br><span class="line">        &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">        &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">        &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;engine&quot;: &#123;</span><br><span class="line">        &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/defualtQuantization/model.yaml&quot;</span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;compression&quot;: &#123;</span><br><span class="line">        &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">                                </span><br><span class="line">        &quot;algorithms&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;name&quot;: &quot;DefaultQuantization&quot;, </span><br><span class="line">                &quot;params&quot;: &#123;</span><br><span class="line">                    &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">                    &quot;stat_subset_size&quot;: 300  </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>model：里面定义的是你最开始量化后的xml和bin的路径以及指定你的设备</p>
-<p>engine:就是你刚刚写好的yaml文件了</p>
-<p>target_device：就是你要量化的设备</p>
-<p>algorithms –</p>
-<p>&nbsp;                       name：这里指定的是你的量化方式</p>
-<p>&nbsp;                       preset：我也不知道什么意思</p>
-<p>&nbsp;                       stat_subset_size: 好像是采取多少张数据集的意思</p>
-<h4 id="3-2-2-AccuracyAwareQuantization"><a href="#3-2-2-AccuracyAwareQuantization" class="headerlink" title="3.2.2 AccuracyAwareQuantization"></a><a href="#"></a>3.2.2 AccuracyAwareQuantization</h4><p>先放一下json文件</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;model&quot;: &#123;</span><br><span class="line">        &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">        &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">        &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;engine&quot;: &#123;</span><br><span class="line">        &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/AccuracyAwareQuantization/model.yaml&quot;</span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;compression&quot;: &#123;</span><br><span class="line">        &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">                                </span><br><span class="line">        &quot;algorithms&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;name&quot;: &quot;AccuracyAwareQuantization&quot;, </span><br><span class="line">                &quot;params&quot;: &#123;</span><br><span class="line">                    &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">                    &quot;stat_subset_size&quot;: 300  ,</span><br><span class="line">                    &quot;maximal_drop&quot;: 0.1 </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>想比于DefaultQuantization就是name里面那个不一样以及多了一个maximal_drop,这个参数的意义是运行你的模型下降多少指标</p>
-<p>准确度的测试脚本可以用我3.1讲到的那个部分来测试只要把模型替换掉就OK了</p>
-<p>但是Openvino的量化好像只支撑分类网络和目标检测，后续找个时间写一下有关Pytorch自带的QAT的量化方法</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Openvino</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ubuntu19 Openvion cmake源码编译</title>
-    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
-    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>解压后的结构目录</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
-<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后安装外部依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
-
-<p>我中间报了一些黄的的警告我没有管他之后</p>
-<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
-<p>&nbsp;没有报错就好，然后开始编译库</p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
-<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
-<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
-<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>Openvino</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Markdown图床</title>
     <url>/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/</url>
     <content><![CDATA[<h1 id="Markdown图床"><a href="#Markdown图床" class="headerlink" title="Markdown图床"></a>Markdown图床</h1><h2 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h2><ul>
@@ -423,6 +301,277 @@
       </tags>
   </entry>
   <entry>
+    <title>Openvino量化模型推理 Fp32 Fp16 int8</title>
+    <url>/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/</url>
+    <content><![CDATA[<h1 id="Openvino量化模型推理-Fp32-Fp16-int8"><a href="#Openvino量化模型推理-Fp32-Fp16-int8" class="headerlink" title="Openvino量化模型推理 Fp32 Fp16 int8"></a>Openvino量化模型推理 Fp32 Fp16 int8</h1><p>我忘记我是哪个版本的<a href="https://so.csdn.net/so/search?q=openvino&spm=1001.2101.3001.7020">openvino</a>了，这里记录一下我将模型从onnx转换到Openvino的Ir模型以及最后的int8,Openvino比Tensorrt的泛化性要高，Tensorrt的量化是模型放到不同的机子上面都需要重新量化一次但是Openvino没有这个缺点。</p>
+<p>我的OpenVino采用的是源码编译的这里采用的是python代码，之后可能会写一份C++代码放上去,先上才艺</p>
+<h2 id="一-将模型转换成onnx模型"><a href="#一-将模型转换成onnx模型" class="headerlink" title="一.将模型转换成onnx模型"></a><a href="#"></a>一.将模型转换成<a href="https://so.csdn.net/so/search?q=onnx%E6%A8%A1%E5%9E%8B&spm=1001.2101.3001.7020">onnx模型</a></h2><p>这里我采用的是pytorch模型文件转成onnx</p>
+<p>模型结构包括参数保存</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import torch</span><br><span class="line">import torch.nn</span><br><span class="line">import os</span><br><span class="line">import sys</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">def export(model_path):</span><br><span class="line">    net = torch.load(</span><br><span class="line">        model_path,</span><br><span class="line">        map_location=torch.device(&#x27;cpu&#x27;),</span><br><span class="line">    )</span><br><span class="line">    net.eval()</span><br><span class="line">    #这里需要指定你输入和输出的名字方便后面推理</span><br><span class="line">    input_names = [&#x27;input&#x27;]</span><br><span class="line">    output_names = [&#x27;output&#x27;]</span><br><span class="line">    #这里需要确定模型的输入</span><br><span class="line">    x = torch.randn(1, 3, 224, 224)</span><br><span class="line"> </span><br><span class="line">    torch.onnx.export(</span><br><span class="line">        net,</span><br><span class="line">        x,</span><br><span class="line">        os.path.join(</span><br><span class="line">            os.path.split(model_path)[0],</span><br><span class="line">            &#x27;best.onnx&#x27;,</span><br><span class="line">        ),</span><br><span class="line">        input_names=input_names,</span><br><span class="line">        output_names=output_names,</span><br><span class="line">        verbose=False,</span><br><span class="line">        opset_version=12,</span><br><span class="line">    )</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">if __name__ == &quot;__main__&quot;:</span><br><span class="line">    model_path = &#x27;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/best.pt&#x27;</span><br><span class="line">    export(model_path)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>模型采用字典保存</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line">import torch</span><br><span class="line">from swin_transformer import *</span><br><span class="line">from collections import OrderedDict</span><br><span class="line"> </span><br><span class="line">DROP_PATH_RATE = 0.5</span><br><span class="line">EMBED_DIM = 192</span><br><span class="line">DEPTHS = [2, 2, 18, 2]</span><br><span class="line">NUM_HEADS = [6, 12, 24, 48]</span><br><span class="line">WINDOW_SIZE = 7</span><br><span class="line"> </span><br><span class="line">model_path = &#x27;&#x27;</span><br><span class="line"> </span><br><span class="line">checkpoint = torch.load(</span><br><span class="line">    model_path,</span><br><span class="line">    map_location=&#x27;cpu&#x27;,</span><br><span class="line">)</span><br><span class="line">model = SwinTransformer(</span><br><span class="line">    img_size=224,</span><br><span class="line">    patch_size=4,</span><br><span class="line">    in_chans=3,</span><br><span class="line">    num_classes=0,</span><br><span class="line">    embed_dim=EMBED_DIM,</span><br><span class="line">    depths=DEPTHS,</span><br><span class="line">    num_heads=NUM_HEADS,</span><br><span class="line">    window_size=WINDOW_SIZE,</span><br><span class="line">    mlp_ratio=4,</span><br><span class="line">    qkv_bias=True,</span><br><span class="line">    qk_scale=None,</span><br><span class="line">    drop_rate=0.0,</span><br><span class="line">    drop_path_rate=DROP_PATH_RATE,</span><br><span class="line">    ape=False,</span><br><span class="line">    patch_norm=True,</span><br><span class="line">)</span><br><span class="line"> </span><br><span class="line">new_state_dict = OrderedDict()</span><br><span class="line">for k, v in checkpoint[&#x27;model&#x27;].items():</span><br><span class="line">    if k != &#x27;head.weight&#x27;:</span><br><span class="line">        new_state_dict[k] = v</span><br><span class="line">    else:</span><br><span class="line">        print(k, v.shape)</span><br><span class="line">model.load_state_dict(new_state_dict, strict=False)</span><br><span class="line"> </span><br><span class="line">model.eval()</span><br><span class="line"> </span><br><span class="line">input_names = [&#x27;input&#x27;]</span><br><span class="line">output_names = [&#x27;output&#x27;]</span><br><span class="line">x = torch.randn(1, 3, 224, 224)</span><br><span class="line"> </span><br><span class="line">torch.onnx.export(</span><br><span class="line">    model,</span><br><span class="line">    x,</span><br><span class="line">    os.path.join(</span><br><span class="line">        os.path.split(model_path)[0],</span><br><span class="line">        &#x27;best.onnx&#x27;,</span><br><span class="line">    ),</span><br><span class="line">    input_names=input_names,</span><br><span class="line">    output_names=output_names,</span><br><span class="line">    verbose=False,</span><br><span class="line">    opset_version=12,</span><br><span class="line">)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>总结来说就是把字典导入到模型的结构里面然后在进行onnx的转换这部分可以自己网上找找教程听多的</p>
+<h2 id="二-模型从onnx模型转ir模型"><a href="#二-模型从onnx模型转ir模型" class="headerlink" title="二.模型从onnx模型转ir模型"></a><a href="#"></a>二.模型从onnx模型转ir模型</h2><p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/397c40c6ae4a4094a2e8dc88cda85f48_cbd8964035d941349.png"></p>
+<p>&nbsp;这里如果你是用python直接pip的话可以直接进入conda的环境去使用她，如果你是源码编译OpenVino的话可能要进入那个目录下载一下，这里我个人觉得如果你只是用来测试的话Python其实就很够用了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python mo_onnx.py --input_model &lt;输入模型路经&gt; --output_dir &lt;输出模型路经&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>（如果需要量化到FP16的话需要额外指定参数 –compress_to_fp16）</strong></p>
+<p>首先先将你的模型转换到Ir格式，这里放一下mo的参数你们可以有道翻译一下我个人英语不太好这里就不解释了</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mo -h #可以查看mo的参数</span><br><span class="line">#或者是进入到mo.py所在的文件夹然后</span><br><span class="line">python mo.py -h</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后测试一下转换完的模型推理速度</p>
+<p>进入Openvino这个文件夹</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/41d7baf4604c49d39d32700025ce258a_3e8eadeb2477454a9.png"></p>
+<p>&nbsp;然后查看一下你模型量化的结果（FP32）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python ./benchmark_app.py -m &lt;量化后的xml文件&gt; -d CPU -api async -i &lt;选择图片路径&gt; -b 1</span><br></pre></td></tr></table></figure>
+
+<p>其中 <strong>-d</strong>指定的是你的设备 -api指定的是你的推理模式（同步还是异步推理）</p>
+<p>看一下FP32模型的速度</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9dbc17d300f143568c3c598f768cc605_dbe4da939502499a9.png"></p>
+<p>&nbsp;FP16</p>
+<img width="598" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/bec68d6b955a4401bedf8d1c54e700c6_f4b0436799124d78a.png" class="jop-noMdConv">
+
+<p>&nbsp;ONNX模型推理速度</p>
+<img width="870" height="240" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c25101469a364d8e9d8bea60f3dd3142_2ded076e1fd74ad0b.png" class="jop-noMdConv">
+
+<h2 id="三，Int8量化"><a href="#三，Int8量化" class="headerlink" title=" 三，Int8量化"></a><a href="#"></a> 三，<a href="https://so.csdn.net/so/search?q=Int8&spm=1001.2101.3001.7020">Int8</a>量化</h2><p>在转换之前，我们需要准备一下数据（在量化过程中会使用到）。对于自己的数据集首先转换成openvino支持的数据格式，这里使用imagenet数据集格式，对于分类任务需要annotation.txt文件以及labels.txt共两个文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">├── dataset:： 存放数据集的根目录</span><br><span class="line">│     ├── 1：         </span><br><span class="line">│     ├── 2：     </span><br><span class="line">│     ├── 3：         </span><br><span class="line">│     ├── 4：    </span><br><span class="line">│     └── .... ：              </span><br></pre></td></tr></table></figure>
+
+<p>这里给一个生成annotation.txt和labels.txt脚本（霹雳趴拉导师那边抄的）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">import os</span><br><span class="line">import glob</span><br><span class="line"> </span><br><span class="line">image_dir = &quot;/your_dataset_dir&quot;</span><br><span class="line">assert os.path.exists(image_dir), &quot;image dir does not exist...&quot;</span><br><span class="line"> </span><br><span class="line">img_list = glob.glob(os.path.join(image_dir, &quot;*&quot;, &quot;*.jpg&quot;))</span><br><span class="line">assert len(img_list) &gt; 0, &quot;No images(.jpg) were found in image dir...&quot;</span><br><span class="line"> </span><br><span class="line">classes_info = os.listdir(image_dir)</span><br><span class="line">classes_info.sort()</span><br><span class="line">classes_dict = &#123;&#125;</span><br><span class="line"> </span><br><span class="line"># create label file</span><br><span class="line">with open(&quot;my_labels.txt&quot;, &quot;w&quot;) as lw:</span><br><span class="line">    # 注意，没有背景时，index要从0开始</span><br><span class="line">    for index, c in enumerate(classes_info, start=0):</span><br><span class="line">        txt = &quot;&#123;&#125;:&#123;&#125;&quot;.format(index, c)</span><br><span class="line">        if index != len(classes_info):</span><br><span class="line">            txt += &quot;\n&quot;</span><br><span class="line">        lw.write(txt)</span><br><span class="line">        classes_dict.update(&#123;c: str(index)&#125;)</span><br><span class="line">print(&quot;create my_labels.txt successful...&quot;)</span><br><span class="line"> </span><br><span class="line"># create annotation file</span><br><span class="line">with open(&quot;my_annotation.txt&quot;, &quot;w&quot;) as aw:</span><br><span class="line">    for img in img_list:</span><br><span class="line">        img_classes = classes_dict[img.split(&quot;/&quot;)[-2]]</span><br><span class="line">        txt = &quot;&#123;&#125; &#123;&#125;&quot;.format(img, img_classes)</span><br><span class="line">        if index != len(img_list):</span><br><span class="line">            txt += &quot;\n&quot;</span><br><span class="line">        aw.write(txt)</span><br><span class="line">print(&quot;create my_annotation.txt successful...&quot;)</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-模型测试"><a href="#3-1-模型测试" class="headerlink" title="3.1 模型测试"></a><a href="#"></a>3.1 模型测试</h3><p>首先先测试FP32和FP16的模型精度，先准备一份yaml文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">models:</span><br><span class="line">  - name: mobileNetV3Fp32</span><br><span class="line">    launchers:</span><br><span class="line">      #下面指定运行的框架 dlsdk就是openvino， 也可以是tensorflow或者其他框架</span><br><span class="line">      #model/weights是要测试的模型文件名</span><br><span class="line">      #adapter是告诉accuracy checker模型的输出是目标分类还是目标识别或者其他的输出</span><br><span class="line">      - framework: openvino</span><br><span class="line">        model: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml</span><br><span class="line">        weights: /home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin</span><br><span class="line">        adapter: classification</span><br><span class="line"> </span><br><span class="line">    datasets:</span><br><span class="line">      #下面这部分是有关数据集的路径，数据集的格式(imagenet，VOC或者其他)以及标注文件的名字</span><br><span class="line">      - name: Flower</span><br><span class="line">        data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">        annotation_conversion:</span><br><span class="line">          converter: imagenet</span><br><span class="line">          annotation_file: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt&quot;</span><br><span class="line">        #预处理告诉ac_checker工具在把数据集图片送进模型前要做那些预处理，比如缩放，剪切或者调整RGB/BGR顺序之类</span><br><span class="line">        reader: opencv_imread # default setting</span><br><span class="line">        preprocessing:</span><br><span class="line">          - type: resize</span><br><span class="line">            size: 256</span><br><span class="line">            aspect_ratio_scale: greater</span><br><span class="line">          - type: crop</span><br><span class="line">            size: 224</span><br><span class="line">          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">          - type: normalization</span><br><span class="line">            # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">            mean: (123.675, 116.28, 103.53)</span><br><span class="line">            std: (58.395, 57.12, 57.375)</span><br><span class="line">        #这里定义统计准确度用的算法，这里要看2种准确度，一个是top1的，还一个是top5的</span><br><span class="line">        metrics:</span><br><span class="line">          - name: accuracy @ top1</span><br><span class="line">            type: accuracy</span><br><span class="line">            top_k: 1</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>model：存放你的xml的路径，在精度测试中可以先不用放weight,这个model也可以是你的onnx文件</p>
+<p>adapter:选择你的网络类型我这里是分类网络，openvino还支持目标检测网络具体可以看看config下面的配置</p>
+<p>datasource:下面存放的是你的数据集的根路径（这里有个坑就是这个文件夹下面存放的图片路径要和你上面生成的annotion.txt对应起来包括你的类别还有路径，相当于就是你把你数据集所有的图片全部放在这个路径下面，验证的时候由annotion.txt里面的东西验证）</p>
+<p>convert:我直接写imagenet没有什么影响</p>
+<p>preprocessing：里面的是写的是你预处理操作（记得颜色通道的转换不然的话精确度一直和训练的时候验证都是错的）这里有的预处理很傻逼我官网也没有找到如果有人找到的话欢迎评论区和我说一声哈哈哈哈哈</p>
+<p>&nbsp;metrics:定义的是评价指标这里是分类网络所以我采用的是accuary这里的top1表示，评分排名前1中能正确分出的概率。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">accuracy_check -c 你的yaml文件 -s ./ -td CPU</span><br></pre></td></tr></table></figure>
+
+<p>可以得到正确率了，之后int8量化也需要用到这个进行评估。</p>
+<h3 id="3-2-yaml文件以及json文件的准备"><a href="#3-2-yaml文件以及json文件的准备" class="headerlink" title="3.2.yaml文件以及json文件的准备"></a><a href="#"></a>3.2.yaml文件以及json文件的准备</h3><p>这里int8有两种量化方式一种是全int8量化还有一种是混精度量化首先先准备一下model.yaml文件</p>
+<p>这里的yaml文件和刚刚那个yaml文件大差不差</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">models:</span><br><span class="line">  - name: mobileNetV3</span><br><span class="line">    launchers:</span><br><span class="line">      - framework: dlsdk</span><br><span class="line">        device: CPU</span><br><span class="line">        adapter: classification</span><br><span class="line">    #定义数据集</span><br><span class="line">    datasets:</span><br><span class="line">      - name: classification_dataset</span><br><span class="line">        #定义数据集路径</span><br><span class="line">        data_source: /mnt/hdd-4t/data/hanyue/mobileNet/flower</span><br><span class="line">        #定义annotation路径</span><br><span class="line">        annotation_conversion:</span><br><span class="line">          converter: imagenet</span><br><span class="line">          annotation_file: /home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/my_annotation.txt</span><br><span class="line"> </span><br><span class="line">        reader: opencv_imread # default setting</span><br><span class="line">        #这里需要提前定义预处理</span><br><span class="line">        preprocessing:</span><br><span class="line">          - type: resize</span><br><span class="line">            size: 256</span><br><span class="line">            aspect_ratio_scale: greater</span><br><span class="line">          - type: crop</span><br><span class="line">            size: 224</span><br><span class="line">          - type: bgr_to_rgb # bgr format in opencv</span><br><span class="line">          - type: normalization</span><br><span class="line">            # you may specify precomputed statistics manually or use precomputed values, such as ImageNet as well</span><br><span class="line">            mean: (123.675, 116.28, 103.53)</span><br><span class="line">            std: (58.395, 57.12, 57.375)</span><br><span class="line">        metrics:</span><br><span class="line">          - name: accuracy @ top1</span><br><span class="line">            type: accuracy</span><br><span class="line">            top_k: 1</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后就是json文件的编写</p>
+<h4 id="3-2-1-DefaultQuantization"><a href="#3-2-1-DefaultQuantization" class="headerlink" title="3.2.1 DefaultQuantization"></a><a href="#"></a>3.2.1 DefaultQuantization</h4><p>这个应该是openvino中的全int8的量化</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;model&quot;: &#123;</span><br><span class="line">        &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">        &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">        &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;engine&quot;: &#123;</span><br><span class="line">        &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/defualtQuantization/model.yaml&quot;</span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;compression&quot;: &#123;</span><br><span class="line">        &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">                                </span><br><span class="line">        &quot;algorithms&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;name&quot;: &quot;DefaultQuantization&quot;, </span><br><span class="line">                &quot;params&quot;: &#123;</span><br><span class="line">                    &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">                    &quot;stat_subset_size&quot;: 300  </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>model：里面定义的是你最开始量化后的xml和bin的路径以及指定你的设备</p>
+<p>engine:就是你刚刚写好的yaml文件了</p>
+<p>target_device：就是你要量化的设备</p>
+<p>algorithms –</p>
+<p>&nbsp;                       name：这里指定的是你的量化方式</p>
+<p>&nbsp;                       preset：我也不知道什么意思</p>
+<p>&nbsp;                       stat_subset_size: 好像是采取多少张数据集的意思</p>
+<h4 id="3-2-2-AccuracyAwareQuantization"><a href="#3-2-2-AccuracyAwareQuantization" class="headerlink" title="3.2.2 AccuracyAwareQuantization"></a><a href="#"></a>3.2.2 AccuracyAwareQuantization</h4><p>先放一下json文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;model&quot;: &#123;</span><br><span class="line">        &quot;model_name&quot;: &quot;MobileNetV3&quot;, </span><br><span class="line">        &quot;model&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.xml&quot;, </span><br><span class="line">        &quot;weights&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/runs/train/exp1/bestfp16.bin&quot; </span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;engine&quot;: &#123;</span><br><span class="line">        &quot;config&quot;: &quot;/home/yuesang/Pythonproject/MobileNetV3/onnxinference/int8inference/AccuracyAwareQuantization/model.yaml&quot;</span><br><span class="line">    &#125;,</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">    &quot;compression&quot;: &#123;</span><br><span class="line">        &quot;target_device&quot;: &quot;CPU&quot;, </span><br><span class="line">                                </span><br><span class="line">        &quot;algorithms&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;name&quot;: &quot;AccuracyAwareQuantization&quot;, </span><br><span class="line">                &quot;params&quot;: &#123;</span><br><span class="line">                    &quot;preset&quot;: &quot;performance&quot;,                      </span><br><span class="line">                    &quot;stat_subset_size&quot;: 300  ,</span><br><span class="line">                    &quot;maximal_drop&quot;: 0.1 </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>想比于DefaultQuantization就是name里面那个不一样以及多了一个maximal_drop,这个参数的意义是运行你的模型下降多少指标</p>
+<p>准确度的测试脚本可以用我3.1讲到的那个部分来测试只要把模型替换掉就OK了</p>
+<p>但是Openvino的量化好像只支撑分类网络和目标检测，后续找个时间写一下有关Pytorch自带的QAT的量化方法</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu19 Openvion cmake源码编译</title>
+    <url>/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/</url>
+    <content><![CDATA[<h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>解压后的结构目录</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
+<p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后安装外部依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
+
+<p>我中间报了一些黄的的警告我没有管他之后</p>
+<p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
+<p>&nbsp;没有报错就好，然后开始编译库</p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
+<p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+
+<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
+<p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
+<p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>Openvino</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</title>
+    <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/</url>
+    <content><![CDATA[<h1 id="ubuntu22-pycharm-cuda-cudnn，tensorrt的安装"><a href="#ubuntu22-pycharm-cuda-cudnn，tensorrt的安装" class="headerlink" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装"></a>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</h1><p>（写这篇博客的意义在于之后方便之后重装不用再重新看一大堆博客了）</p>
+<p><strong>我的电脑配置为y9000p(2022),12i7,3060的显卡 pycharm版本为2022.2,cuda版本为11.6.2</strong></p>
+<p><strong>cudnn版本为8.4.1,tensorrt版本为8.4.1</strong></p>
+<h2 id="一-pycharm的安装"><a href="#一-pycharm的安装" class="headerlink" title="一.pycharm的安装"></a><a href="#"></a>一.pycharm的安装</h2><p>官方的安装连接:<a href="https://www.jetbrains.com/pycharm/download/#section=linux" title="Download PyCharm: Python IDE for Professional Developers by JetBrains">Download PyCharm: Python IDE for Professional Developers by JetBrains</a></p>
+<p>下载下来后先不着急可以先把pycharm固定到收藏夹上</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ~/.local/share/applications/</span><br><span class="line">sudo gedit Pycharm.desktop</span><br></pre></td></tr></table></figure>
+
+<p><strong>之后将下方文字复制进去（注意注释!）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Desktop Entry]</span><br><span class="line">Version=1.0</span><br><span class="line">Terminal=false</span><br><span class="line">Type=Application</span><br><span class="line">Name=Pycharm</span><br><span class="line">Exec=/opt/pycharm/bin/pycharm.sh</span><br><span class="line"># 注意：Exec表示安装软件的**启动快捷方式**文件路径</span><br><span class="line"># 注意：Icon表示安装软件的图标路径</span><br><span class="line">Icon=/opt/pycharm/bin/pycharm.png</span><br><span class="line">NoDisplay=false</span><br><span class="line">StartupWMClass=</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>之后就可以把pycharm固定到收藏夹上</p>
+<h2 id="二-minconda的安装"><a href="#二-minconda的安装" class="headerlink" title="二.minconda的安装"></a><a href="#"></a>二.minconda的安装</h2><p>miniconda安装的时候如果采用sudo则以后使用conda命令需要加sudo</p>
+<p>这里选择的是miniconda因为我服务器上面之前配置的也是miniconda为了向服务器看齐，这里的话如果安装的是anconda的话window环境下anconda的env拷贝进来好像是可以直接用的，这个我还没有尝试过。</p>
+<p><strong>miniconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/" title="Index of /anaconda/miniconda/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;miniconda&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
+<p><strong>anconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/" title="Index of /anaconda/archive/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;archive&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
+<p>minconda和anconda的差别就是anconda的base环境包括了conda管理器、Pyhon编译器、常用的包和Spyder IDE等，而miniconda的base环境选择只包括conda管理器和Python编译器</p>
+<p>然后选择你下载下来的sh进行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo bash Miniconda3-py39_4.9.2-Linux-x86_64.sh</span><br></pre></td></tr></table></figure>
+
+<h2 id="三-Nvdia显卡的安装"><a href="#三-Nvdia显卡的安装" class="headerlink" title="三.Nvdia显卡的安装"></a><a href="#"></a>三.Nvdia显卡的安装</h2><p>首先是关于显卡的卸载，我们可以进入附加驱动中选择x.org选项就相当于把本来的显卡驱动删除了，如果你有两个显示屏的话安装完显卡驱动后副屏才可以用因为副屏是挂载在你的独显上</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6c0b69b61bf14dd6a0b2c3a5d2caefd0_79a070ed217a4622b.png"></p>
+<p>&nbsp;显卡安装不建议用附加驱动，因为很慢，所以可以换源后直接用命令行安装</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ubuntu-drivers devices</span><br></pre></td></tr></table></figure>
+
+<p>这是可用的显卡</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/deedfe2db2f7493d850087f8eb3af135_3bac9215b4b745b7b.png"></p>
+<p>&nbsp;<strong>在安装NVIDIA驱动以前需要禁止系统自带显卡驱动nouveau：可以先通过指令<code>lsmod | grep nouveau</code>查看nouveau驱动的启用情况，如果有输出表示nouveau驱动正在工作，如果没有内容输出则表示已经禁用了nouveau</strong>**(这里我没有图所以找了一张网上的)**</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/17c7cfc464b54a90b6fb8e4257c7ca2a_259f95930526495c8.png"></p>
+<p>&nbsp;电脑有有输出，表示nouveau启动了，下面进行nouveau的禁用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/modprobe.d/blacklist.conf</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4107bb0291614f308aa2cfa11b25eb48_bc486b7a284541d48.png"></p>
+<p>在blacklist.conf文件末尾加上这两行，并保存：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">blacklist nouveau</span><br><span class="line">options nouveau modeset=0</span><br></pre></td></tr></table></figure>
+
+<p>然后在终端中输入：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo update-initramfs -u  #应用更改</span><br></pre></td></tr></table></figure>
+
+<p><strong>选择合适的显卡进行下载（可以进入官网查看cuda和显卡的对应版本:<a href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html" title="Release Notes :: CUDA Toolkit Documentation">Release Notes :: CUDA Toolkit Documentation</a>）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install nvidia-driver-510 # 根据自己的n卡可选驱动下载显卡驱动</span><br></pre></td></tr></table></figure>
+
+<p>重启电脑后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvidia-smi </span><br></pre></td></tr></table></figure>
+
+<p>查看是否安装完成</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/14d411a70a8a496db4597f6b75c2bf16_906040e8175e420aa.png"></p>
+<p><strong>（这里有一点需要特别注意：右上角的CUDA Version的意思是你的装的显卡驱动最大支持11.6的cuda）</strong></p>
+<h2 id="四：CUDA的安装"><a href="#四：CUDA的安装" class="headerlink" title="四：CUDA的安装"></a><a href="#"></a><strong>四：CUDA的安装</strong></h2><h3 id="CUDA下载"><a href="#CUDA下载" class="headerlink" title="CUDA下载"></a><a href="#"></a><strong>CUDA下载</strong></h3><p>我们进入<a href="https://developer.nvidia.cn/cuda-toolkit-archive" title="CUDA Toolkit Archive | NVIDIA Developer">CUDA Toolkit Archive | NVIDIA Developer</a>选择我们适合的cuda这里我选择11.6.2版本的</p>
+<img width="1200" height="654" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/472f848107ea4535bd4249ef515ebcb4_5c8286c7ed0b46989.png" class="jop-noMdConv">
+
+<p>&nbsp;安装的命令如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>细节的地方来了，你的tmp空间可能不够你可以在你的home文件夹下建立一个tmp然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run --tmpdir=这里填写你的新建立的tmp位置</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>使用完以后删掉这个tmp即可因为tmp文件夹重启后里面的文件默认不保存</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7b9eaf1e05594a15ab45ae4ccfd5b97b_12b269e7bf4445879.png"></p>
+<p>等待一会这个时间可能会有点长</p>
+<p>选择continue</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c33c5596287f4f7e99b292b501636093_b631af5dcf9e426b9.png"> 输入accept</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/be2fd1ea55654298a1e054707fa019c2_1390615b7701418d8.png"></p>
+<p>&nbsp;因为刚开始我们已经安装完驱动所以这里可以不用选择（之前安装的时候出现了一个小问题就是我当初重装显卡驱动的时候把显卡驱动删了想着能不能用run里面自带的但是我是没有成功，之后用下面这个方法也同样成功运行）</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/cdc3b1056f874696b16b61351371eb6e_842dcbddc6794f779.png"></p>
+<h3 id="配置cuda环境"><a href="#配置cuda环境" class="headerlink" title="配置cuda环境"></a><a href="#"></a><strong>配置cuda环境</strong></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>添加以下到末尾</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
+
+<p>然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>在终端输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvcc -V</span><br></pre></td></tr></table></figure>
+
+<p>显示以下则为成功（记得V要大写）</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7dc6f3364ff94039ace3ef3ffc66113b_92618f1fc8ac48ed9.png"></p>
+<p><strong>如果不成功，重新source ~&#x2F;.bashrc然后输入nvcc -V成功的话，细节的地方来了！！！！！</strong></p>
+<p><strong>首先，我们需要搞明白Linux启动时读取配置文件的顺序。在刚登录Linux时，首先启动<code>/etc/profile</code> 文件，然后再启动用户目录下的 <code>~/.bash_profile</code>、<code>~/.bash_login</code>或 <code>~/.profile</code>文件中的其中一个，<br>执行的顺序为：<code>~/.bash_profile</code>、<code>~/.bash_login</code>、 <code>~/.profile</code></strong></p>
+<p><code>所以如果行不同我们可以：</code></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>然后输入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
+
+<p>最后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>之后应该就能显示了</p>
+<h3 id="CUDA的测试"><a href="#CUDA的测试" class="headerlink" title="CUDA的测试"></a><a href="#"></a>CUDA的测试</h3><p>下载测试文件：<a href="https://github.com/nvidia/cuda-samples" title="GitHub - NVIDIA/cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit">GitHub - NVIDIA&#x2F;cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit</a></p>
+<p>下载解压后make一下</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c812c23a6ee4fd69748eb91a128dc05_39a5e78576a14f1ca.png"></p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5ea6dfd19d964fa9ac7b7f95183dbf1d_1475ea4225a84c158.png"></p>
+<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a6886047066744b08e2fa1cfc9af2df0_63d7e9f5fdd8445bb.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b54f4a317fc64aa795e66bf71163d97e_d0876e270e6e47f28.png"></p>
+<p>出现这个结果就是成功了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4373d4bbf57445989e5004d3bd6ad751_cd458d6cee7a44d79.png"></p>
+<h2 id="四-CUDANN的安装"><a href="#四-CUDANN的安装" class="headerlink" title="四.CUDANN的安装"></a><a href="#"></a>四.CUDANN的安装</h2><h3 id="CUDANN下载"><a href="#CUDANN下载" class="headerlink" title="CUDANN下载"></a><a href="#"></a>CUDANN下载</h3><p>下载连接：<a href="https://developer.nvidia.com/rdp/cudnn-download">https://developer.nvidia.com/rdp/cudnn-download</a></p>
+<p>这里我下在的是cudann8.4.1</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9f24be3dde60443f9a18839b76218bdb_6e701b31e177461eb.png"></p>
+<p>&nbsp;下载Linux x86-64(tar)</p>
+<p>进入解压后的界面，然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda-11.6/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda-11.6/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda-11.6/lib64/libcudnn*</span><br><span class="line">#下面这个是方便后面opencv配置cuda</span><br><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>之后查看<a href="https://so.csdn.net/so/search?q=CUDNN&spm=1001.2101.3001.7020">CUDNN</a>版本</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /usr/local/cuda-11.6/include/cudnn_version.h | grep CUDNN_MAJOR -A 2</span><br></pre></td></tr></table></figure>
+
+<h3 id="CUDNN依赖"><a href="#CUDNN依赖" class="headerlink" title="CUDNN依赖"></a><a href="#"></a>CUDNN依赖</h3><p>依赖网站：<a href="https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/" title="Index of /compute/cuda/repos/ubuntu2004/x86_64">Index of &#x2F;compute&#x2F;cuda&#x2F;repos&#x2F;ubuntu2004&#x2F;x86_64</a></p>
+<p>找到对应的依赖（一个带dev一个不带）</p>
+<p>或者使用命令行进行下载</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>安装依赖</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<h2 id="五-Tensortrt的安装"><a href="#五-Tensortrt的安装" class="headerlink" title="五.Tensortrt的安装"></a><a href="#"></a>五.Tensortrt的安装</h2><h3 id="1-下载"><a href="#1-下载" class="headerlink" title="1.下载"></a><a href="#"></a>1.下载</h3><p>这里是tensorrt的下载连接:<a href="https://developer.nvidia.com/nvidia-tensorrt-8x-download">https://developer.nvidia.com/nvidia-tensorrt-8x-download</a></p>
+<p>下载tar包解压后的到的连接</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e435b363bc446c886e43e5b21292e23_54c963cc1b2a438ab.png"></p>
+<p>修改环境变量:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo gedit ~/.bashrc </span><br></pre></td></tr></table></figure>
+
+<p>在文件末尾加入</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH：/home/stand/Software/TensorRT-8.4.1.5/lib</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>然后</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-测试样例"><a href="#2-测试样例" class="headerlink" title="2. 测试样例"></a><a href="#"></a>2. 测试样例</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd TensorRT-8.4.1.5/samples/sampleMNIST</span><br><span class="line">make -j16</span><br><span class="line">cd ../../bin/</span><br><span class="line">./sample_mnist</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样就成功了</p>
+<img width="1200" height="1242" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3eb8c7cdcede4fdead0f60fb785bad68_4fb7033780c548148.png" class="jop-noMdConv">
+
+<h3 id="3-python部分的安装"><a href="#3-python部分的安装" class="headerlink" title="3.python部分的安装"></a><a href="#"></a>3.python部分的安装</h3><p>用miniconda创建完环境之后</p>
+<p>直接pip目录中的uff，python(注意选择和你conda创建python的版本相对应) ，graphsurgeon下的whl就可以了</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5fdfb1069d5c433781f5f8abf04410eb_48a6f8c2ba974c2db.png"></p>
+<p>我这里是一次就成功了可能出现问题的话可以参考这位大佬:<a href="https://blog.csdn.net/lilin020401/article/details/126475351#t4" title="Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客">Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+      </categories>
+      <tags>
+        <tag>cuda</tag>
+        <tag>cudnn</tag>
+        <tag>tensorrt</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</title>
     <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/</url>
     <content><![CDATA[<h1 id="ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）"><a href="#ubuntu22部署c-配置opencv4-5-5-opencv-contrib4-5-5-以及opencv下的cuda（cuda11-6-cudnn8-4-1）" class="headerlink" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）"></a>ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</h1><hr>
@@ -587,158 +736,9 @@
         <category>环境配置</category>
       </categories>
       <tags>
+        <tag>cuda</tag>
         <tag>opencv</tag>
         <tag>opencv_contrib</tag>
-        <tag>cuda</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</title>
-    <url>/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/</url>
-    <content><![CDATA[<h1 id="ubuntu22-pycharm-cuda-cudnn，tensorrt的安装"><a href="#ubuntu22-pycharm-cuda-cudnn，tensorrt的安装" class="headerlink" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装"></a>ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</h1><p>（写这篇博客的意义在于之后方便之后重装不用再重新看一大堆博客了）</p>
-<p><strong>我的电脑配置为y9000p(2022),12i7,3060的显卡 pycharm版本为2022.2,cuda版本为11.6.2</strong></p>
-<p><strong>cudnn版本为8.4.1,tensorrt版本为8.4.1</strong></p>
-<h2 id="一-pycharm的安装"><a href="#一-pycharm的安装" class="headerlink" title="一.pycharm的安装"></a><a href="#"></a>一.pycharm的安装</h2><p>官方的安装连接:<a href="https://www.jetbrains.com/pycharm/download/#section=linux" title="Download PyCharm: Python IDE for Professional Developers by JetBrains">Download PyCharm: Python IDE for Professional Developers by JetBrains</a></p>
-<p>下载下来后先不着急可以先把pycharm固定到收藏夹上</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ~/.local/share/applications/</span><br><span class="line">sudo gedit Pycharm.desktop</span><br></pre></td></tr></table></figure>
-
-<p><strong>之后将下方文字复制进去（注意注释!）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Desktop Entry]</span><br><span class="line">Version=1.0</span><br><span class="line">Terminal=false</span><br><span class="line">Type=Application</span><br><span class="line">Name=Pycharm</span><br><span class="line">Exec=/opt/pycharm/bin/pycharm.sh</span><br><span class="line"># 注意：Exec表示安装软件的**启动快捷方式**文件路径</span><br><span class="line"># 注意：Icon表示安装软件的图标路径</span><br><span class="line">Icon=/opt/pycharm/bin/pycharm.png</span><br><span class="line">NoDisplay=false</span><br><span class="line">StartupWMClass=</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>之后就可以把pycharm固定到收藏夹上</p>
-<h2 id="二-minconda的安装"><a href="#二-minconda的安装" class="headerlink" title="二.minconda的安装"></a><a href="#"></a>二.minconda的安装</h2><p>miniconda安装的时候如果采用sudo则以后使用conda命令需要加sudo</p>
-<p>这里选择的是miniconda因为我服务器上面之前配置的也是miniconda为了向服务器看齐，这里的话如果安装的是anconda的话window环境下anconda的env拷贝进来好像是可以直接用的，这个我还没有尝试过。</p>
-<p><strong>miniconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/" title="Index of /anaconda/miniconda/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;miniconda&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
-<p><strong>anconda的地址：</strong><a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/" title="Index of /anaconda/archive/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of &#x2F;anaconda&#x2F;archive&#x2F; | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a></p>
-<p>minconda和anconda的差别就是anconda的base环境包括了conda管理器、Pyhon编译器、常用的包和Spyder IDE等，而miniconda的base环境选择只包括conda管理器和Python编译器</p>
-<p>然后选择你下载下来的sh进行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo bash Miniconda3-py39_4.9.2-Linux-x86_64.sh</span><br></pre></td></tr></table></figure>
-
-<h2 id="三-Nvdia显卡的安装"><a href="#三-Nvdia显卡的安装" class="headerlink" title="三.Nvdia显卡的安装"></a><a href="#"></a>三.Nvdia显卡的安装</h2><p>首先是关于显卡的卸载，我们可以进入附加驱动中选择x.org选项就相当于把本来的显卡驱动删除了，如果你有两个显示屏的话安装完显卡驱动后副屏才可以用因为副屏是挂载在你的独显上</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6c0b69b61bf14dd6a0b2c3a5d2caefd0_79a070ed217a4622b.png"></p>
-<p>&nbsp;显卡安装不建议用附加驱动，因为很慢，所以可以换源后直接用命令行安装</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ubuntu-drivers devices</span><br></pre></td></tr></table></figure>
-
-<p>这是可用的显卡</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/deedfe2db2f7493d850087f8eb3af135_3bac9215b4b745b7b.png"></p>
-<p>&nbsp;<strong>在安装NVIDIA驱动以前需要禁止系统自带显卡驱动nouveau：可以先通过指令<code>lsmod | grep nouveau</code>查看nouveau驱动的启用情况，如果有输出表示nouveau驱动正在工作，如果没有内容输出则表示已经禁用了nouveau</strong>**(这里我没有图所以找了一张网上的)**</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/17c7cfc464b54a90b6fb8e4257c7ca2a_259f95930526495c8.png"></p>
-<p>&nbsp;电脑有有输出，表示nouveau启动了，下面进行nouveau的禁用</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/modprobe.d/blacklist.conf</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4107bb0291614f308aa2cfa11b25eb48_bc486b7a284541d48.png"></p>
-<p>在blacklist.conf文件末尾加上这两行，并保存：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">blacklist nouveau</span><br><span class="line">options nouveau modeset=0</span><br></pre></td></tr></table></figure>
-
-<p>然后在终端中输入：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo update-initramfs -u  #应用更改</span><br></pre></td></tr></table></figure>
-
-<p><strong>选择合适的显卡进行下载（可以进入官网查看cuda和显卡的对应版本:<a href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html" title="Release Notes :: CUDA Toolkit Documentation">Release Notes :: CUDA Toolkit Documentation</a>）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo apt install nvidia-driver-510 # 根据自己的n卡可选驱动下载显卡驱动</span><br></pre></td></tr></table></figure>
-
-<p>重启电脑后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvidia-smi </span><br></pre></td></tr></table></figure>
-
-<p>查看是否安装完成</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/14d411a70a8a496db4597f6b75c2bf16_906040e8175e420aa.png"></p>
-<p><strong>（这里有一点需要特别注意：右上角的CUDA Version的意思是你的装的显卡驱动最大支持11.6的cuda）</strong></p>
-<h2 id="四：CUDA的安装"><a href="#四：CUDA的安装" class="headerlink" title="四：CUDA的安装"></a><a href="#"></a><strong>四：CUDA的安装</strong></h2><h3 id="CUDA下载"><a href="#CUDA下载" class="headerlink" title="CUDA下载"></a><a href="#"></a><strong>CUDA下载</strong></h3><p>我们进入<a href="https://developer.nvidia.cn/cuda-toolkit-archive" title="CUDA Toolkit Archive | NVIDIA Developer">CUDA Toolkit Archive | NVIDIA Developer</a>选择我们适合的cuda这里我选择11.6.2版本的</p>
-<img width="1200" height="654" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/472f848107ea4535bd4249ef515ebcb4_5c8286c7ed0b46989.png" class="jop-noMdConv">
-
-<p>&nbsp;安装的命令如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>细节的地方来了，你的tmp空间可能不够你可以在你的home文件夹下建立一个tmp然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run</span><br><span class="line">sudo sh cuda_11.6.2_510.47.03_linux.run --tmpdir=这里填写你的新建立的tmp位置</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>使用完以后删掉这个tmp即可因为tmp文件夹重启后里面的文件默认不保存</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7b9eaf1e05594a15ab45ae4ccfd5b97b_12b269e7bf4445879.png"></p>
-<p>等待一会这个时间可能会有点长</p>
-<p>选择continue</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c33c5596287f4f7e99b292b501636093_b631af5dcf9e426b9.png"> 输入accept</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/be2fd1ea55654298a1e054707fa019c2_1390615b7701418d8.png"></p>
-<p>&nbsp;因为刚开始我们已经安装完驱动所以这里可以不用选择（之前安装的时候出现了一个小问题就是我当初重装显卡驱动的时候把显卡驱动删了想着能不能用run里面自带的但是我是没有成功，之后用下面这个方法也同样成功运行）</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/cdc3b1056f874696b16b61351371eb6e_842dcbddc6794f779.png"></p>
-<h3 id="配置cuda环境"><a href="#配置cuda环境" class="headerlink" title="配置cuda环境"></a><a href="#"></a><strong>配置cuda环境</strong></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<p>添加以下到末尾</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
-
-<p>然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<p>在终端输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nvcc -V</span><br></pre></td></tr></table></figure>
-
-<p>显示以下则为成功（记得V要大写）</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/7dc6f3364ff94039ace3ef3ffc66113b_92618f1fc8ac48ed9.png"></p>
-<p><strong>如果不成功，重新source ~&#x2F;.bashrc然后输入nvcc -V成功的话，细节的地方来了！！！！！</strong></p>
-<p><strong>首先，我们需要搞明白Linux启动时读取配置文件的顺序。在刚登录Linux时，首先启动<code>/etc/profile</code> 文件，然后再启动用户目录下的 <code>~/.bash_profile</code>、<code>~/.bash_login</code>或 <code>~/.profile</code>文件中的其中一个，<br>执行的顺序为：<code>~/.bash_profile</code>、<code>~/.bash_login</code>、 <code>~/.profile</code></strong></p>
-<p><code>所以如果行不同我们可以：</code></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/profile</span><br></pre></td></tr></table></figure>
-
-<p>然后输入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export PATH=$PATH:/usr/local/cuda/bin  </span><br><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64  </span><br><span class="line">export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/cuda/lib64</span><br></pre></td></tr></table></figure>
-
-<p>最后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
-
-<p>之后应该就能显示了</p>
-<h3 id="CUDA的测试"><a href="#CUDA的测试" class="headerlink" title="CUDA的测试"></a><a href="#"></a>CUDA的测试</h3><p>下载测试文件：<a href="https://github.com/nvidia/cuda-samples" title="GitHub - NVIDIA/cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit">GitHub - NVIDIA&#x2F;cuda-samples: Samples for CUDA Developers which demonstrates features in CUDA Toolkit</a></p>
-<p>下载解压后make一下</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c812c23a6ee4fd69748eb91a128dc05_39a5e78576a14f1ca.png"></p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5ea6dfd19d964fa9ac7b7f95183dbf1d_1475ea4225a84c158.png"></p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/a6886047066744b08e2fa1cfc9af2df0_63d7e9f5fdd8445bb.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b54f4a317fc64aa795e66bf71163d97e_d0876e270e6e47f28.png"></p>
-<p>出现这个结果就是成功了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4373d4bbf57445989e5004d3bd6ad751_cd458d6cee7a44d79.png"></p>
-<h2 id="四-CUDANN的安装"><a href="#四-CUDANN的安装" class="headerlink" title="四.CUDANN的安装"></a><a href="#"></a>四.CUDANN的安装</h2><h3 id="CUDANN下载"><a href="#CUDANN下载" class="headerlink" title="CUDANN下载"></a><a href="#"></a>CUDANN下载</h3><p>下载连接：<a href="https://developer.nvidia.com/rdp/cudnn-download">https://developer.nvidia.com/rdp/cudnn-download</a></p>
-<p>这里我下在的是cudann8.4.1</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/9f24be3dde60443f9a18839b76218bdb_6e701b31e177461eb.png"></p>
-<p>&nbsp;下载Linux x86-64(tar)</p>
-<p>进入解压后的界面，然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda-11.6/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda-11.6/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda-11.6/lib64/libcudnn*</span><br><span class="line">#下面这个是方便后面opencv配置cuda</span><br><span class="line">sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include </span><br><span class="line">sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64 </span><br><span class="line">sudo chmod a+r /usr/local/cuda-11.6/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>之后查看<a href="https://so.csdn.net/so/search?q=CUDNN&spm=1001.2101.3001.7020">CUDNN</a>版本</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cat /usr/local/cuda-11.6/include/cudnn_version.h | grep CUDNN_MAJOR -A 2</span><br></pre></td></tr></table></figure>
-
-<h3 id="CUDNN依赖"><a href="#CUDNN依赖" class="headerlink" title="CUDNN依赖"></a><a href="#"></a>CUDNN依赖</h3><p>依赖网站：<a href="https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/" title="Index of /compute/cuda/repos/ubuntu2004/x86_64">Index of &#x2F;compute&#x2F;cuda&#x2F;repos&#x2F;ubuntu2004&#x2F;x86_64</a></p>
-<p>找到对应的依赖（一个带dev一个不带）</p>
-<p>或者使用命令行进行下载</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>安装依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br><span class="line">wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.4.1.50-1+cuda11.6_amd64.deb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<h2 id="五-Tensortrt的安装"><a href="#五-Tensortrt的安装" class="headerlink" title="五.Tensortrt的安装"></a><a href="#"></a>五.Tensortrt的安装</h2><h3 id="1-下载"><a href="#1-下载" class="headerlink" title="1.下载"></a><a href="#"></a>1.下载</h3><p>这里是tensorrt的下载连接:<a href="https://developer.nvidia.com/nvidia-tensorrt-8x-download">https://developer.nvidia.com/nvidia-tensorrt-8x-download</a></p>
-<p>下载tar包解压后的到的连接</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/0e435b363bc446c886e43e5b21292e23_54c963cc1b2a438ab.png"></p>
-<p>修改环境变量:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1.  sudo gedit ~/.bashrc </span><br></pre></td></tr></table></figure>
-
-<p>在文件末尾加入</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH：/home/stand/Software/TensorRT-8.4.1.5/lib</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<p>然后</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-测试样例"><a href="#2-测试样例" class="headerlink" title="2. 测试样例"></a><a href="#"></a>2. 测试样例</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd TensorRT-8.4.1.5/samples/sampleMNIST</span><br><span class="line">make -j16</span><br><span class="line">cd ../../bin/</span><br><span class="line">./sample_mnist</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这样就成功了</p>
-<img width="1200" height="1242" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3eb8c7cdcede4fdead0f60fb785bad68_4fb7033780c548148.png" class="jop-noMdConv">
-
-<h3 id="3-python部分的安装"><a href="#3-python部分的安装" class="headerlink" title="3.python部分的安装"></a><a href="#"></a>3.python部分的安装</h3><p>用miniconda创建完环境之后</p>
-<p>直接pip目录中的uff，python(注意选择和你conda创建python的版本相对应) ，graphsurgeon下的whl就可以了</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5fdfb1069d5c433781f5f8abf04410eb_48a6f8c2ba974c2db.png"></p>
-<p>我这里是一次就成功了可能出现问题的话可以参考这位大佬:<a href="https://blog.csdn.net/lilin020401/article/details/126475351#t4" title="Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客">Ubuntu22.04 下安装驱动、CUDA、cudnn以及TensorRT_lilin020401的博客-CSDN博客</a></p>
-]]></content>
-      <categories>
-        <category>环境配置</category>
-      </categories>
-      <tags>
-        <tag>cuda</tag>
-        <tag>cudnn</tag>
-        <tag>tensorrt</tag>
       </tags>
   </entry>
   <entry>
