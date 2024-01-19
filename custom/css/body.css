@@ -50,16 +50,19 @@ body {
 .content {
   font-size: 20px; /* 或你想要的任何大小 */
   background: rgba(255,255,255,0.2);
+  border-radius: 15px; /* 圆角的半径 */
 }
 /* 文本设置黑夜模式 */
 .darkmode--activated .content {
   font-size: 20px; /* 或你想要的任何大小 */
   background: rgba(0,0,0,0.2);
+  border-radius: 15px; /* 圆角的半径 */
 }
 
 /* 导航栏文字大小 */
 .site-nav {
   font-size: 20px; /* 或其他你希望的大小 */
+  
 }
 
 
@@ -71,7 +74,7 @@ body {
    -webkit-box-shadow: 0 0 5px rgba(202, 203, 203, .5);
    -moz-box-shadow: 0 0 5px rgba(202, 203, 204, .5);
    background: rgba(255,255,255,0.7);
-   border-radius: 10px; /* 圆角的半径 */
+   border-radius: 15px; /* 圆角的半径 */
 }
 
 /* 文章部分黑夜 */
@@ -81,7 +84,7 @@ body {
   -webkit-box-shadow: 0 0 5px rgba(50, 50, 50, .5);
   -moz-box-shadow: 0 0 5px rgba(50, 50, 50, .5);
   background: rgba(0,0,0,0.7);
-  border-radius: 10px; /* 圆角的半径 */
+  border-radius: 15px; /* 圆角的半径 */
 }
 
 .posts-expand .post-title-link {
