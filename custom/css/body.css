@@ -1,3 +1,4 @@
+/* 主体 */
 body {
   background: url("/images/background.jpg");
   background-repeat: no-repeat;
@@ -6,6 +7,60 @@ body {
   background-position: 50% 50%;
 }
 
+
+
+.category-all-chart {
+  width: 50%; /* 设置宽度为200像素 */
+  height: 50%; /* 设置高度为100像素 */
+  margin-top: 5%; /* 添加上外边距，以创建距离上方元素的间距 */
+  /* 或者使用 margin-bottom 添加下外边距，以创建距离下方元素的间距 */
+}
+
+.tag-charts {
+  width: 100%; /* 设置宽度为200像素 */
+  height: 100%; /* 设置高度为100像素 */
+  margin-top: 5%; /* 添加上外边距，以创建距离上方元素的间距 */
+  /* 或者使用 margin-bottom 添加下外边距，以创建距离下方元素的间距 */
+}
+
+/* 标签页分类页填充 */
+.content.page.posts-expand{
+  padding: 0px;
+}
+
+/* 标签页数据获取 */
+.tagclouddata{
+  display: none;
+}
+
+/* 分类页标题 */
+.category-all-title {
+  text-align: center;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* 可选：如果需要垂直居中对齐，可以添加以下样式 */
+  flex-direction: column; /* 垂直居中时使用，使元素竖直排列 */
+}
+
+/* 文本设置 */
+.content {
+  font-size: 20px; /* 或你想要的任何大小 */
+  background: rgba(255,255,255,0.2);
+}
+/* 文本设置黑夜模式 */
+.darkmode--activated .content {
+  font-size: 20px; /* 或你想要的任何大小 */
+  background: rgba(0,0,0,0.2);
+}
+
+/* 导航栏文字大小 */
+.site-nav {
+  font-size: 20px; /* 或其他你希望的大小 */
+}
+
+
 /* 文章部分 */
 .post {
    margin-top: 60px;
@@ -13,15 +68,18 @@ body {
    padding: 25px;
    -webkit-box-shadow: 0 0 5px rgba(202, 203, 203, .5);
    -moz-box-shadow: 0 0 5px rgba(202, 203, 204, .5);
-   background: rgba(255,255,255,0.9);
+   background: rgba(255,255,255,0.7);
+   border-radius: 10px; /* 圆角的半径 */
 }
 
+/* 文章部分黑夜 */
 .darkmode--activated .post {
   /* 在这里定义暗黑模式下的样式 */
-  background: rgba(0, 0, 0, 0.9); /* 例如，使用更暗的背景色 */
   color: #ccc; /* 更改文本颜色以提高可读性 */
   -webkit-box-shadow: 0 0 5px rgba(50, 50, 50, .5);
   -moz-box-shadow: 0 0 5px rgba(50, 50, 50, .5);
+  background: rgba(0,0,0,0.7);
+  border-radius: 10px; /* 圆角的半径 */
 }
 
 .posts-expand .post-title-link {

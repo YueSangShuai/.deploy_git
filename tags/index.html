@@ -114,6 +114,10 @@
 
 
 
+<script defer data-pjax src="/custom/js/raydar.js"></script>
+
+
+<script defer data-pjax src="/custom/js/bar.js"></script>
 
 
 
@@ -305,10 +309,18 @@
       <div class="post-body">
           <div class="tag-cloud">
             <div class="tag-cloud-title">
-              目前共计 13 个标签
+              <i class="fas fa-book">标签统计</i> 
+            </div>
+            <div class="tag-charts">
+              <canvas id="myBarChart"></canvas>
+              <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- 引入Chart.js库 -->
             </div>
             <div class="tag-cloud-tags">
+
               <a href="/tags/IOU/" style="font-size: 15px; color: #ccc">IOU</a> <a href="/tags/Jeston-nx/" style="font-size: 20px; color: #6f6f6f">Jeston nx</a> <a href="/tags/Openvino/" style="font-size: 20px; color: #6f6f6f">Openvino</a> <a href="/tags/Yolo/" style="font-size: 20px; color: #6f6f6f">Yolo</a> <a href="/tags/cuda/" style="font-size: 20px; color: #6f6f6f">cuda</a> <a href="/tags/cudnn/" style="font-size: 15px; color: #ccc">cudnn</a> <a href="/tags/hexo/" style="font-size: 25px; color: #111">hexo</a> <a href="/tags/opencv/" style="font-size: 15px; color: #ccc">opencv</a> <a href="/tags/opencv-contrib/" style="font-size: 15px; color: #ccc">opencv_contrib</a> <a href="/tags/tensorrt/" style="font-size: 15px; color: #ccc">tensorrt</a> <a href="/tags/ubuntu/" style="font-size: 15px; color: #ccc">ubuntu</a> <a href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" style="font-size: 15px; color: #ccc">交叉熵损失</a> <a href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" style="font-size: 15px; color: #ccc">优化器</a>
+              
+              <div class="tagclouddata"><ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul></div>
+              
             </div>
           </div>
         
