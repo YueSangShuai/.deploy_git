@@ -22,12 +22,12 @@
     var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="YOLOV8和YOLOV5对比正负样本匹配策略yolov5yolov5:采用anchor-base策略 1.跨anchor预测在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:$\frac {GT宽高}{anchors宽高}&#x3D;ration_1$ $\">
+  <meta name="description" content="YOLOV8和YOLOV5对比 正负样本匹配策略 yolov5 yolov5:采用anchor-base策略 1.跨anchor预测 在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。 在yolov5中一个GT可以由多个anchor负责预测，具体方法如下: $ \frac {GT宽高}{anchors宽高}&#x3D;ration_1 $">
 <meta property="og:type" content="article">
 <meta property="og:title" content="YOLOV8和YOLOV5对比">
 <meta property="og:url" content="http://yuesangshuai.github.io/2024/01/08/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94/index.html">
 <meta property="og:site_name" content="你好陌生人">
-<meta property="og:description" content="YOLOV8和YOLOV5对比正负样本匹配策略yolov5yolov5:采用anchor-base策略 1.跨anchor预测在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:$\frac {GT宽高}{anchors宽高}&#x3D;ration_1$ $\">
+<meta property="og:description" content="YOLOV8和YOLOV5对比 正负样本匹配策略 yolov5 yolov5:采用anchor-base策略 1.跨anchor预测 在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。 在yolov5中一个GT可以由多个anchor负责预测，具体方法如下: $ \frac {GT宽高}{anchors宽高}&#x3D;ration_1 $">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/731986cd924df77e562fa23f6460f3ec.png">
 <meta property="article:published_time" content="2024-01-08T09:43:59.875Z">
@@ -132,6 +132,13 @@
 
 
 <script defer data-pjax src="/custom/js/test.js"></script>
+
+
+<script defer data-pjax src="/custom/js/code-unfloder.js"></script>
+<link rel="stylesheet" href="/custom/css/highlight.css">
+
+
+<script defer data-pjax src="/custom/js/vuepress.js"></script>
 
 
 
@@ -421,12 +428,38 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="YOLOV8和YOLOV5对比"><a href="#YOLOV8和YOLOV5对比" class="headerlink" title="YOLOV8和YOLOV5对比"></a>YOLOV8和YOLOV5对比</h1><h2 id="正负样本匹配策略"><a href="#正负样本匹配策略" class="headerlink" title="正负样本匹配策略"></a>正负样本匹配策略</h2><h3 id="yolov5"><a href="#yolov5" class="headerlink" title="yolov5"></a>yolov5</h3><p>yolov5:采用anchor-base策略</p>
-<h4 id="1-跨anchor预测"><a href="#1-跨anchor预测" class="headerlink" title="1.跨anchor预测"></a>1.跨anchor预测</h4><p>在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。<br>在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:<br>$<br>\frac {GT宽高}{anchors宽高}&#x3D;ration_1<br>$</p>
-<p>$<br>\frac {anchors宽高}{GT宽高}&#x3D;ration_2<br>$<br>取ratio1和ratio2的最大值作为最后的宽高比，该宽高比和设定阈值（默认为4）比较，小于设定阈值的anchor则为匹配到的anchor。<br>给出一位老哥的代码比较能直观的理解这个<br>  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">anchor_boxes=torch.tensor([[<span class="number">1.25000</span>, <span class="number">1.62500</span>],[<span class="number">2.00000</span>, <span class="number">3.75000</span>],[<span class="number">4.12500</span>, <span class="number">2.87500</span>]])</span><br><span class="line">gt_box=torch.tensor([<span class="number">5</span>,<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">ratio1=gt_box/anchor_boxes</span><br><span class="line">ratio2=anchor_boxes/gt_box</span><br><span class="line"><span class="comment">#这里的max最后取[0]代表着取值[1]是索引</span></span><br><span class="line">ratio=torch.<span class="built_in">max</span>(ratio1, ratio2).<span class="built_in">max</span>(<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(ratio)</span><br><span class="line"> </span><br><span class="line">anchor_t=<span class="number">4</span></span><br><span class="line">res=ratio&lt;anchor_t</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure></p>
-<h4 id="2-跨grid预测"><a href="#2-跨grid预测" class="headerlink" title="2.跨grid预测"></a>2.跨grid预测</h4><p>  在v5之前的yolo都是假设GT落入某个预测分支的某个网格(预测分支在这里的意思就是yolo的三个检测头)，该网格有左、上、右、下4个邻域网格，根据GT框的中心位置，将最近的2个邻域网格也作为预测网格，也即一个GT框可以由3个网格来预测。<br>  (偷个别人的例子)<br> 计算例子：<br>GT box中心点处于grid1中，grid1被选中，为了增加增样本，grid1的上下左右grid为候选网格，因为GT中心点更靠近grid2和grid3，grid2和grid3也作为匹配到的网格，根据上步的anchor匹配结果，GT与anchor2、anchor3相匹配，因此GT在当前层匹配到的正样本有6个，分别为：grid1_anchor2，grid1_anchor3，grid2_anchor2，grid2_anchor3，grid3_anchor2，grid3_anchor3。<br><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/731986cd924df77e562fa23f6460f3ec.png"></p>
-<h4 id="3-跨分支预测"><a href="#3-跨分支预测" class="headerlink" title="3.跨分支预测"></a>3.跨分支预测</h4><p>原先一个GT只能由一个分支进行预测，现在我们在每个分支上进行anchor的匹配和grid的匹配，只要满足上述的条件即为正样本。<br>详细的匹配策略可以根据这位大佬的debug一步步进行<br> [大佬教程]:<a target="_blank" rel="noopener" href="https://blog.csdn.net/u013066730/article/details/126969286">https://blog.csdn.net/u013066730/article/details/126969286</a></p>
-<h3 id="yolov8"><a href="#yolov8" class="headerlink" title="yolov8"></a>yolov8</h3><p> yolov8采用的是anchor-free，其核心思路就是每个grid作为一个anchor,<br> $$<br>\text { alignmetric }&#x3D;s^\alpha +u^\beta<br>$$<br>其中，s 是预测类别分值，u 是预测框和真实框的ciou值，另外两个就是权重超参数了对于每个真实框，然后直接对align_metric匹配程度排序，选取topK个预测框作为正样本。</p>
+        <h1>YOLOV8和YOLOV5对比</h1>
+<h2 id="正负样本匹配策略">正负样本匹配策略</h2>
+<h3 id="yolov5">yolov5</h3>
+<p>yolov5:采用anchor-base策略</p>
+<h4 id="1-跨anchor预测">1.跨anchor预测</h4>
+<p>在yolov3中一个GT只能由一个anchor负责预测具体是哪个anchor是看哪个anchor与这个GT的IOU最大。<br>
+在yolov5中一个GT可以由多个anchor负责预测，具体方法如下:<br>
+$<br>
+\frac {GT宽高}{anchors宽高}=ration_1<br>
+$</p>
+<p>$<br>
+\frac {anchors宽高}{GT宽高}=ration_2<br>
+$<br>
+取ratio1和ratio2的最大值作为最后的宽高比，该宽高比和设定阈值（默认为4）比较，小于设定阈值的anchor则为匹配到的anchor。<br>
+给出一位老哥的代码比较能直观的理解这个</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">anchor_boxes=torch.tensor([[<span class="number">1.25000</span>, <span class="number">1.62500</span>],[<span class="number">2.00000</span>, <span class="number">3.75000</span>],[<span class="number">4.12500</span>, <span class="number">2.87500</span>]])</span><br><span class="line">gt_box=torch.tensor([<span class="number">5</span>,<span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">ratio1=gt_box/anchor_boxes</span><br><span class="line">ratio2=anchor_boxes/gt_box</span><br><span class="line"><span class="comment">#这里的max最后取[0]代表着取值[1]是索引</span></span><br><span class="line">ratio=torch.<span class="built_in">max</span>(ratio1, ratio2).<span class="built_in">max</span>(<span class="number">1</span>)[<span class="number">0</span>]</span><br><span class="line"><span class="built_in">print</span>(ratio)</span><br><span class="line"> </span><br><span class="line">anchor_t=<span class="number">4</span></span><br><span class="line">res=ratio&lt;anchor_t</span><br><span class="line"><span class="built_in">print</span>(res)</span><br></pre></td></tr></table></figure>
+<h4 id="2-跨grid预测">2.跨grid预测</h4>
+<p>在v5之前的yolo都是假设GT落入某个预测分支的某个网格(预测分支在这里的意思就是yolo的三个检测头)，该网格有左、上、右、下4个邻域网格，根据GT框的中心位置，将最近的2个邻域网格也作为预测网格，也即一个GT框可以由3个网格来预测。<br>
+(偷个别人的例子)<br>
+计算例子：<br>
+GT box中心点处于grid1中，grid1被选中，为了增加增样本，grid1的上下左右grid为候选网格，因为GT中心点更靠近grid2和grid3，grid2和grid3也作为匹配到的网格，根据上步的anchor匹配结果，GT与anchor2、anchor3相匹配，因此GT在当前层匹配到的正样本有6个，分别为：grid1_anchor2，grid1_anchor3，grid2_anchor2，grid2_anchor3，grid3_anchor2，grid3_anchor3。<br>
+<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/731986cd924df77e562fa23f6460f3ec.png" alt=""></p>
+<h4 id="3-跨分支预测">3.跨分支预测</h4>
+<p>原先一个GT只能由一个分支进行预测，现在我们在每个分支上进行anchor的匹配和grid的匹配，只要满足上述的条件即为正样本。<br>
+详细的匹配策略可以根据这位大佬的debug一步步进行<br>
+[大佬教程]:<a target="_blank" rel="noopener" href="https://blog.csdn.net/u013066730/article/details/126969286">https://blog.csdn.net/u013066730/article/details/126969286</a></p>
+<h3 id="yolov8">yolov8</h3>
+<p>yolov8采用的是anchor-free，其核心思路就是每个grid作为一个anchor,<br>
+$$<br>
+\text { alignmetric }=s^\alpha +u^\beta<br>
+$$<br>
+其中，s 是预测类别分值，u 是预测框和真实框的ciou值，另外两个就是权重超参数了对于每个真实框，然后直接对align_metric匹配程度排序，选取topK个预测框作为正样本。</p>
 
     </div>
 
@@ -530,7 +563,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#YOLOV8%E5%92%8CYOLOV5%E5%AF%B9%E6%AF%94"><span class="nav-number">1.</span> <span class="nav-text">YOLOV8和YOLOV5对比</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC%E5%8C%B9%E9%85%8D%E7%AD%96%E7%95%A5"><span class="nav-number">1.1.</span> <span class="nav-text">正负样本匹配策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#yolov5"><span class="nav-number">1.1.1.</span> <span class="nav-text">yolov5</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%B7%A8anchor%E9%A2%84%E6%B5%8B"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">1.跨anchor预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E8%B7%A8grid%E9%A2%84%E6%B5%8B"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">2.跨grid预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E8%B7%A8%E5%88%86%E6%94%AF%E9%A2%84%E6%B5%8B"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">3.跨分支预测</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#yolov8"><span class="nav-number">1.1.2.</span> <span class="nav-text">yolov8</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">YOLOV8和YOLOV5对比</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E8%B4%9F%E6%A0%B7%E6%9C%AC%E5%8C%B9%E9%85%8D%E7%AD%96%E7%95%A5"><span class="nav-number">1.1.</span> <span class="nav-text">正负样本匹配策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#yolov5"><span class="nav-number">1.1.1.</span> <span class="nav-text">yolov5</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%B7%A8anchor%E9%A2%84%E6%B5%8B"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">1.跨anchor预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E8%B7%A8grid%E9%A2%84%E6%B5%8B"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">2.跨grid预测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E8%B7%A8%E5%88%86%E6%94%AF%E9%A2%84%E6%B5%8B"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">3.跨分支预测</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#yolov8"><span class="nav-number">1.1.2.</span> <span class="nav-text">yolov8</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -546,7 +579,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -600,6 +633,11 @@
 	</div>
 	<ul class="links-of-blogroll-list recent-posts-list">
 	        <li class="my-links-of-blogroll-item">
+		    <a href="/2024/01/22/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%20next%E4%B8%BB%E9%A2%98%E9%AD%94%E6%94%B9/" title="hexo next魔改" target="">
+		    hexo next魔改
+		    </a>
+		</li>
+	        <li class="my-links-of-blogroll-item">
 		    <a href="/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/" title="hexo基础版搭建" target="">
 		    hexo基础版搭建
 		    </a>
@@ -619,11 +657,6 @@
 		    穷苦人民如何用移动固态配置unbutu22.04
 		    </a>
 		</li>
-	        <li class="my-links-of-blogroll-item">
-		    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）" target="">
-		    ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）
-		    </a>
-		</li>
 	</ul>
     </div>
 
@@ -634,7 +667,7 @@
 	<div class="widget-wrap">
 		<div id="myCanvasContainer" class="widget tagcloud">
 			<canvas width="250" height="150" id="resCanvas" style="width:100%">
-				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
+				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
 			</canvas>
 		</div>
 	</div>

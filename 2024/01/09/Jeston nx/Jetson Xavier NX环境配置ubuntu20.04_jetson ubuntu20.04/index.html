@@ -22,12 +22,12 @@
     var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Jetson Xavier NX环境配置ubuntu20.04特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。 安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系 这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。 一.准备事项有条件的话最好有台装ubuuntu的主机，因为nx安">
+  <meta name="description" content="Jetson Xavier NX环境配置ubuntu20.04 特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。 安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系 这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。 一.准备事项 有条件的话最好有台装ubuuntu的主机，因为n">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Jetson Xavier NX环境配置ubuntu20.04">
 <meta property="og:url" content="http://yuesangshuai.github.io/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/index.html">
 <meta property="og:site_name" content="你好陌生人">
-<meta property="og:description" content="Jetson Xavier NX环境配置ubuntu20.04特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。 安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系 这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。 一.准备事项有条件的话最好有台装ubuuntu的主机，因为nx安">
+<meta property="og:description" content="Jetson Xavier NX环境配置ubuntu20.04 特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。 安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系 这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。 一.准备事项 有条件的话最好有台装ubuuntu的主机，因为n">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png">
@@ -148,6 +148,13 @@
 
 
 <script defer data-pjax src="/custom/js/test.js"></script>
+
+
+<script defer data-pjax src="/custom/js/code-unfloder.js"></script>
+<link rel="stylesheet" href="/custom/css/highlight.css">
+
+
+<script defer data-pjax src="/custom/js/vuepress.js"></script>
 
 
 
@@ -437,78 +444,62 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Jetson-Xavier-NX环境配置ubuntu20-04"><a href="#Jetson-Xavier-NX环境配置ubuntu20-04" class="headerlink" title="Jetson Xavier NX环境配置ubuntu20.04"></a>Jetson Xavier NX环境配置ubuntu20.04</h1><p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
+        <h1>Jetson Xavier NX环境配置ubuntu20.04</h1>
+<p><strong>特别感谢淘宝老哥有问必答，这里为他写个教程减轻老哥的工作负担。</strong></p>
 <p><strong>安装上nx的版本和你的虚拟机的系统没有关系和安装的jetpack的版本有关系</strong></p>
 <p><strong>这里我先装在sd卡上的原因是因为nx默认sd卡启动，你就算装在固态中但是系统也还是默认sd卡启动需要在后面的操作中把它转到固态中。</strong></p>
-<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
-<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=ssd&spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
-<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…..）然后直接把之前安装好的镜像直接导入即可。</p>
-<h2 id="二-虚拟机"><a href="#二-虚拟机" class="headerlink" title="二.虚拟机"></a><a id="t1"></a>二.虚拟机</h2><p>创建一个虚拟机</p>
+<h2 id="a-id-t0-a-一-准备事项"><a id="t0"></a>一.准备事项</h2>
+<p>有条件的话最好有台装ubuuntu的主机，因为nx安装的过程中会经常断线重连，有时候虚拟机的话会识别不到。这里不要ubuntu的版本不要用22的版本我测试过22的版本我没有办法进行安装（也有可能是我的问题）</p>
+<p>这里我用的是Ubuntu20.04的镜像和vmware16，先在虚拟机上面进行安装然后再拷贝到nx的<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=ssd&amp;spm=1001.2101.3001.7020">ssd</a>固态里面，我的nx是国产套件没有sd卡所以直接在虚拟机上面直接进行安装。</p>
+<p>虚拟机安装还有一个好处就是你在虚拟机环境安装完成之后万一那天你的nx又炸了你只需要格式化你的固态（这里建议买一个固态的转换口tb好像还挺贵的…）然后直接把之前安装好的镜像直接导入即可。</p>
+<h2 id="a-id-t1-a-二-虚拟机"><a id="t1"></a>二.虚拟机</h2>
+<p>创建一个虚拟机</p>
 <img width="1200" height="716" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5c3fc4ef67c74adaad2dac54aa8362d6_c4866f084ca842509.png"/>
-
-<p>&nbsp;选择你镜像的位置</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png"></p>
-<p>&nbsp;分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png"></p>
-<p>&nbsp;然后就是Ubuntu的安装</p>
+<p> 选择你镜像的位置</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/8bf7d1a07742442f8a1dad6722034882_a90d1f4114a643c0a.png" alt=""></p>
+<p> 分配内存的时候建议给大点60Gcbd<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ad09ddb431454a2fa218542df02b4b3f_6f85f6d3e69242fea.png" alt=""></p>
+<p> 然后就是Ubuntu的安装</p>
 <img width="1200" height="566" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1cf9d6b16a0b4017b4538bfc1183f121_d5c1955fe25a4eb7b.png"/>
-
-<h2 id="三-Nvidia-sdk的安装"><a href="#三-Nvidia-sdk的安装" class="headerlink" title="三.Nvidia sdk的安装"></a><a id="t2"></a>三.<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=Nvidia&spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2><p>进入官网：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
+<h2 id="a-id-t2-a-三-Nvidia-sdk的安装"><a id="t2"></a>三.<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=Nvidia&amp;spm=1001.2101.3001.7020">Nvidia</a> sdk的安装</h2>
+<p>进入官网：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/zh-cn/embedded/jetpack" title="JetPack SDK | NVIDIA Developer">JetPack SDK | NVIDIA Developer</a>（怕你们英文不好给你们的是中文的官网）</p>
 <p>选择SDK，这里需要登录自己个人的Nvidia账号</p>
 <img width="1200" height="265" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/334d7bc0a53a44238cdc9a974d519335_d9a5cd189cca43bf9.png"/>
-
 <p>或者直接在虚拟机内进行下载，我这里选择直接从主机拖拽到虚拟机内因为我有安装vmware-tools</p>
 <p>输入指令进行安装</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ./sdkmanager_1.6.1-8175_amd64.deb ./sdkmanager_1.6.1-8175_amd64.deb </span><br></pre></td></tr></table></figure>
-
 <p>安装完成后输入</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdkmanager </span><br></pre></td></tr></table></figure>
-
 <p>出现这个页面就代表着安装完成，然后登录一下自己的开发者账号<img width="1200" height="683" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/f908305664a549f89fd4ce6255e7bb79_9bad16fe03e549b2a.png"/></p>
-<p>&nbsp;成功进入后的界面</p>
+<p> 成功进入后的界面</p>
 <img width="1200" height="538" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/280f402d5b694c76a2e3628bfeaa7a27_fc90091e5c784de29.png"/>
-
-<p>&nbsp;之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
+<p> 之后用杜邦线或者跳线帽短接FC REC和GND（第二个引脚和第三个引脚）</p>
 <img width="1200" height="900" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/4961d70182784916b20317e1236886d4_139acd134902413da.jpeg"/>
-
-<p>&nbsp;接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
+<p> 接通电脑和电源，在虚拟机界面会弹出外接移动设备选择到你装sdk的这个虚拟机上面就可以了。（操作太快忘记截图了）</p>
 <img width="1200" height="754" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/77e573f67f9f40199e5caa33b8923313_cb2cad02f62a485ea.png"/>
-
-<p>&nbsp;<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=jetpack&spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
+<p> <a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=jetpack&amp;spm=1001.2101.3001.7020">jetpack</a>选择5.01dp(官网安装的是16版本但是下载完以后会跳出更新，更新完应该是18，而且这个版本和ubuntu的版本没有关系，实际系统的版本取决于你的选中的JetPack版本)，这里我选择5.0.1dp版本，因刷写系统在模组上运行，故Host Machine可不勾选</p>
 <img width="1200" height="786" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d7fa0a14d5314344a9434710f3566d3d_1adf6993b90a49bb9.png"/>
-
 <p>deepstream我也不知道干啥的先装上去吧</p>
 <img width="1200" height="739" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3088901daf4e4797ba11f40815847e13_c095e4de1028465d9.png"/>
-
-<p>&nbsp;然后只装os</p>
+<p> 然后只装os</p>
 <img width="1200" height="755" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3dad96f2e89246fa9f125d39854d3029_16bbe216a1534e7fa.png"/>
-
-<p>&nbsp;到这步应该就没有问题了（网络不好的可以多等等）</p>
+<p> 到这步应该就没有问题了（网络不好的可以多等等）</p>
 <img width="1200" height="567" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/88f66fe2f1de47d086158bd432973cdc_0f38c70ef9bc44ea9.png"/>
-
-<p>&nbsp;完成后跳出了这个页面（按照这个选择）</p>
+<p> 完成后跳出了这个页面（按照这个选择）</p>
 <img width="1200" height="708" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/d8d63fe71f2a4258878c580f25fc83f7_6fd232e7711b4a36b.png"/>
-
-<p>&nbsp;然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
+<p> 然后安装完成后外接显示屏到nx像配置Ubuntu一样配置完成就OK了</p>
 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5f2b93da5fcc4c1f95c6f060e9969a25_078780d3047e4e72a.png"/>
-
 <p>查看一下我们装的系统版本是否是正确的.</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/lsb-release</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;大功告成</p>
+<p> 大功告成</p>
 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6430965d7e1d412a9eee86a5023910c1_7314436ee52444f6b.png"/>
-
-<h2 id="四将SSD设置成默认启动盘"><a href="#四将SSD设置成默认启动盘" class="headerlink" title=" 四将SSD设置成默认启动盘"></a><a id="t3"></a> 四将SSD设置成默认启动盘</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
-
+<h2 id="a-id-t3-a-四将SSD设置成默认启动盘"><a id="t3"></a> 四将SSD设置成默认启动盘</h2>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install git</span><br></pre></td></tr></table></figure>
 <p>输入disk,我这里是16g运存所以我分16g，剩下全部给系统就可以了</p>
 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/e9f08d9d32e746efae8bdf3ce3a0c6ef_6c1a1b765ade440aa.png"/>
-
 <p>jinru</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">git clone https://github.com/jetsonhacks/rootOnNVMe.git</span><br><span class="line">    </span><br><span class="line">cd rootOnNVMe</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./copy-rootfs-ssd.sh</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./setup-service.sh</span><br></pre></td></tr></table></figure>
-
 <p>进入新的系统后在root打开属性查看一下空间就知道有没有成功了。</p>
 <p>完成！</p>
 
@@ -614,7 +605,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Jetson-Xavier-NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20-04"><span class="nav-number">1.</span> <span class="nav-text">Jetson Xavier NX环境配置ubuntu20.04</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%87%86%E5%A4%87%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.1.</span> <span class="nav-text">一.准备事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">1.2.</span> <span class="nav-text">二.虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-Nvidia-sdk%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">1.3.</span> <span class="nav-text">三.Nvidia sdk的安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E5%B0%86SSD%E8%AE%BE%E7%BD%AE%E6%88%90%E9%BB%98%E8%AE%A4%E5%90%AF%E5%8A%A8%E7%9B%98"><span class="nav-number">1.4.</span> <span class="nav-text"> 四将SSD设置成默认启动盘</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Jetson Xavier NX环境配置ubuntu20.04</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#a-id-t0-a-%E4%B8%80-%E5%87%86%E5%A4%87%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.1.</span> <span class="nav-text">一.准备事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#a-id-t1-a-%E4%BA%8C-%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">1.2.</span> <span class="nav-text">二.虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#a-id-t2-a-%E4%B8%89-Nvidia-sdk%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">1.3.</span> <span class="nav-text">三.Nvidia sdk的安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#a-id-t3-a-%E5%9B%9B%E5%B0%86SSD%E8%AE%BE%E7%BD%AE%E6%88%90%E9%BB%98%E8%AE%A4%E5%90%AF%E5%8A%A8%E7%9B%98"><span class="nav-number">1.4.</span> <span class="nav-text"> 四将SSD设置成默认启动盘</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -630,7 +621,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -684,6 +675,11 @@
 	</div>
 	<ul class="links-of-blogroll-list recent-posts-list">
 	        <li class="my-links-of-blogroll-item">
+		    <a href="/2024/01/22/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%20next%E4%B8%BB%E9%A2%98%E9%AD%94%E6%94%B9/" title="hexo next魔改" target="">
+		    hexo next魔改
+		    </a>
+		</li>
+	        <li class="my-links-of-blogroll-item">
 		    <a href="/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/" title="hexo基础版搭建" target="">
 		    hexo基础版搭建
 		    </a>
@@ -703,11 +699,6 @@
 		    穷苦人民如何用移动固态配置unbutu22.04
 		    </a>
 		</li>
-	        <li class="my-links-of-blogroll-item">
-		    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）" target="">
-		    ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）
-		    </a>
-		</li>
 	</ul>
     </div>
 
@@ -718,7 +709,7 @@
 	<div class="widget-wrap">
 		<div id="myCanvasContainer" class="widget tagcloud">
 			<canvas width="250" height="150" id="resCanvas" style="width:100%">
-				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
+				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
 			</canvas>
 		</div>
 	</div>

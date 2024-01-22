@@ -22,10 +22,6 @@ function removeCSS(url) {
     }
 }
 
-// 使用 querySelector 获取第一个匹配的 .pretype 元素
-// var element = document.querySelector('.pretype');
-// var id = element.id;
-// var path='custom/css/loading/' + id + '.css'
 
 
 var preloader = {

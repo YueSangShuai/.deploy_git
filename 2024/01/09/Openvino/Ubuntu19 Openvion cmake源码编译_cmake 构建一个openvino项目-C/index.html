@@ -22,12 +22,12 @@
     var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Ubuntu19 Openvion cmake源码编译苦逼打工人Ubuntu服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。 123git clone https:&#x2F;&#x2F;github.com&#x2F;openvinotoolkit&#x2F;openvino.gitcd openvino  解压后的结构目录  有的包需要我们去gith">
+  <meta name="description" content="Ubuntu19 Openvion cmake源码编译 苦逼打工人Ubuntu服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。 123git clone https:&#x2F;&#x2F;github.com&#x2F;openvinotoolkit&#x2F;openvino.gitcd openvino 解压后的结构目录  有的包需要我们去gith">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Ubuntu19 Openvion cmake源码编译">
 <meta property="og:url" content="http://yuesangshuai.github.io/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/index.html">
 <meta property="og:site_name" content="你好陌生人">
-<meta property="og:description" content="Ubuntu19 Openvion cmake源码编译苦逼打工人Ubuntu服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。 123git clone https:&#x2F;&#x2F;github.com&#x2F;openvinotoolkit&#x2F;openvino.gitcd openvino  解压后的结构目录  有的包需要我们去gith">
+<meta property="og:description" content="Ubuntu19 Openvion cmake源码编译 苦逼打工人Ubuntu服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。 123git clone https:&#x2F;&#x2F;github.com&#x2F;openvinotoolkit&#x2F;openvino.gitcd openvino 解压后的结构目录  有的包需要我们去gith">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png">
@@ -135,6 +135,13 @@
 
 
 <script defer data-pjax src="/custom/js/test.js"></script>
+
+
+<script defer data-pjax src="/custom/js/code-unfloder.js"></script>
+<link rel="stylesheet" href="/custom/css/highlight.css">
+
+
+<script defer data-pjax src="/custom/js/vuepress.js"></script>
 
 
 
@@ -424,32 +431,27 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Ubuntu19-Openvion-cmake源码编译"><a href="#Ubuntu19-Openvion-cmake源码编译" class="headerlink" title="Ubuntu19 Openvion cmake源码编译"></a>Ubuntu19 Openvion cmake源码编译</h1><p>苦逼打工人<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=Ubuntu&spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
+        <h1>Ubuntu19 Openvion cmake源码编译</h1>
+<p>苦逼打工人<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=Ubuntu&amp;spm=1001.2101.3001.7020">Ubuntu</a>服务器没有可视化界面，而且服务器用的是Ubuntu19，官网好像只支持18，20的安装，没办法为了量化这些模型只好cmake编译了。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/openvinotoolkit/openvino.git</span><br><span class="line">cd openvino</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <p>解压后的结构目录</p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/5a8d3ae6a20e40e6b93287e96f8e8a34_2e068f8ccd0e4123a.png" alt=""></p>
 <p>有的包需要我们去github下载但是公司的机子不能科学上网但是Openvino官方提供了人性的gitee安装的脚本。进入Openvino的目录之后</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">chmod +x scripts/submodule_update_with_gitee.sh</span><br><span class="line">./scripts/submodule_update_with_gitee.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <p>然后安装外部依赖</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">chmod +x install_build_dependencies.sh</span><br><span class="line">sudo ./install_build_dependencies.sh</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <p>然后可以开始狗蛋的cmake编译了，先用这个试试水</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cmake -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">make --jobs=$(nproc --all)</span><br></pre></td></tr></table></figure>
-
 <p>我中间报了一些黄的的警告我没有管他之后</p>
 <p><strong>（python版的openvino好像可以直接pip 安装runtime或者dev包括了onnx转ir的mo_onnx，但是如果要做int8量化的话最好还是编译一下）（记得换成你的python版本）</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#根据自己实际需要我这里需要用到python版本的openvino我才安装的</span><br><span class="line">#如果需要的话可以指定一下位置</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release -DNGRAPH_DEBUG_ENABLE=ON \</span><br><span class="line">-DENABLE_PYTHON=ON \</span><br><span class="line">-DPYTHON_EXECUTABLE=/usr/bin/python3.7 \</span><br><span class="line">-DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \</span><br><span class="line">-DPYTHON_INCLUDE_DIR=/usr/include/python3.7 ..   </span><br></pre></td></tr></table></figure>
-
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png"></p>
-<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png"></p>
-<p>&nbsp;没有报错就好，然后开始编译库</p>
-<p>&nbsp;<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png"></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/3d3dcc4c683d494682cdff4c2684d517_87712abb6a8444b2b.png" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/ecdd776fdfc44f8d9971b5176ad620f8_f2483488a09e40d78.png" alt=""></p>
+<p> 没有报错就好，然后开始编译库</p>
+<p> <img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/359aefa8233449278ae14e7ab0bb1925_e133f89b69294f79a.png" alt=""></p>
 <p>我编译的过程很顺利没有出现什么其他的错误，编译完以后直接</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-
-<p>&nbsp;之后就可以快乐的使用Openvino啦</p>
+<p> 之后就可以快乐的使用Openvino啦</p>
 <p><strong>(经过我测试，我发现如果有python使用需求的小伙伴们可以直接从官网pip下载OpenVino里面的东西有mo.py的转换还有int8模型量化的代码)</strong></p>
 <p>最近还是int8试试水，之后如果可以出一期Openvino量化的教程。</p>
 
@@ -555,7 +557,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Ubuntu19-Openvion-cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91"><span class="nav-number">1.</span> <span class="nav-text">Ubuntu19 Openvion cmake源码编译</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Ubuntu19 Openvion cmake源码编译</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -571,7 +573,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -625,6 +627,11 @@
 	</div>
 	<ul class="links-of-blogroll-list recent-posts-list">
 	        <li class="my-links-of-blogroll-item">
+		    <a href="/2024/01/22/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%20next%E4%B8%BB%E9%A2%98%E9%AD%94%E6%94%B9/" title="hexo next魔改" target="">
+		    hexo next魔改
+		    </a>
+		</li>
+	        <li class="my-links-of-blogroll-item">
 		    <a href="/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/" title="hexo基础版搭建" target="">
 		    hexo基础版搭建
 		    </a>
@@ -644,11 +651,6 @@
 		    穷苦人民如何用移动固态配置unbutu22.04
 		    </a>
 		</li>
-	        <li class="my-links-of-blogroll-item">
-		    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）" target="">
-		    ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）
-		    </a>
-		</li>
 	</ul>
     </div>
 
@@ -659,7 +661,7 @@
 	<div class="widget-wrap">
 		<div id="myCanvasContainer" class="widget tagcloud">
 			<canvas width="250" height="150" id="resCanvas" style="width:100%">
-				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
+				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
 			</canvas>
 		</div>
 	</div>

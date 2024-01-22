@@ -22,12 +22,12 @@
     var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在安装cuda这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIF">
+  <meta name="description" content="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01） 这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在安装cuda这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WI">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）">
 <meta property="og:url" content="http://yuesangshuai.github.io/2024/01/09/Jeston%20nx/Jeston%20nx%E5%AE%89%E8%A3%85cuda,cudann,tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPa/index.html">
 <meta property="og:site_name" content="你好陌生人">
-<meta property="og:description" content="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在安装cuda这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIF">
+<meta property="og:description" content="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01） 这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在安装cuda这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WI">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/745ba610764a440895475ba8d1aa28d1_2be41ad5b386494d8.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/daf6336878d94e8e8a0f7121b9b452c1_d840294fbb1b49ce9.png">
@@ -135,6 +135,13 @@
 
 
 <script defer data-pjax src="/custom/js/test.js"></script>
+
+
+<script defer data-pjax src="/custom/js/code-unfloder.js"></script>
+<link rel="stylesheet" href="/custom/css/highlight.css">
+
+
+<script defer data-pjax src="/custom/js/vuepress.js"></script>
 
 
 
@@ -424,36 +431,31 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）"><a href="#Jeston-nx安装cuda-cudann-tenorrt并且卸载原先的opencv（JectPack-5-01）" class="headerlink" title="Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）"></a>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1><p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
+        <h1>Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</h1>
+<p>这里我把nx分成了两个部分进行安装：系统的安装和cuda的安装。这样做的原因是因为在<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85cuda&amp;spm=1001.2101.3001.7020">安装cuda</a>这些组件的时候nx需要联网，在有网线的情况下可以通过网线连接WIFE口进行直接安装之后再按照我另外一篇博客中直接把这些插件勾选上去就可以了之后把sd卡的系统拷贝到固态中，（很可惜公司WIFE离我太远了，刚好又没有网线本来想尝试从电脑桥接网络到nx上），没有网线的话我们先安装系统之后连接上WIFE之后再cuda这些组件的安装。（nx基础环境的安装可以查看我的上一篇博客）。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
 <p>这里有个很狗的坑，我在安装的时候杜邦线忘记拔下来导致系统一直无法被主机识别，ip地址一直不对。</p>
 <p>之后把nx接数据线到主机上面（记得杜邦线不要短接！！！记得杜邦线不要短接！！！记得杜邦线不要短接！！！重要的事情说三遍）</p>
-<h2 id="一-准备事项"><a href="#一-准备事项" class="headerlink" title="一.准备事项"></a><a id="t0"></a>一.准备事项</h2><p>首先我们先换个源</p>
+<h2 id="a-id-t0-a-一-准备事项"><a id="t0"></a>一.准备事项</h2>
+<p>首先我们先换个源</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo gedit /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
 <p>注意JetPack5.0.1是ubuntu20了，后缀是focal，开发板还要带上ports：(记得开发板的要是ubuntu-port之前换源一直出错就是因为换错了)</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-updates main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-backports main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line">deb https://mirrors.ustc.edu.cn/ubuntu-ports/ focal-security main restricted universe multiverse</span><br><span class="line">    </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
 <p>进入主机的sdk界面host不用勾选（这个选项是为了安装cuda这些东西到你的主机上面，看很多博客说这样安装大概率会用不了）</p>
 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/745ba610764a440895475ba8d1aa28d1_2be41ad5b386494d8.png"/>
-
 <p>在这里Jeston os不用勾选，如果你勾选的换就默认重装系统了 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/daf6336878d94e8e8a0f7121b9b452c1_d840294fbb1b49ce9.png"/></p>
-<p>&nbsp;ip地址一般默认不用改变如果实在不知道的话可以</p>
+<p> ip地址一般默认不用改变如果实在不知道的话可以</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure>
-
 <p>来查看你的ip如果有连WIFE的话可能会出现两个这里你两个都试试一般就可以了，然后输入你的用户名和密码</p>
 <img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/6319a52dd2ab4669a59e17520f708772_839888ab3d0f4cd6a.png"/>
-
-<p>&nbsp;等这三个选项全部打勾以后开始安装<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b59586872bf445afa5219503d1d9181a_89a9e6a610604b49b.png"/></p>
+<p> 等这三个选项全部打勾以后开始安装<img width="1200" height="675" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/b59586872bf445afa5219503d1d9181a_89a9e6a610604b49b.png"/></p>
 <p>安装完成后先安装pip3</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br></pre></td></tr></table></figure>
-
 <p>安装jtop(一定要加后面的版本这个版本是支持5.0以上的)</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo -H pip install jetson-stats==4.0.0rc2</span><br></pre></td></tr></table></figure>
-
-<h2 id="二-opencv的卸载"><a href="#二-opencv的卸载" class="headerlink" title="二.opencv的卸载"></a><a id="t1"></a>二.opencv的卸载</h2><p>（最近公司加班多找个时间把这个部分补上）</p>
-<p> </p>
+<h2 id="a-id-t1-a-二-opencv的卸载"><a id="t1"></a>二.opencv的卸载</h2>
+<p>（最近公司加班多找个时间把这个部分补上）</p>
+<p></p>
 
     </div>
 
@@ -557,7 +559,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Jeston-nx%E5%AE%89%E8%A3%85cuda-cudann-tenorrt%E5%B9%B6%E4%B8%94%E5%8D%B8%E8%BD%BD%E5%8E%9F%E5%85%88%E7%9A%84opencv%EF%BC%88JectPack-5-01%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E5%87%86%E5%A4%87%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.1.</span> <span class="nav-text">一.准备事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-opencv%E7%9A%84%E5%8D%B8%E8%BD%BD"><span class="nav-number">1.2.</span> <span class="nav-text">二.opencv的卸载</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Jeston nx安装cuda,cudann,tenorrt并且卸载原先的opencv（JectPack 5.01）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#a-id-t0-a-%E4%B8%80-%E5%87%86%E5%A4%87%E4%BA%8B%E9%A1%B9"><span class="nav-number">1.1.</span> <span class="nav-text">一.准备事项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#a-id-t1-a-%E4%BA%8C-opencv%E7%9A%84%E5%8D%B8%E8%BD%BD"><span class="nav-number">1.2.</span> <span class="nav-text">二.opencv的卸载</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -573,7 +575,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -627,6 +629,11 @@
 	</div>
 	<ul class="links-of-blogroll-list recent-posts-list">
 	        <li class="my-links-of-blogroll-item">
+		    <a href="/2024/01/22/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%20next%E4%B8%BB%E9%A2%98%E9%AD%94%E6%94%B9/" title="hexo next魔改" target="">
+		    hexo next魔改
+		    </a>
+		</li>
+	        <li class="my-links-of-blogroll-item">
 		    <a href="/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E5%9F%BA%E7%A1%80%E7%89%88%E6%90%AD%E5%BB%BA/" title="hexo基础版搭建" target="">
 		    hexo基础版搭建
 		    </a>
@@ -646,11 +653,6 @@
 		    穷苦人民如何用移动固态配置unbutu22.04
 		    </a>
 		</li>
-	        <li class="my-links-of-blogroll-item">
-		    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）" target="">
-		    ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）
-		    </a>
-		</li>
 	</ul>
     </div>
 
@@ -661,7 +663,7 @@
 	<div class="widget-wrap">
 		<div id="myCanvasContainer" class="widget tagcloud">
 			<canvas width="250" height="150" id="resCanvas" style="width:100%">
-				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
+				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
 			</canvas>
 		</div>
 	</div>
