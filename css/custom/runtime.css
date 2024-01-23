@@ -7,15 +7,15 @@
 div#runtime {
   width: 180px;
   margin: auto;
-  color: rgba(0,0,0,0);
+  color: #fff;
   padding-inline: 5px;
   border-radius: 10px;
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0,0,0,0.7);
   font-family: 'UnidreamLED';
 }
 .darkmode--activated div#runtime {
   color: #28b4c8;
-  box-shadow: 0 0 5px rgba(28,69,218,0);
+  box-shadow: 0 0 5px rgba(28,69,218,0.71);
   animation: flashlight 1s linear infinite alternate;
 }
 @-moz-keyframes flashlight {
