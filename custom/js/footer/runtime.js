@@ -27,7 +27,7 @@ setInterval(() => {
       time[4] = nol(second);
     }//秒
     //早上7点到晚上10点营业
-    if ((Number(time[2])<19) && (Number(time[2])>9)){
+    if ((Number(time[2])<18) && (Number(time[2])>=8)){
       currentTimeHtml ="<img class='boardsign' src='https://img.shields.io/badge/该拉屎了-打工中-6adea8?style=social&logo=cakephp' title='距离百年老店也就差不到一百年~'><div id='runtime'>" + time[0] + ' YEAR ' + time[1] + ' DAYS ' + time[2] + ' : ' + time[3] + ' : ' + time[4] + '</div>';
     } //徽标内容参考站内教程
     //其余时间打烊
