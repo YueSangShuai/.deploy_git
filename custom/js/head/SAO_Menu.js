@@ -292,6 +292,12 @@ window.document.oncontextmenu = function(event) {
     localStorage.setItem("SAOSwitch", "turnOff");//将关闭状态激活
     SAOclose();
   }
+
+  function SAOKeepOn(){
+    localStorage.setItem("SAOSwitch", "turnOn");//将关闭状态解除
+  }
+
+
   //控制开关右键菜单效果
   function SAOSwitch(){
     var SAOSwitch = localStorage.getItem("SAOSwitch");
@@ -303,3 +309,11 @@ window.document.oncontextmenu = function(event) {
       SAOKeepOff()
     }
   }
+
+  document.addEventListener("keydown", function(event) {
+    // 检查按下的键是否是 "S" 键，不区分大小写
+    if (event.key.toLowerCase() === "s") {
+      // 调用 SAOKeepOn 函数
+      SAOKeepOn();
+    }
+  });
