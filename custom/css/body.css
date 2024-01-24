@@ -8,8 +8,14 @@ body {
 }
 
 /* 代码片段 */
-.highlight-container{
+ .highlight-container{
   border-radius: 15px; /* 圆角的半径 */
+  /* background: rgba(33, 97, 158, 0.603) */
+}
+
+.darkmode--activated .highlight-container{
+  border-radius: 15px; /* 圆角的半径 */
+  /* background: rgba(33, 97, 158, 0.603) */
 }
 
 /* 分类页图标 */

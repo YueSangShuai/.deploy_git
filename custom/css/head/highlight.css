@@ -1,6 +1,5 @@
 .js_highlight_container {
   position: relative;
-  background-color: highlight-background;
   
 }
 .js_highlight_container.on .highlight-footer {
@@ -16,6 +15,7 @@
   overflow: hidden;
   max-height: 200px;
   border-radius: 15px; /* 圆角的半径 */
+  color: rgba(0,0,0,0.5);
 }
 .js_highlight_container .highlight-footer {
   position: absolute;

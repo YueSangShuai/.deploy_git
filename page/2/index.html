@@ -19,7 +19,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta property="og:type" content="website">
@@ -131,6 +131,9 @@
 
 
 <script defer data-pjax src="/custom/js/head/SAO_Menu.js"></script>
+
+
+<script defer data-pjax src="/custom/js/head/swiper_init.js"></script>
 
 
 
@@ -456,6 +459,12 @@
 	  </div>
 	</div>
 	<br>
+
+.blog-slider.swiper-container-fade.swiper-container-horizontal#swiper_container
+  .blog-slider__wrp.swiper-wrapper(style='transition-duration: 0ms;')
+    
+  .blog-slider__pagination.swiper-pagination-clickable.swiper-pagination-bullets
+
     <ul class="recent-posts">
             <div class="recent-post-item">
               
@@ -717,290 +726,6 @@
                 </div>
 
             </div>
-            <div class="recent-post-item">
-              
-              
-              
-                <div class="recent-post-content">
-                  <div class="recent-post-cover-shadow"></div>
-                  <div class="recent-post-cover">
-                    <img class="article-cover" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/article.jpg" onerror="this.onerror=null;this.src='/'" alt="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）">
-                  </div>
-                  <div class="recent-post-info">
-                    <a class="article-title" href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%E9%83%A8%E7%BD%B2c++%20%E9%85%8D%E7%BD%AEopencv4.5.5,opencv_contrib4.5.5,%E4%BB%A5%E5%8F%8A/" title="ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）">
-                      <div class="article-title-link">ubuntu22部署c++ 配置opencv4.5.5,opencv_contrib4.5.5,以及opencv下的cuda（cuda11.6,cudnn8.4.1）</div>
-                    </a>
-                    <div class="recent-post-meta">
-                      <div class="article-meta-wrap">
-                        <span class="article-meta"><i class="fas fa-thumbtack sticky"></i><span class="sticky">置顶</span><span class="article-meta-separator">|</span></span>
-                        
-                        <span class="post-meta-date">
-                          <i class="far fa-calendar-alt"></i>
-                          <span class="article-meta-label">2024-01-24</span>
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-history"></i>
-                          <span class="article-meta-label">2024-01-10</span>
-                          <span class="article-meta-separator">|</span>
-                        </span>
-                        <span class="article-meta">
-                          <i class="fas fa-inbox"></i>
-                          
-                            <a href="/categories/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" class="article-meta__categories">环境配置</a>
-                            
-                          
-                        </span>
-
-                        <span class="article-meta tags">
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-tag"></i>
-                          
-                            <a href="/tags/cuda/" class="article-meta__tags">cuda</a>
-                            
-                            
-                              <span class="article-meta-link">•</span>
-                            
-                          
-                            <a href="/tags/opencv/" class="article-meta__tags">opencv</a>
-                            
-                            
-                              <span class="article-meta-link">•</span>
-                            
-                          
-                            <a href="/tags/opencv-contrib/" class="article-meta__tags">opencv_contrib</a>
-                            
-                            
-                          
-                        </span>
-
-                      </div>
-                    
-                </span>
-                    </div>
-                  </div>
-
-                </div>
-
-            </div>
-            <div class="recent-post-item">
-              
-              
-              
-                <div class="recent-post-content">
-                  <div class="recent-post-cover-shadow"></div>
-                  <div class="recent-post-cover">
-                    <img class="article-cover" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/article.jpg" onerror="this.onerror=null;this.src='/'" alt="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装">
-                  </div>
-                  <div class="recent-post-info">
-                    <a class="article-title" href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ubuntu22%20pycharm,cuda,cudnn%EF%BC%8Ctensorrt%E7%9A%84%E5%AE%89%E8%A3%85_ubuntu22%20l/" title="ubuntu22 pycharm,cuda,cudnn，tensorrt的安装">
-                      <div class="article-title-link">ubuntu22 pycharm,cuda,cudnn，tensorrt的安装</div>
-                    </a>
-                    <div class="recent-post-meta">
-                      <div class="article-meta-wrap">
-                        <span class="article-meta"><i class="fas fa-thumbtack sticky"></i><span class="sticky">置顶</span><span class="article-meta-separator">|</span></span>
-                        
-                        <span class="post-meta-date">
-                          <i class="far fa-calendar-alt"></i>
-                          <span class="article-meta-label">2024-01-24</span>
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-history"></i>
-                          <span class="article-meta-label">2024-01-10</span>
-                          <span class="article-meta-separator">|</span>
-                        </span>
-                        <span class="article-meta">
-                          <i class="fas fa-inbox"></i>
-                          
-                            <a href="/categories/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" class="article-meta__categories">环境配置</a>
-                            
-                          
-                        </span>
-
-                        <span class="article-meta tags">
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-tag"></i>
-                          
-                            <a href="/tags/cuda/" class="article-meta__tags">cuda</a>
-                            
-                            
-                              <span class="article-meta-link">•</span>
-                            
-                          
-                            <a href="/tags/cudnn/" class="article-meta__tags">cudnn</a>
-                            
-                            
-                              <span class="article-meta-link">•</span>
-                            
-                          
-                            <a href="/tags/tensorrt/" class="article-meta__tags">tensorrt</a>
-                            
-                            
-                          
-                        </span>
-
-                      </div>
-                    
-                </span>
-                    </div>
-                  </div>
-
-                </div>
-
-            </div>
-            <div class="recent-post-item">
-              
-              
-              
-                <div class="recent-post-content">
-                  <div class="recent-post-cover-shadow"></div>
-                  <div class="recent-post-cover">
-                    <img class="article-cover" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/article.jpg" onerror="this.onerror=null;this.src='/'" alt="Ubuntu19 Openvion cmake源码编译">
-                  </div>
-                  <div class="recent-post-info">
-                    <a class="article-title" href="/2024/01/09/Openvino/Ubuntu19%20Openvion%20cmake%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91_cmake%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AAopenvino%E9%A1%B9%E7%9B%AE-C/" title="Ubuntu19 Openvion cmake源码编译">
-                      <div class="article-title-link">Ubuntu19 Openvion cmake源码编译</div>
-                    </a>
-                    <div class="recent-post-meta">
-                      <div class="article-meta-wrap">
-                        <span class="article-meta"><i class="fas fa-thumbtack sticky"></i><span class="sticky">置顶</span><span class="article-meta-separator">|</span></span>
-                        
-                        <span class="post-meta-date">
-                          <i class="far fa-calendar-alt"></i>
-                          <span class="article-meta-label">2024-01-24</span>
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-history"></i>
-                          <span class="article-meta-label">2024-01-10</span>
-                          <span class="article-meta-separator">|</span>
-                        </span>
-                        <span class="article-meta">
-                          <i class="fas fa-inbox"></i>
-                          
-                            <a href="/categories/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" class="article-meta__categories">环境配置</a>
-                            
-                          
-                        </span>
-
-                        <span class="article-meta tags">
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-tag"></i>
-                          
-                            <a href="/tags/Openvino/" class="article-meta__tags">Openvino</a>
-                            
-                            
-                          
-                        </span>
-
-                      </div>
-                    
-                </span>
-                    </div>
-                  </div>
-
-                </div>
-
-            </div>
-            <div class="recent-post-item">
-              
-              
-              
-                <div class="recent-post-content">
-                  <div class="recent-post-cover-shadow"></div>
-                  <div class="recent-post-cover">
-                    <img class="article-cover" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/article.jpg" onerror="this.onerror=null;this.src='/'" alt="Openvino量化模型推理 Fp32 Fp16 int8">
-                  </div>
-                  <div class="recent-post-info">
-                    <a class="article-title" href="/2024/01/09/Openvino/Openvino%E9%87%8F%E5%8C%96%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%20Fp32%20Fp16%20int8_openvino%20int8-CSDN%E5%8D%9A%E5%AE%A2/" title="Openvino量化模型推理 Fp32 Fp16 int8">
-                      <div class="article-title-link">Openvino量化模型推理 Fp32 Fp16 int8</div>
-                    </a>
-                    <div class="recent-post-meta">
-                      <div class="article-meta-wrap">
-                        <span class="article-meta"><i class="fas fa-thumbtack sticky"></i><span class="sticky">置顶</span><span class="article-meta-separator">|</span></span>
-                        
-                        <span class="post-meta-date">
-                          <i class="far fa-calendar-alt"></i>
-                          <span class="article-meta-label">2024-01-24</span>
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-history"></i>
-                          <span class="article-meta-label">2024-01-10</span>
-                          <span class="article-meta-separator">|</span>
-                        </span>
-                        <span class="article-meta">
-                          <i class="fas fa-inbox"></i>
-                          
-                            <a href="/categories/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" class="article-meta__categories">环境配置</a>
-                            
-                          
-                        </span>
-
-                        <span class="article-meta tags">
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-tag"></i>
-                          
-                            <a href="/tags/Openvino/" class="article-meta__tags">Openvino</a>
-                            
-                            
-                          
-                        </span>
-
-                      </div>
-                    
-                </span>
-                    </div>
-                  </div>
-
-                </div>
-
-            </div>
-            <div class="recent-post-item">
-              
-              
-              
-                <div class="recent-post-content">
-                  <div class="recent-post-cover-shadow"></div>
-                  <div class="recent-post-cover">
-                    <img class="article-cover" src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/article.jpg" onerror="this.onerror=null;this.src='/'" alt="Jetson Xavier NX环境配置ubuntu20.04">
-                  </div>
-                  <div class="recent-post-info">
-                    <a class="article-title" href="/2024/01/09/Jeston%20nx/Jetson%20Xavier%20NX%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AEubuntu20.04_jetson%20ubuntu20.04/" title="Jetson Xavier NX环境配置ubuntu20.04">
-                      <div class="article-title-link">Jetson Xavier NX环境配置ubuntu20.04</div>
-                    </a>
-                    <div class="recent-post-meta">
-                      <div class="article-meta-wrap">
-                        <span class="article-meta"><i class="fas fa-thumbtack sticky"></i><span class="sticky">置顶</span><span class="article-meta-separator">|</span></span>
-                        
-                        <span class="post-meta-date">
-                          <i class="far fa-calendar-alt"></i>
-                          <span class="article-meta-label">2024-01-24</span>
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-history"></i>
-                          <span class="article-meta-label">2024-01-10</span>
-                          <span class="article-meta-separator">|</span>
-                        </span>
-                        <span class="article-meta">
-                          <i class="fas fa-inbox"></i>
-                          
-                            <a href="/categories/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" class="article-meta__categories">环境配置</a>
-                            
-                          
-                        </span>
-
-                        <span class="article-meta tags">
-                          <span class="article-meta-separator">|</span>
-                          <i class="fas fa-tag"></i>
-                          
-                            <a href="/tags/Jeston-nx/" class="article-meta__tags">Jeston nx</a>
-                            
-                            
-                          
-                        </span>
-
-                      </div>
-                    
-                </span>
-                    </div>
-                  </div>
-
-                </div>
-
-            </div>
     </ul>
 
 
@@ -1204,6 +929,9 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/pangu@4/dist/browser/pangu.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
 
@@ -1216,6 +944,65 @@
 
 
 <script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
 
 
 
@@ -1240,6 +1027,7 @@
 
 
 
+    <div id="pjax">
   
 
   
@@ -1348,5 +1136,6 @@ NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
 });
 </script>
 
+    </div>
 </body>
 </html>
