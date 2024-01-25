@@ -66,29 +66,24 @@ body {
 /* 文本设置 */
 .content {
   /* font-size: 20px;  */
-  background: rgba(70, 201, 103, 0.0);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 15px; /* 圆角的半径 */
 }
 /* 文本设置黑夜模式 */
 .darkmode--activated .content {
   /* font-size: 20px;  */
-  background: rgba(38, 121, 52, 0.0);
+  background: rgba(38, 121, 52, 0.2);
   border-radius: 15px; /* 圆角的半径 */
 }
 
 
-/* 标签部分设置 */
-.tag-cloud{
-  color: #000;
-}
-
 /* 首页滚动播放设置 */
 #swiper_container {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(201, 197, 197, 0.9);
 }
 
 .darkmode--activated #swiper_container {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(75, 72, 72, 0.9);
 }
 
 
