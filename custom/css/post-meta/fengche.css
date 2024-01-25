@@ -1,6 +1,6 @@
 h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
-  -webkit-animation: ccc 1.6s linear infinite ;
-  animation: ccc 1.6s linear infinite ;
+  -webkit-animation: ccc 1.6s linear  ;
+  animation: ccc 1.6s linear  ;
 }
 
 
@@ -34,8 +34,8 @@ h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
   margin-left: -1.55rem;
   font-size: 1.3rem;
   margin-top: -0.23rem;
-  -webkit-animation: ccc 1s linear infinite;
-  animation: ccc 1s linear infinite;
+  -webkit-animation: ccc 1s linear ;
+  animation: ccc 1s linear ;
 }
 .post-body h2::before {
   font-family: "Font Awesome 5 Free"; /* FontAwesome 字体 */
@@ -44,8 +44,8 @@ h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
   margin-left: -1.35rem;
   font-size: 1.1rem;
   margin-top: -0.12rem;
-  -webkit-animation: ccc 1s linear infinite;
-  animation: ccc 1s linear infinite;
+  -webkit-animation: ccc 1s linear ;
+  animation: ccc 1s linear ;
 }
 .post-body h3::before {
   font-family: "Font Awesome 5 Free"; /* FontAwesome 字体 */
@@ -54,8 +54,8 @@ h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
   margin-left: -1.22rem;
   font-size: 0.95rem;
   margin-top: -0.09rem;
-  -webkit-animation: ccc 1s linear infinite;
-  animation: ccc 1s linear infinite;
+  -webkit-animation: ccc 1s linear ;
+  animation: ccc 1s linear ;
 }
 .post-body h4::before {
   font-family: "Font Awesome 5 Free"; /* FontAwesome 字体 */
@@ -64,8 +64,8 @@ h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
   margin-left: -1.05rem;
   font-size: 0.8rem;
   margin-top: -0.09rem;
-  -webkit-animation: ccc 1s linear infinite;
-  animation: ccc 1s linear infinite;
+  -webkit-animation: ccc 1s linear ;
+  animation: ccc 1s linear ;
 }
 .post-body h5::before {
   font-family: "Font Awesome 5 Free"; /* FontAwesome 字体 */
@@ -100,7 +100,7 @@ h1::before, h2::before, h3::before, h4::before, h5::before, h6::before {
 .post-body h5:hover::before,
 .post-body h6:hover::before {
   color: var(--theme-color);
-  -webkit-animation: ccc 1s linear infinite;
-  animation: ccc 1s linear infinite;
+  -webkit-animation: ccc 1s linear;
+  animation: ccc 1s linear;
 }
 
