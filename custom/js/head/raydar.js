@@ -8,8 +8,12 @@ function generateRandomColor() {
 
 document.addEventListener('DOMContentLoaded', function () {
     const canvas = document.getElementById('myRadarChart');
-
+    if (!canvas) {
+        return;
+    }
     const ctx = canvas.getContext('2d');
+
+
     var items = document.querySelectorAll('.category-list-item');
 
     if (items.length == 0) {

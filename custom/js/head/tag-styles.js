@@ -1,4 +1,5 @@
 var alltags = document.getElementsByClassName('tag-cloud-tags');
+if (!alltags) return;
 var tags = alltags[0].getElementsByTagName('a');
 for (var i = tags.length - 1; i >= 0; i--) {
   var r=Math.floor(Math.random()*75+130);
