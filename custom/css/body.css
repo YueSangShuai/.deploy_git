@@ -92,8 +92,6 @@ body {
    margin-top: 60px;
    margin-bottom: 60px;
    padding: 25px;
-   -webkit-box-shadow: 0 0 5px rgba(202, 203, 203, .5);
-   -moz-box-shadow: 0 0 5px rgba(202, 203, 204, .5);
    background: rgba(255,255,255,0.7);
    border-radius: 15px; /* 圆角的半径 */
 }
@@ -102,8 +100,6 @@ body {
 .darkmode--activated .post {
   /* 在这里定义暗黑模式下的样式 */
   color: #ccc; /* 更改文本颜色以提高可读性 */
-  -webkit-box-shadow: 0 0 5px rgba(50, 50, 50, .5);
-  -moz-box-shadow: 0 0 5px rgba(50, 50, 50, .5);
   background: rgba(0,0,0,0.7);
   border-radius: 15px; /* 圆角的半径 */
 }
