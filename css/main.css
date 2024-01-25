@@ -1249,7 +1249,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #fff;
+  background: #7f2187;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -3123,15 +3123,12 @@ div#runtime {
 * {
   box-sizing: border-box;
 }
-div#swiper_container {
-  background: rgba(255,255,255,0);
-}
 .blog-slider {
   width: 100%;
   position: relative;
   border-radius: 12px 8px 8px 12px;
   margin: auto;
-  background: var(--global-bg);
+  background: rgba(24,13,13,0.7);
   padding: 10px;
   transition: all 0.3s;
 }
@@ -3281,7 +3278,8 @@ div#swiper_container {
 .blog-slider .swiper-pagination-fraction {
   bottom: 10px;
   left: 0;
-  width: 100%;
+  width: 20px;
+  height: 20px;
 }
 .blog-slider__pagination {
   position: absolute;
