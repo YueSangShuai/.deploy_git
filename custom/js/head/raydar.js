@@ -8,17 +8,15 @@ function generateRandomColor() {
 
 function initializeChart() {
     const canvas = document.getElementById('myRadarChart');
-
+    
     if (!canvas) {
-        console.error('Canvas element not found');
         return;
     }
 
     const ctx = canvas.getContext('2d');
     var items = document.querySelectorAll('.category-list-item');
 
-    if (items.length === 0) {
-        console.error('No category list items found');
+    if (items.length == 0) {
         return;
     }
 
@@ -26,7 +24,7 @@ function initializeChart() {
     var mylabels = [];
     var mydata = [];
     var myLinks = [];
-
+    
     items.forEach(function(item) {
         var link = item.querySelector('.category-list-link');
         var data = item.querySelector('.category-list-count');
@@ -38,10 +36,6 @@ function initializeChart() {
         }
     });
 
-    if (mylabels.length === 0 || mydata.length === 0) {
-        console.error('No valid data found for chart');
-        return;
-    }
 
     new Chart(ctx, {
         type: 'doughnut',
@@ -96,13 +90,18 @@ function initializeChart() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+function runChartScript() {
     initializeChart();  // 初次加载时初始化图表
+    
+    // 监控浏览器导航变化
+    window.addEventListener('popstate', function () {
+        initializeChart();
+    });
 
-    // 监控页面变化，如果页面切换导致元素变化，重新初始化图表
+    // 监控页面变化（DOM元素变化）
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
+            if (mutation.type === 'childList' || mutation.type === 'attributes') {
                 initializeChart();
             }
         });
@@ -110,6 +109,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     observer.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
+        attributes: true
     });
-});
+}
+
+// 确保脚本在页面切换时执行
+document.addEventListener('DOMContentLoaded', runChartScript);
