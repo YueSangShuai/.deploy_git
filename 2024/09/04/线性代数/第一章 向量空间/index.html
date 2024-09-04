@@ -24,7 +24,7 @@
 
   <meta name="description" content="线性代数是研究有限维向量空间上的线性映射的学问 集合 $R^2$（你可以将其视作一个平面）是全体有序实数对所构成的集合： $$R^2 &#x3D; {(𝑥, 𝑦) : 𝑥, 𝑦 ∈ R}.$$ 集合 $R3$（你可以将其视作通常的三维空间）是全体有序实数三元组所构成的集合： $$R^3 &#x3D; {(𝑥, 𝑦, 𝑧) : 𝑥, 𝑦, 𝑧 ∈ R}.$$ $F^𝑛$ 是全体具有 𝑛 个 F">
 <meta property="og:type" content="article">
-<meta property="og:title" content="你好陌生人">
+<meta property="og:title" content="向量空间">
 <meta property="og:url" content="http://yuesangshuai.github.io/2024/09/04/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E7%AC%AC%E4%B8%80%E7%AB%A0%20%E5%90%91%E9%87%8F%E7%A9%BA%E9%97%B4/index.html">
 <meta property="og:site_name" content="你好陌生人">
 <meta property="og:description" content="线性代数是研究有限维向量空间上的线性映射的学问 集合 $R^2$（你可以将其视作一个平面）是全体有序实数对所构成的集合： $$R^2 &#x3D; {(𝑥, 𝑦) : 𝑥, 𝑦 ∈ R}.$$ 集合 $R3$（你可以将其视作通常的三维空间）是全体有序实数三元组所构成的集合： $$R^3 &#x3D; {(𝑥, 𝑦, 𝑧) : 𝑥, 𝑦, 𝑧 ∈ R}.$$ $F^𝑛$ 是全体具有 𝑛 个 F">
@@ -56,8 +56,9 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/c1e2114d003186481c0088498b9a3293.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/aa589c347455948984a19b82fae1f5aa.png">
 <meta property="article:published_time" content="2024-09-04T06:50:34.044Z">
-<meta property="article:modified_time" content="2024-09-04T07:15:02.193Z">
+<meta property="article:modified_time" content="2024-09-04T07:27:29.922Z">
 <meta property="article:author" content="YueSang">
+<meta property="article:tag" content="线性代数">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/785897d763447f08caeb2ffd3ad095ed.png">
 
@@ -187,7 +188,7 @@
 
 
 
-  <title> | 你好陌生人</title>
+  <title>向量空间 | 你好陌生人</title>
   
 
 
@@ -502,7 +503,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
+          向量空间
         </h1>
 
         <div class="post-meta">
@@ -513,11 +514,20 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-09-04 14:50:34 / 修改时间：15:15:02" itemprop="dateCreated datePublished" datetime="2024-09-04T14:50:34+08:00">2024-09-04</time>
+              <time title="创建时间：2024-09-04 14:50:34 / 修改时间：15:27:29" itemprop="dateCreated datePublished" datetime="2024-09-04T14:50:34+08:00">2024-09-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a>
+                </span>
             </span>
 
           
-            <span id="/2024/09/04/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E7%AC%AC%E4%B8%80%E7%AB%A0%20%E5%90%91%E9%87%8F%E7%A9%BA%E9%97%B4/" class="post-meta-item leancloud_visitors" data-flag-title="" title="阅读次数">
+            <span id="/2024/09/04/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E7%AC%AC%E4%B8%80%E7%AB%A0%20%E5%90%91%E9%87%8F%E7%A9%BA%E9%97%B4/" class="post-meta-item leancloud_visitors" data-flag-title="向量空间" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -624,7 +634,7 @@ $𝑆$ 中的每一个元素映射到集合 $𝐹$ 中的某个元素。</strong
 </ul>
 <p>向量空间 $F^𝑛$是向量空间 $F^𝑆$的一个特例，因为每个 $(𝑥^1, . . . , 𝑥^𝑛) ∈ F^𝑛$都可被视作一个从集合  {1, 2, . . . , 𝑛} 到 $F$ 的函数 $𝑥$，只要将$(𝑥^1, . . . , 𝑥^𝑛)$ 的第 $𝑘$ 个坐标写成 $𝑥(𝑘)$ 而不是 $𝑥_k$.</p>
 <p><strong>加法逆元唯一:向量空间里的每个元素都有唯一的加法逆元．</strong></p>
-<p>证明 设$𝑉$ 是向量空间．令 $𝑣 ∈ 𝑉$．假设 $𝑤 $和 $𝑤^′$ 都是 $𝑣$ 的加法逆元．那么<br>
+<p>证明 设$𝑉$是向量空间．令 $𝑣 ∈ 𝑉$．假设 $𝑤 $和 $𝑤^′$ 都是 $𝑣$ 的加法逆元．那么<br>
 $$<br>
 𝑤 = 𝑤 + 0 = 𝑤 + (𝑣 + 𝑤^′) = (𝑤 + 𝑣) + 𝑤^′ = 0 + 𝑤^′ = 𝑤^′<br>
 $$<br>
@@ -695,6 +705,9 @@ $𝑣_1 + · · · + 𝑣_𝑚$,<br>
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/" rel="tag"># 线性代数</a>
+          </div>
 
         
 
@@ -789,13 +802,13 @@ $𝑣_1 + · · · + 𝑣_𝑚$,<br>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -836,8 +849,8 @@ $𝑣_1 + · · · + 𝑣_𝑚$,<br>
 	</div>
 	<ul class="links-of-blogroll-list recent-posts-list">
 	        <li class="my-links-of-blogroll-item">
-		    <a href="/2024/09/04/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E7%AC%AC%E4%B8%80%E7%AB%A0%20%E5%90%91%E9%87%8F%E7%A9%BA%E9%97%B4/" title="" target="">
-		    
+		    <a href="/2024/09/04/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E7%AC%AC%E4%B8%80%E7%AB%A0%20%E5%90%91%E9%87%8F%E7%A9%BA%E9%97%B4/" title="向量空间" target="">
+		    向量空间
 		    </a>
 		</li>
 	        <li class="my-links-of-blogroll-item">
@@ -860,7 +873,7 @@ $𝑣_1 + · · · + 𝑣_𝑚$,<br>
 	<div class="widget-wrap">
 		<div id="myCanvasContainer" class="widget tagcloud">
 			<canvas width="300" height="300" id="resCanvas" style="width:100%">
-				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li></ul>
+				<ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IOU/" rel="tag">IOU</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jeston-nx/" rel="tag">Jeston nx</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Openvino/" rel="tag">Openvino</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Yolo/" rel="tag">Yolo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuda/" rel="tag">cuda</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cudnn/" rel="tag">cudnn</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv/" rel="tag">opencv</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/opencv-contrib/" rel="tag">opencv_contrib</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorrt/" rel="tag">tensorrt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1/" rel="tag">交叉熵损失</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BC%98%E5%8C%96%E5%99%A8/" rel="tag">优化器</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/" rel="tag">线性代数</a><span class="tag-list-count">1</span></li></ul>
 			</canvas>
 		</div>
 	</div>
@@ -1014,6 +1027,59 @@ window.addEventListener('pjax:success', () => {
   
 
   
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
