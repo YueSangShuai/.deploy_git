@@ -1,30 +1,36 @@
 function generateRandomColor() {
-    var r = Math.floor(Math.random() * 256); // 随机生成0-255之间的红色分量
-    var g = Math.floor(Math.random() * 256); // 随机生成0-255之间的绿色分量
-    var b = Math.floor(Math.random() * 256); // 随机生成0-255之间的蓝色分量
-    var a = 0.2; // 设置透明度
-    return `rgba(${r}, ${g}, ${b}, ${a})`; // 返回生成的颜色字符串
+    var r = Math.floor(Math.random() * 256);
+    var g = Math.floor(Math.random() * 256);
+    var b = Math.floor(Math.random() * 256);
+    var a = 0.2;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+function initializeChart() {
     const canvas = document.getElementById('myRadarChart');
 
-    const ctx = canvas.getContext('2d');
-
-
-    var items = document.querySelectorAll('.category-list-item');
-
-    if (items.length == 0) {
+    if (!canvas) {
+        console.error('Canvas element not found');
         return;
     }
+
+    const ctx = canvas.getContext('2d');
+    var items = document.querySelectorAll('.category-list-item');
+
+    if (items.length === 0) {
+        console.error('No category list items found');
+        return;
+    }
+
     var myColors = [];
     var mylabels = [];
     var mydata = [];
-    var myLinks=[];
+    var myLinks = [];
+
     items.forEach(function(item) {
         var link = item.querySelector('.category-list-link');
         var data = item.querySelector('.category-list-count');
-        if (link) {
+        if (link && data) {
             mylabels.push(link.textContent.trim());
             mydata.push(Number(data.textContent.trim()));
             myColors.push(generateRandomColor());
@@ -32,16 +38,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    if (mylabels.length === 0 || mydata.length === 0) {
+        console.error('No valid data found for chart');
+        return;
+    }
 
-    const myRadarChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: mylabels,
             datasets: [{
                 label: 'myradar',
-                backgroundColor: myColors, // 使用颜色数组
-                borderColor: myColors.map(color => color.replace('0.2', '1')), // 边框颜色
-                pointBackgroundColor: myColors.map(color => color.replace('0.2', '1')), // 数据点颜色
+                backgroundColor: myColors,
+                borderColor: myColors.map(color => color.replace('0.2', '1')),
+                pointBackgroundColor: myColors.map(color => color.replace('0.2', '1')),
                 data: mydata
             }]
         },
@@ -66,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         display: true,
                         color: 'black',
                         font: {
-                            size: 20 // 设置雷达图标签文字大小
+                            size: 20
                         }
                     }
                 }
@@ -75,15 +85,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 legend: {
                     labels: {
                         font: {
-                            size: 20 // 设置图例文字大小
+                            size: 20
                         }
                     },
                     position: 'top',
-                    display:false
+                    display: false
                 }
             }
         }
     });
-    
- 
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    initializeChart();  // 初次加载时初始化图表
+
+    // 监控页面变化，如果页面切换导致元素变化，重新初始化图表
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                initializeChart();
+            }
+        });
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 });
