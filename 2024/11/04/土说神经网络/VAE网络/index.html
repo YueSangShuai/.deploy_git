@@ -22,30 +22,24 @@
     var CONFIG = {"hostname":"yuesangshuai.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":false,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":true,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Markdown图床 1. 安装  PicGo  首先打开picgo官网，下载安装包   界面如下：  点开图床设置  接下来我会一一描述如何从github中获取这些东西  2. github 首先创建一个好记的仓库名  分支部分默认:master就行 然后是获取token进入setting:  最底下有个  然后  之后这样勾选  这样你就可以得到一个token，记得保存这个token，这个to">
+  <meta name="description" content="分布变化 VAE和GAN的本质都是希望重构一个隐变量$Z$生成目标数据$X$,换一种方式来说就是假设$Z$符合某些分布，然后训练一个模型$X&#x3D;g(Z)$将概率分布映射到X就是从结果映射回训练集(个人理解) VAE主要就是为了解决下面这个问题  VAE理解误区 那现在假设$Z$服从标准的正态分布，那么我就可以从中采样得到若干个$Z1,Z2,…,Zn$，然后对它做变换得到$X^1&#x3D;g(Z1),X^2&#x3D;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Markdown图床">
-<meta property="og:url" content="http://yuesangshuai.github.io/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/index.html">
+<meta property="og:title" content="VAE网络">
+<meta property="og:url" content="http://yuesangshuai.github.io/2024/11/04/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/VAE%E7%BD%91%E7%BB%9C/index.html">
 <meta property="og:site_name" content="你好陌生人">
-<meta property="og:description" content="Markdown图床 1. 安装  PicGo  首先打开picgo官网，下载安装包   界面如下：  点开图床设置  接下来我会一一描述如何从github中获取这些东西  2. github 首先创建一个好记的仓库名  分支部分默认:master就行 然后是获取token进入setting:  最底下有个  然后  之后这样勾选  这样你就可以得到一个token，记得保存这个token，这个to">
+<meta property="og:description" content="分布变化 VAE和GAN的本质都是希望重构一个隐变量$Z$生成目标数据$X$,换一种方式来说就是假设$Z$符合某些分布，然后训练一个模型$X&#x3D;g(Z)$将概率分布映射到X就是从结果映射回训练集(个人理解) VAE主要就是为了解决下面这个问题  VAE理解误区 那现在假设$Z$服从标准的正态分布，那么我就可以从中采样得到若干个$Z1,Z2,…,Zn$，然后对它做变换得到$X^1&#x3D;g(Z1),X^2&#x3D;">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//42b06d30b078093c44af1bcfa69adeac.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//5c6ff7c000e84da4137e7b418bfb42ba.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9aa122338e571e381e3d5d12b422aded.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e6618bcabea3c60d34e724c0bfe3a66f.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7013512526adb5c659dd17fa635b2a91.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3f3574d1bbd20c1604e28fce611abc8b.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//07fe2a9fdec1257c0853fc71301175e2.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7a876b7bab2841dd4b8b8546cf785fd.png">
-<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7deb1860493cfa28ec0f0496cda9839.png">
-<meta property="article:published_time" content="2024-01-11T07:17:02.317Z">
-<meta property="article:modified_time" content="2024-01-11T07:22:14.943Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/894cfeb0551a2031c8049d2987814dac.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1dd5b522109ac7188a62d8c8594a7737.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/40b1004fdb091f7f35ab4ac9873e3752.png">
+<meta property="article:published_time" content="2024-11-04T02:04:41.043Z">
+<meta property="article:modified_time" content="2024-11-04T02:08:05.999Z">
 <meta property="article:author" content="YueSang">
-<meta property="article:tag" content="hexo">
+<meta property="article:tag" content="IOU">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//42b06d30b078093c44af1bcfa69adeac.png">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/894cfeb0551a2031c8049d2987814dac.png">
 
-<link rel="canonical" href="http://yuesangshuai.github.io/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/">
+<link rel="canonical" href="http://yuesangshuai.github.io/2024/11/04/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/VAE%E7%BD%91%E7%BB%9C/">
 
 
 <script id="page-configurations">
@@ -170,7 +164,7 @@
 
 
 
-  <title>Markdown图床 | 你好陌生人</title>
+  <title>VAE网络 | 你好陌生人</title>
   
 
 
@@ -472,7 +466,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yuesangshuai.github.io/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/">
+    <link itemprop="mainEntityOfPage" href="http://yuesangshuai.github.io/2024/11/04/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/VAE%E7%BD%91%E7%BB%9C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/微信图片_20240109114649.jpg">
@@ -485,7 +479,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Markdown图床
+          VAE网络
         </h1>
 
         <div class="post-meta">
@@ -496,7 +490,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-01-11 15:17:02 / 修改时间：15:22:14" itemprop="dateCreated datePublished" datetime="2024-01-11T15:17:02+08:00">2024-01-11</time>
+              <time title="创建时间：2024-11-04 10:04:41 / 修改时间：10:08:05" itemprop="dateCreated datePublished" datetime="2024-11-04T10:04:41+08:00">2024-11-04</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -504,12 +498,12 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/hexo%E9%85%8D%E7%BD%AE/" itemprop="url" rel="index"><span itemprop="name">hexo配置</span></a>
+                  <a href="/categories/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index"><span itemprop="name">神经网络</span></a>
                 </span>
             </span>
 
           
-            <span id="/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/" class="post-meta-item leancloud_visitors" data-flag-title="Markdown图床" title="阅读次数">
+            <span id="/2024/11/04/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/VAE%E7%BD%91%E7%BB%9C/" class="post-meta-item leancloud_visitors" data-flag-title="VAE网络" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -524,8 +518,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/Markdown%E5%9B%BE%E5%BA%8A/" itemprop="commentCount"></span>
+    <a title="valine" href="/2024/11/04/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/VAE%E7%BD%91%E7%BB%9C/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2024/11/04/%E5%9C%9F%E8%AF%B4%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/VAE%E7%BD%91%E7%BB%9C/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -558,40 +552,33 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1>Markdown图床</h1>
-<h2 id="1-安装">1. 安装</h2>
-<ul>
-<li>PicGo</li>
-<li>
-<h3 id="首先打开picgo官网，下载安装包">首先打开<a href="https://link.zhihu.com/?target=https%3A//github.com/Molunerfinn/PicGo">picgo官网</a>，下载安装包</h3>
-</li>
-</ul>
-<p>界面如下：<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//42b06d30b078093c44af1bcfa69adeac.png" alt="42b06d30b078093c44af1bcfa69adeac.png"><br>
-点开图床设置<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//5c6ff7c000e84da4137e7b418bfb42ba.png" alt="5c6ff7c000e84da4137e7b418bfb42ba.png"><br>
-接下来我会一一描述如何从github中获取这些东西<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//9aa122338e571e381e3d5d12b422aded.png" alt="9aa122338e571e381e3d5d12b422aded.png"></p>
-<h2 id="2-github">2. github</h2>
-<p>首先创建一个好记的仓库名<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//e6618bcabea3c60d34e724c0bfe3a66f.png" alt="e6618bcabea3c60d34e724c0bfe3a66f.png"><br>
-分支部分默认:master就行<br>
-然后是获取token进入setting:<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//7013512526adb5c659dd17fa635b2a91.png" alt="7013512526adb5c659dd17fa635b2a91.png"><br>
-最底下有个<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//3f3574d1bbd20c1604e28fce611abc8b.png" alt="3f3574d1bbd20c1604e28fce611abc8b.png"><br>
-然后<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//07fe2a9fdec1257c0853fc71301175e2.png" alt="07fe2a9fdec1257c0853fc71301175e2.png"><br>
-之后这样勾选<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7a876b7bab2841dd4b8b8546cf785fd.png" alt="a7a876b7bab2841dd4b8b8546cf785fd.png"><br>
-这样你就可以得到一个token，记得保存这个token，这个token只能看一次。<br>
-将这个token塞到刚刚pigo里面之后就可以上传图片了。</p>
-<h2 id="可能会出现的问题">可能会出现的问题</h2>
-<p>链接失败：<br>
-<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master//a7deb1860493cfa28ec0f0496cda9839.png" alt="a7deb1860493cfa28ec0f0496cda9839.png"><br>
-记得点开这里面这样勾选</p>
-<p>上传失败：<br>
-仓库的设置有问题或者网不好没传上去</p>
+        <h1>分布变化</h1>
+<p>VAE和GAN的本质都是希望重构一个隐变量$Z$生成目标数据$X$,换一种方式来说就是假设$Z$符合某些分布，然后训练一个模型$X=g(Z)$将概率分布映射到X就是从结果映射回训练集(个人理解)<br>
+VAE主要就是为了解决下面这个问题</p>
+<p><img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/894cfeb0551a2031c8049d2987814dac.png" alt="894cfeb0551a2031c8049d2987814dac.png"></p>
+<h1>VAE理解误区</h1>
+<p>那现在假设$Z$服从标准的正态分布，那么我就可以从中采样得到若干个$Z1,Z2,…,Zn$，然后对它做变换得到$X^1=g(Z1),X^2=g(Z2),…,X^n=g(Zn)$，我们怎么判断这个通过$g$构造出来的数据集，它的分布跟我们目标的数据集分布是不是一样的呢？有读者说不是有KL散度吗？当然不行，因为KL散度是根据两个概率分布的表达式来算它们的相似度的，然而目前我们并不知道它们的概率分布的表达式，我们只有样本本身而没有分布表达式就没办法计算KL散度。</p>
+<p>首先我们有一批数据样本${X1,…,Xn}$其整体用$X$描述，我们本想根据${X1,…,Xn}$到$X$布$p(X)$如果能得到的话，那我直接根据$p(X)$采样，就可以得到所有可能的$X$（包括${X1,…,Xn}$外的），这是一个终极理想的生成模型了。当然，这个理想很难实现，于是我们将分布改一改<br>
+$$<br>
+p(X)=\sum_Z p(X \mid Z) p(Z)<br>
+$$</p>
+<p>$p(X|Z)$就描述了一个由$Z$来生成$X$的模型，而我们假设$Z$服从标准正态分布，$p(Z)=N(0,I)$。如果这个理想能实现，那么我们就可以先从标准正态分布中采样一个$Z$，然后根据$Z$来算一个$X$，也是一个很棒的生成模型。接下来就是结合自编码器来实现重构，保证有效信息没有丢失，再加上一系列的推导，最后把模型实现。框架的示意图如下：<br>
+<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/1dd5b522109ac7188a62d8c8594a7737.png" alt="1dd5b522109ac7188a62d8c8594a7737.png"><br>
+如果按照上述流程的话会出现一个问题，无法保证重新采样出来的$Z_k$是否还对应着远来的$X_k$,。</p>
+<h1>一致性</h1>
+<p>在VAE中没有假设$p(Z)$是符合正太分布的，假设的是$p(Z|X)$是符合正太分布的。</p>
+<p>给定一个真实样本$X_k$，我们假设存在一个专属于$X_k$的分布$p(Z|Xk)$，并进一步假设这个分布是（独立的、多元的）正态分布。为什么要强调“专属”呢？因为我们后面要训练一个生成器$X=g(Z)$，希望能够把从分布$P(Z|X_k)$采样出来的一个$Z_k$还原为$X_k$。如果假设$p(Z)$是正态分布，然后从$p(Z)$中采样一个$Z$，那么我们怎么知道这个$Z$对应于哪个真实的$X$呢？现在$p(Z|X_k)$专属于$X_k$，我们有理由说从这个分布采样出来的$Z$应该要还原到$X_k$中去。</p>
+<p>此时每一个$X_k$都有一个专属的正太分布方便后面的生成器进行还原，正太分布有两个参数均值 $\mu$ 和方差 $\sigma^2$，此时我们采用神经网络来拟合他们正太分布的均值和方差，具体流程如下:<br>
+<img src="https://raw.githubusercontent.com/YueSangShuai/upload_imgs/master/40b1004fdb091f7f35ab4ac9873e3752.png" alt="40b1004fdb091f7f35ab4ac9873e3752.png"></p>
+<h1>随机性</h1>
+<p>首先，我们希望重构$X$，也就是最小化$D(X^k,X_k)^2$，但是这个重构过程受到噪声的影响，因为$Z_k$是通过重新采样过的，不是直接由encoder算出来的。显然噪声会增加重构的难度，不过好在这个噪声强度（也就是方差）通过一个神经网络算出来的，所以最终模型为了重构得更好，肯定会想尽办法让方差为0。而方差为0的话，也就没有随机性了，所以不管怎么采样其实都只是得到确定的结果（也就是均值），只拟合一个当然比拟合多个要容易，而均值是通过另外一个神经网络算出来的。<br>
+说白了，模型会慢慢退化成普通的AutoEncoder，噪声不再起作用。<br>
+这样不就白费力气了吗？说好的生成模型呢？</p>
+<p>别急别急，其实VAE还让所有的$p(Z|X)$都向标准正态分布看齐，这样就防止了噪声为零，同时保证了模型具有生成能力。怎么理解“保证了生成能力”呢？如果所有的$p(Z|X)$都很接近标准正态分布$N(0,I)$，那么根据定义<br>
+$$<br>
+p(Z)=\sum_X p(Z \mid X) p(X)=\sum_X \mathcal{N}(0, I) p(X)=\mathcal{N}(0, I) \sum_X p(X)=\mathcal{N}(0, I)<br>
+$$<br>
+这样我们就能达到我们的先验假设：$p(Z)$是标准正态分布。然后我们就可以放心地从$N(0,I)$中采样来生成图像了.</p>
 
     </div>
 
@@ -601,7 +588,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/hexo/" rel="tag"># hexo</a>
+              <a href="/tags/IOU/" rel="tag"># IOU</a>
           </div>
 
         
@@ -610,13 +597,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2024/01/10/ubuntu%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/%E7%A9%B7%E8%8B%A6%E4%BA%BA%E6%B0%91%E5%A6%82%E4%BD%95%E7%94%A8%E7%A7%BB%E5%8A%A8%E5%9B%BA%E6%80%81%E9%85%8D%E7%BD%AEunbutu22.04_awesome-terminal-fonts-CS/" rel="prev" title="穷苦人民如何用移动固态配置unbutu22.04">
-      <i class="fa fa-chevron-left"></i> 穷苦人民如何用移动固态配置unbutu22.04
+    <a href="/2024/09/04/%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0/%E7%AC%AC%E4%B8%80%E7%AB%A0%20%E5%90%91%E9%87%8F%E7%A9%BA%E9%97%B4/" rel="prev" title="向量空间">
+      <i class="fa fa-chevron-left"></i> 向量空间
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2024/01/11/hexo%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/hexo%E4%B8%AA%E4%BA%BA%E7%95%8C%E9%9D%A2%E7%BE%8E%E5%8C%96/" rel="next" title="hexo美化">
-      hexo美化 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -677,7 +661,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">Markdown图床</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85"><span class="nav-number">1.1.</span> <span class="nav-text">1. 安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A6%96%E5%85%88%E6%89%93%E5%BC%80picgo%E5%AE%98%E7%BD%91%EF%BC%8C%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85%E5%8C%85"><span class="nav-number">1.1.1.</span> <span class="nav-text">首先打开picgo官网，下载安装包</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-github"><span class="nav-number">1.2.</span> <span class="nav-text">2. github</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E8%83%BD%E4%BC%9A%E5%87%BA%E7%8E%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.3.</span> <span class="nav-text">可能会出现的问题</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text">分布变化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">2.</span> <span class="nav-text">VAE理解误区</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">3.</span> <span class="nav-text">一致性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">4.</span> <span class="nav-text">随机性</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -925,6 +909,59 @@ window.addEventListener('pjax:success', () => {
   
 
   
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
